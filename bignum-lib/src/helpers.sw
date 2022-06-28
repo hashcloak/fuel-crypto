@@ -8,3 +8,7 @@ pub fn unpack_or_0 (x: Option<u32>) -> u32 {
         Option::None => 0,
     }
 }
+
+pub trait Zero {
+    fn is_zero(self) -> bool;
+}
