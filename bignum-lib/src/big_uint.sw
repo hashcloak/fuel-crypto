@@ -23,8 +23,6 @@ impl Zero for BigUint {
     }
 }
 
-// TODO BigUint zero toevoegen
-
 fn max(left: u64, right: u64) -> u64 {
     if(left >= right) { left } else { right }
 }
