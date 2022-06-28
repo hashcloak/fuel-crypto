@@ -77,10 +77,13 @@ fn is_bigger_or_equal(a: BigUint, b: BigUint) -> bool {
     if a.data.len() > b.data.len() {
         return true;
     } else if a.data.len() == b.data.len() {
+        if a.data.len() == 0 {
+            return true;
+        }
         let mut i = a.data.len() - 1;
         let mut a_is_bigger_or_equal = true;
         let mut looping = true;
-        while i > 0 && looping {
+        while i >= 0 && looping {
             let a_val = unpack_or_0(a.data.get(i));
             let b_val = unpack_or_0(b.data.get(i));
             if  a_val > b_val {
@@ -88,9 +91,12 @@ fn is_bigger_or_equal(a: BigUint, b: BigUint) -> bool {
             } else if a_val < b_val {
                 a_is_bigger_or_equal = false;
                 looping = false; // we know b is bigger
+            } else if a_val == b_val && i == 0 {
+                looping = false; // we have seen all elements and a & b are equal
+            } else {
+                // If we're not sure yet and the index is not yet 0; keep looping
+                i = i - 1;
             }
-            // If we're not sure yet; keep looping
-            i = i - 1;
         }
         return a_is_bigger_or_equal;
     } else {
@@ -113,13 +119,16 @@ fn sub_limb(a_i: u32, b_i: u32, borrow_i: u32) -> (u32, u32) {
 return Some(BigUint) if a >= b, otherwise None
 */
 pub fn sub(a: BigUint, b: BigUint) -> Option<BigUint> {
+    // Special case 0 - 0 = 0
+    if(a.data.len() == 0 && b.data.len() == 0) {
+        return Option::Some(BigUint{data: ~Vec::new::<u32>()});
+    }
+
     if is_bigger_or_equal(a, b) {
         let a_vec: Vec<u32> = a.data;
         let b_vec: Vec<u32> = b.data;
         let len_a: u32 = a_vec.len();
 
-        // The resulting vector will be filled in the opposite order
-        // For the final result this is reversed and the leading zeroes will be disregarded
         let mut res: Vec<u32> = ~Vec::new::<u32>();
         let mut i = 0;
         let mut borrow_i: u32 = 0;
@@ -146,7 +155,7 @@ pub fn sub(a: BigUint, b: BigUint) -> Option<BigUint> {
         }
 
         let mut normalized_res: Vec<u32> = ~Vec::new::<u32>();
-        let res_is_zero = most_significant_bit_index == 0 && unpack_or_0(res.get(0) )== 0;
+        let res_is_zero = most_significant_bit_index == 0 && unpack_or_0(res.get(0)) == 0;
         if(!res_is_zero) {
             let mut j = 0;
             while j <= most_significant_bit_index {

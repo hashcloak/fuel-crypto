@@ -157,12 +157,15 @@ fn biguint_addition_zeros() -> bool {
 // SUBTRACTION BIGUINT
 fn biguint_subtraction_tests() -> bool {
     assert(biguint_subtraction_result_none());
+    assert(big_uint_subtraction_result_none_2());
 
     assert(biguint_subtraction_from_0());
     assert(biguint_subtraction_to_0());
+    assert(biguint_subtraction_zeros());
 
     assert(biguint_subtraction_res_same_len());
     assert(biguint_subtraction_shorter_len());
+
     true
 }
 
@@ -179,6 +182,26 @@ fn biguint_subtraction_result_none() -> bool {
     let mut b_data: Vec<u32> = ~Vec::new::<u32>();
     b_data.push(100);
     b_data.push(12);
+    let b = BigUint{data: b_data};
+
+    let res_bigint = sub(a, b);
+
+    assert(res_bigint.is_none());
+
+    true
+}
+
+/*
+This should also work for length 1
+[6] - [8] should give None
+*/
+fn big_uint_subtraction_result_none_2() -> bool {
+    let mut a_data: Vec<u32> = ~Vec::new::<u32>();
+    a_data.push(6);
+    let a = BigUint{data: a_data};
+
+    let mut b_data: Vec<u32> = ~Vec::new::<u32>();
+    b_data.push(8);
     let b = BigUint{data: b_data};
 
     let res_bigint = sub(a, b);
@@ -273,6 +296,27 @@ fn biguint_subtraction_shorter_len() -> bool {
 
     assert(unpack_or_0(res_vec.get(0)) == 18);
     assert(res_vec.get(1).is_none());
+
+    true
+}
+
+/*
+0 - 0 = 0
+*/
+fn biguint_subtraction_zeros() -> bool {
+    // a = 0
+    let mut a_data: Vec<u32> = ~Vec::new::<u32>();
+    let a = BigUint{data: a_data};
+
+    // b = 0
+    let mut b_data: Vec<u32> = ~Vec::new::<u32>();
+    let b = BigUint{data: b_data};
+
+    // total = 0
+    let res_bigint = sub(a, b);
+
+    assert(res_bigint.is_some());
+    assert(res_bigint.unwrap().is_zero());
 
     true
 }
