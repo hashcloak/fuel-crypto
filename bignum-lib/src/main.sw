@@ -337,10 +337,9 @@ When calculating X*Y
 The result = 10043362780126293152582135998281912347988259896158629291622500
 
 This is written in base 2^32 as follows:
-29514790528243204098500 * 2^128 + 2000 * 2^96 + 1000 * 2^64 +400 * 2^32 + 100
+1600 * 2^192 + 2400 * 2^160 + 2500 * 2^128 + 2000 * 2^96 + 1000 * 2^64 +400 * 2^32 + 100
 And therefore translates to data vector
-[100, 400, 1000, 2000, 29514790528243204098500]
-
+[100, 400, 1000, 2000, 2500, 2400, 1600]
 ——
 
 Applying Karatsuba would work as follows
@@ -361,8 +360,6 @@ Check that this is correct:
  = 10043362780126293152582135998281912347988259896158629291622500
 
 */
-
-//TODO make this test run with schoolbook, so this example can be used for Karatsuba mult
 fn biguint_schoolbook_mult() -> bool {
     let mut a_data: Vec<u32> = ~Vec::new::<u32>();
     a_data.push(1);
@@ -378,9 +375,16 @@ fn biguint_schoolbook_mult() -> bool {
     b_data.push(400);
     let b = BigUint{data: b_data};
 
-    // let res_bigint = schoolbook_mult(a, b);
+    let res_bigint = schoolbook_mult(a, b);
+    let res_vec = res_bigint.data; 
 
-    // log(res_bigint.data.len());
+    assert(unpack_or_0(res_vec.get(0)) == 100);
+    assert(unpack_or_0(res_vec.get(1)) == 400);
+    assert(unpack_or_0(res_vec.get(2)) == 1000);
+    assert(unpack_or_0(res_vec.get(3)) == 2000);
+    assert(unpack_or_0(res_vec.get(4)) == 2500);
+    assert(unpack_or_0(res_vec.get(5)) == 2400);
+    assert(unpack_or_0(res_vec.get(6)) == 1600);
 
     true
 }
