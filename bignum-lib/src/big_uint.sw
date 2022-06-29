@@ -170,3 +170,57 @@ pub fn sub(a: BigUint, b: BigUint) -> Option<BigUint> {
         return Option::None::<BigUint>();
     }
 }
+
+/*
+Not optimized
+*/
+pub fn schoolbook_mult(a: BigUint, b: BigUint) -> BigUint {
+    let a_vec: Vec<u32> = a.data;
+    let b_vec: Vec<u32> = b.data;
+    let a_len = a_vec.len();
+    let b_len = b_vec.len();
+
+    let mut res_vec: Vec<u32> = ~Vec::new::<u32>();
+
+    let mut i = 0;
+    let mut k = 0;
+    let mut prod_coeff: u64 = 0;
+    let mut prod_carry: u64 = 0;
+    let mut temp: u64 = 0; 
+    let base: u64 = 0x100000000;
+    let mut temp = 0u64; 
+    
+    while k <= (b_len + a_len) {
+        prod_coeff = prod_carry;
+        prod_carry = 0;
+        while i <= k {
+            temp = unpack_or_0(a_vec.get(i)) * unpack_or_0(b_vec.get(k-i));
+            if temp >= base {
+                prod_carry +=  ((temp >> 32) & 0xffffffff);
+                temp =  (temp & 0xffffffff);
+            }
+            prod_coeff = prod_coeff + temp;
+            if prod_coeff >= base {
+                prod_carry +=  ((prod_coeff >> 32) & 0xffffffff);
+                prod_coeff =  (prod_coeff & 0xffffffff);
+            }
+            i += 1;
+        }
+        res_vec.push(prod_coeff);
+        i = 0;
+        k += 1;
+    }
+
+    BigUint{ data: res_vec}
+}
+
+//https://aquarchitect.github.io/swift-algorithm-club/Karatsuba%20Multiplication/
+/*
+pub fn karatsuba_mult(a: BigUint, b: BigUint) -> BigUint {
+    if(a.data.len() == 1 || b.data.len() == 1) {
+        // in this case it's not worth it?
+    }
+
+    let n = max(a.data.len(), b.data.len());
+}
+*/
