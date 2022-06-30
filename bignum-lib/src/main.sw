@@ -328,7 +328,7 @@ fn biguint_mult_tests() -> bool {
     
     // The new function
     assert(biguint_mult_karatsuba_1_level());
-    
+
     true
 }
 
@@ -348,15 +348,15 @@ fn biguint_mult_karatsuba_1_level() -> bool {
     let b = BigUint{data: b_data};
 
     let res_bigint = karatsuba_1_level_deep(a, b);
-    // let res_vec = res_bigint.data; 
+    let res_vec = res_bigint.data; 
 
-    // assert(unpack_or_0(res_vec.get(0)) == 100);
-    // assert(unpack_or_0(res_vec.get(1)) == 400);
-    // assert(unpack_or_0(res_vec.get(2)) == 1000);
-    // assert(unpack_or_0(res_vec.get(3)) == 2000);
-    // assert(unpack_or_0(res_vec.get(4)) == 2500);
-    // assert(unpack_or_0(res_vec.get(5)) == 2400);
-    // assert(unpack_or_0(res_vec.get(6)) == 1600);
+    assert(unpack_or_0(res_vec.get(0)) == 100);
+    assert(unpack_or_0(res_vec.get(1)) == 400);
+    assert(unpack_or_0(res_vec.get(2)) == 1000);
+    assert(unpack_or_0(res_vec.get(3)) == 2000);
+    assert(unpack_or_0(res_vec.get(4)) == 2500);
+    assert(unpack_or_0(res_vec.get(5)) == 2400);
+    assert(unpack_or_0(res_vec.get(6)) == 1600);
 
     true
 }
@@ -366,6 +366,12 @@ Example input & output for Karatsuba with BigUint
 
 X = (1+2*2^32  + 3*2^64 + 4*2^96) = [1,2,3,4]
 Y = (100+200*2^32  + 300*2^64 + 400*2^96) = [100,200,300,400]
+
+a = [1, 2]
+b = [3, 4]
+c = [100, 200]
+d = [300, 400]
+
 When calculating X*Y
 The result = 10043362780126293152582135998281912347988259896158629291622500
 
@@ -377,14 +383,14 @@ And therefore translates to data vector
 
 Applying Karatsuba would work as follows
 
-Ac = (3+4*2^32) * (300+400*2^32)
-= 29514790528243204096900
-= 7379438837559361382900
-Bd = (1+2*2^32)*(100+200*2^32)
+Ac = (1+2*2^32)*(100+200*2^32)
 = 7378697631201807564900
-Ad+bc = ((3+4*2^32) + (1+2*2^32)) * ((100+200*2^32) + (300+400*2^32)) - ac - bd
+Bd = (3+4*2^32) * (300+400*2^32)
+= 29514790528243204096900
+Ad+bc = (a+b)*(c+d) - a*c - b*d = ((3+4*2^32) + (1+2*2^32)) * ((100+200*2^32) + (300+400*2^32)) - ac - bd
 = ((3+4*2^32) + (1+2*2^32)) * ((100+200*2^32) + (300+400*2^32)) - (3+4*2^32) * (300+400*2^32) - (1+2*2^32)*(100+200*2^32)
 =29514790526525217178200
+
 
 Then, take as result
 Ac * 2^128 + (ad+bc) * 2^64 + Bd 

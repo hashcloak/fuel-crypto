@@ -143,27 +143,7 @@ pub fn sub(a: BigUint, b: BigUint) -> Option<BigUint> {
         }
 
         // Return the result without trailing zeroes
-        // Vectors are not yet mutable, so we create a new one and fill it up until possible trailing zeroes
-        let mut most_significant_bit_index = len_a - 1;
-        let mut index_found = false;
-        while !index_found && most_significant_bit_index > 0 {
-            if (unpack_or_0(res.get(most_significant_bit_index)) != 0) {
-                index_found = true;
-            } else {
-                most_significant_bit_index = most_significant_bit_index - 1;
-            }
-        }
-
-        let mut normalized_res: Vec<u32> = ~Vec::new::<u32>();
-        let res_is_zero = most_significant_bit_index == 0 && unpack_or_0(res.get(0)) == 0;
-        if(!res_is_zero) {
-            let mut j = 0;
-            while j <= most_significant_bit_index {
-                normalized_res.push(unpack_or_0(res.get(j)));    
-                j = j + 1;
-            }
-
-        }
+        let normalized_res = normalized(res);
         
         return Option::Some(BigUint{data: normalized_res});
     } else {
@@ -214,6 +194,13 @@ pub fn schoolbook_mult(a: BigUint, b: BigUint) -> BigUint {
     BigUint{ data: res_vec}
 }
 
+
+fn normalized_biguint(a: BigUint) -> BigUint {
+    let vec = a.data;
+    let normalized_data = normalized(vec);
+    BigUint{ data: normalized_data }
+}
+
 /*
 Splits the coeff vector 1 time in the middle
 
@@ -226,63 +213,50 @@ pub fn karatsuba_1_level_deep(x: BigUint, y: BigUint) -> BigUint {
     let mut a_data: Vec<u32> = copy_vec_from_to(x.data, 0, n);
     let mut b_data: Vec<u32> = copy_vec_from_to(x.data, n, x.data.len());
     let mut c_data: Vec<u32> = copy_vec_from_to(y.data, 0, n);
-    let mut d_data: Vec<u32> = copy_vec_from_to(y.data, 0, y.data.len());
+    let mut d_data: Vec<u32> = copy_vec_from_to(y.data, n, y.data.len());
 
     let a: BigUint = BigUint{ data: a_data };
     let b: BigUint = BigUint{ data: b_data };
     let c: BigUint = BigUint{ data: c_data };
     let d: BigUint = BigUint{ data: d_data };
 
-    let ac: BigUint = schoolbook_mult(a, c);
-    let bd: BigUint = schoolbook_mult(b, d);
+    let ac: BigUint = schoolbook_mult(a, c); 
+    let bd: BigUint = schoolbook_mult(b, d); 
     let mut temp: BigUint = schoolbook_mult(add(a, b), add(c, d)); // (a+b)*(c+d)
     let temp2: BigUint = sub(temp, ac); // (a+b)*(c+d) - ac
+    // unchecked unwrap 2x
+    let ab_plus_bc: Option<BigUint> = sub(normalized_biguint(temp2.unwrap()), normalized_biguint(bd)).unwrap(); // (a+b)*(c+d) - ac - bd
 
-    print_vec(ac.data);
-    // [100, 400, 400] = 100 + 400 * 3^32 + 400 * 2^64
+    // The result would be db * 2^128 + (ad+bc) * 2^64 + ac 
+    // r * 2^64  for r=[r0,r1] = [0,0,r0,r1] 
+    let mut highest = ~Vec::new::<u32>();
+    highest.push(0);
+    highest.push(0);
+    highest.push(0);
+    highest.push(0);
+    let mut i = 0;
+    // we know this length, actually
+    let bd_len = bd.data.len();
+    while i < bd_len {
+        highest.push(unpack_or_0(bd.data.get(i)));
+        i += 1;
+    }
 
+    let mut middle = ~Vec::new::<u32>();
+    middle.push(0);
+    middle.push(0);
+    let mut i = 0;
+    let ab_plus_bc_len = ab_plus_bc.data.len();
+    while i < ab_plus_bc_len {
+        middle.push(unpack_or_0(ab_plus_bc.data.get(i)));
+        i += 1;
+    }
 
-    // print_vec(bd.data);
-    // print_vec(temp.data);
-    // log(temp2.is_none());
-
-
-    // // unchecked unwrap 2x
-    // let ab_plus_bc: BigUint = sub(temp2.unwrap(), bd).unwrap(); // (a+b)*(c+d) - ac - bd
-
-    // // The result would be ac * 2^128 + (ad+bc) * 2^64 + Bd 
-    // // r * 2^64  for r=[r0,r1] = [0,0,r0,r1] 
-    // let mut highest = ~Vec::new::<u32>();
-    // highest.push(0);
-    // highest.push(0);
-    // highest.push(0);
-    // highest.push(0);
-    // let mut i = 0;
-    // // we know this length, actually
-    // let ac_len = ac.data.len();
-    // while i < ac_len {
-    //     highest.push(unpack_or_0(ac.data.get(i)));
-    //     i += 1;
-    // }
-
-    // let mut middle = ~Vec::new::<u32>();
-    // middle.push(0);
-    // middle.push(0);
-    // let mut i = 0;
-    // let ab_plus_bc_len = ab_plus_bc.data.len();
-    // while i < ab_plus_bc_len {
-    //     middle.push(unpack_or_0(ab_plus_bc.data.get(i)));
-    //     i += 1;
-    // }
-
-    // //summed
-    // let highest_bigint = BigUint{ data: highest };
-    // let middle_bigint = BigUint{ data: middle };
-    // temp = add(highest_bigint, middle_bigint);
-    // return add(temp, bd);
-    
-    let mut t: Vec<u32> = ~Vec::new::<u32>();
-    return BigUint{data: t};
+    //summed
+    let highest_bigint = BigUint{ data: highest };
+    let middle_bigint = BigUint{ data: middle };
+    temp = add(highest_bigint, middle_bigint);
+    return add(temp, ac);
 }
 
 //https://aquarchitect.github.io/swift-algorithm-club/Karatsuba%20Multiplication/
