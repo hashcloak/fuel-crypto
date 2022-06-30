@@ -2,9 +2,11 @@ script;
 
 dep big_uint;
 dep helpers;
+dep mod_arithmetic;
 
 use ::big_uint::*;
 use ::helpers::*;
+use ::mod_arithmetic::*;
 
 use std::{vec::Vec, option::*, assert::assert, math::*};
 use std::logging::log;
