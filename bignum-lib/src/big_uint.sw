@@ -206,8 +206,11 @@ Splits the coeff vector 1 time in the middle
 
 Assumes x,y are of same length which is a multiple of 2
 */
-pub fn karatsuba_1_level_deep(x: BigUint, y: BigUint) -> BigUint {
-    // x.len==y.len==2n
+pub fn karatsuba_1_level_deep(x: BigUint, y: BigUint) -> Option<BigUint> {
+    // length of x should be even
+    if (x.data.len() >> 1) << 1 != x.data.len() { //masking with 1 bit didn't work
+        return Option::None::<BigUint>();
+    }
     let n = x.data.len() >> 1; 
 
     let mut a_data: Vec<u32> = copy_vec_from_to(x.data, 0, n);
@@ -224,24 +227,28 @@ pub fn karatsuba_1_level_deep(x: BigUint, y: BigUint) -> BigUint {
     let bd: BigUint = schoolbook_mult(b, d); 
     let mut temp: BigUint = schoolbook_mult(add(a, b), add(c, d)); // (a+b)*(c+d)
     let temp2: BigUint = sub(temp, ac); // (a+b)*(c+d) - ac
-    // unchecked unwrap 2x
-    let ab_plus_bc: Option<BigUint> = sub(normalized_biguint(temp2.unwrap()), normalized_biguint(bd)).unwrap(); // (a+b)*(c+d) - ac - bd
+    assert(temp2.is_some());
+    let ab_plus_bc_wrapped: Option<BigUint> = sub(normalized_biguint(temp2.unwrap()), normalized_biguint(bd)); // (a+b)*(c+d) - ac - bd
+    assert(ab_plus_bc_wrapped.is_some());
+    let ab_plus_bc = ab_plus_bc_wrapped.unwrap();
 
-    // The result would be db * 2^128 + (ad+bc) * 2^64 + ac 
+    // The result would be bd * 2^128 + (ad+bc) * 2^64 + ac 
     // r * 2^64  for r=[r0,r1] = [0,0,r0,r1] 
+
+    // highest represents bd * 2^128
     let mut highest = ~Vec::new::<u32>();
     highest.push(0);
     highest.push(0);
     highest.push(0);
     highest.push(0);
     let mut i = 0;
-    // we know this length, actually
     let bd_len = bd.data.len();
     while i < bd_len {
         highest.push(unpack_or_0(bd.data.get(i)));
         i += 1;
     }
 
+    // middle represents (ad+bc) * 2^64
     let mut middle = ~Vec::new::<u32>();
     middle.push(0);
     middle.push(0);
@@ -252,11 +259,10 @@ pub fn karatsuba_1_level_deep(x: BigUint, y: BigUint) -> BigUint {
         i += 1;
     }
 
-    //summed
     let highest_bigint = BigUint{ data: highest };
     let middle_bigint = BigUint{ data: middle };
     temp = add(highest_bigint, middle_bigint);
-    return add(temp, ac);
+    return Option::Some(add(temp, ac));
 }
 
 //https://aquarchitect.github.io/swift-algorithm-club/Karatsuba%20Multiplication/

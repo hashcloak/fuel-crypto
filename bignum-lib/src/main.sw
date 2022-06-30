@@ -326,9 +326,8 @@ fn biguint_mult_tests() -> bool {
     assert(biguint_schoolbook_mult());
     assert(test_from_swayPractice_repo());
     
-    // The new function
     assert(biguint_mult_karatsuba_1_level());
-
+    assert(biguint_mult_karatsuba_1_level_diff_len());
     true
 }
 
@@ -347,8 +346,8 @@ fn biguint_mult_karatsuba_1_level() -> bool {
     b_data.push(400);
     let b = BigUint{data: b_data};
 
-    let res_bigint = karatsuba_1_level_deep(a, b);
-    let res_vec = res_bigint.data; 
+    let res_bigint = karatsuba_1_level_deep_diff_len(a, b);
+    let res_vec = res_bigint.unwrap().data;
 
     assert(unpack_or_0(res_vec.get(0)) == 100);
     assert(unpack_or_0(res_vec.get(1)) == 400);
@@ -357,6 +356,38 @@ fn biguint_mult_karatsuba_1_level() -> bool {
     assert(unpack_or_0(res_vec.get(4)) == 2500);
     assert(unpack_or_0(res_vec.get(5)) == 2400);
     assert(unpack_or_0(res_vec.get(6)) == 1600);
+
+    true
+}
+
+fn biguint_mult_karatsuba_1_level_diff_len() -> bool {
+    let mut a_data: Vec<u32> = ~Vec::new::<u32>();
+    a_data.push(1);
+    a_data.push(2);
+    a_data.push(3);
+    a_data.push(4);
+    let a = BigUint{data: a_data};
+
+    let mut b_data: Vec<u32> = ~Vec::new::<u32>();
+    b_data.push(100);
+    b_data.push(200);
+    b_data.push(300);
+    // b_data.push(400);
+    let b = BigUint{data: b_data};
+
+    let res_bigint = karatsuba_1_level_deep_diff_len(a, b);
+    let vec = res_bigint.unwrap().data;
+
+    assert(unpack_or_0(vec.get(0)) == 100);
+    assert(unpack_or_0(vec.get(1)) == 400);
+    assert(unpack_or_0(vec.get(2)) == 1000);
+    assert(unpack_or_0(vec.get(3)) == 1600);
+    assert(unpack_or_0(vec.get(4)) == 1700);
+    assert(unpack_or_0(vec.get(5)) == 1200);
+
+    // [100, 400, 1000, 1600, 1700, 1200]
+    // 1200 * 2^160 + 1700 * 2^128 + 1600 * 2^96 + 1000 * 2^64 +400 * 2^32 + 100
+    //1753801965375563525736782247188546140446222870118500
 
     true
 }
