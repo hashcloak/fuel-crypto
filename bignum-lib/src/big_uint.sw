@@ -202,9 +202,9 @@ fn normalized_biguint(a: BigUint) -> BigUint {
 }
 
 /*
-Splits the coeff vector 1 time in the middle
+Splits the coeff vector 1 time in the middle and uses Karatsuba method to calculate result.
 
-Assumes x,y are of same length which is a multiple of 2
+Assumes length of x is a multiple of 2
 */
 pub fn karatsuba_1_level_deep(x: BigUint, y: BigUint) -> Option<BigUint> {
     // length of x should be even
