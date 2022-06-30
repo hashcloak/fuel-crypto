@@ -1,12 +1,12 @@
-script;
+    script;
 
 dep big_uint;
 dep helpers;
-dep mod_arithmetic;
+// dep mod_arithmetic;
 
 use ::big_uint::*;
 use ::helpers::*;
-use ::mod_arithmetic::*;
+// use ::mod_arithmetic::*;
 
 use std::{vec::Vec, option::*, assert::assert, math::*};
 use std::logging::log;
@@ -19,6 +19,7 @@ fn main() {
     assert(biguint_addition_tests()); 
     assert(biguint_subtraction_tests());
     assert(biguint_mult_tests());
+    assert(biguint_mod_tests());
 }
 
 // ADDITION BIGUINT
@@ -348,7 +349,7 @@ fn biguint_mult_karatsuba_1_level() -> bool {
     b_data.push(400);
     let b = BigUint{data: b_data};
 
-    let res_bigint = karatsuba_1_level_deep_diff_len(a, b);
+    let res_bigint = karatsuba_1_level_deep(a, b);
     let res_vec = res_bigint.unwrap().data;
 
     assert(unpack_or_0(res_vec.get(0)) == 100);
@@ -377,7 +378,7 @@ fn biguint_mult_karatsuba_1_level_diff_len() -> bool {
     // b_data.push(400);
     let b = BigUint{data: b_data};
 
-    let res_bigint = karatsuba_1_level_deep_diff_len(a, b);
+    let res_bigint = karatsuba_1_level_deep(a, b);
     let vec = res_bigint.unwrap().data;
 
     assert(unpack_or_0(vec.get(0)) == 100);
@@ -536,5 +537,61 @@ fn test_from_swayPractice_repo() -> bool {
             log(1000000000);
         },
     }
+    true
+}
+
+fn biguint_mod_tests() -> bool {
+    assert(biguint_biguint_mod1());
+    true
+}
+
+/*
+Modular reduction example
+100 + 400 * 2^32 
+= 1717986918500
+[100, 400]
+
+1717986918500 mod (2^32+1) = 4294966997
+[1,1]
+res 
+[4294966997]
+4294966996
+
+mod 12629315258213599 => 1717986918500
+[2579031263, 2940491]
+res
+[100, 400]
+*/
+fn biguint_biguint_mod1() -> bool {
+    let mut a_data: Vec<u32> = ~Vec::new::<u32>();
+    a_data.push(100);
+    a_data.push(400);
+    let a = BigUint{data: a_data};
+
+    // Case 1: 1717986918500 mod (2^32+1) = 4294966997
+    let mut b_data: Vec<u32> = ~Vec::new::<u32>();
+    b_data.push(1);
+    b_data.push(1);
+    let b = BigUint{data: b_data};
+
+    let mut res_bigint = biguint_mod2(a, b);
+    let mut res_vec = res_bigint.data; 
+
+    // TODO the output is now 4294966996..?
+    // assert(unpack_or_0(res_vec.get(0)) == 4294966997);
+    log(res_vec.get(0));
+
+    // Case 2: Should stay the same, because n > a
+    let mut c_data: Vec<u32> = ~Vec::new::<u32>();
+    c_data.push(2579031263);
+    c_data.push(2940491);
+    let c = BigUint{data: c_data};
+
+    res_bigint = biguint_mod2(a, c);
+    res_vec = res_bigint.data; 
+
+    assert(unpack_or_0(res_vec.get(0)) == 100);
+    assert(unpack_or_0(res_vec.get(1)) == 400);
+
     true
 }

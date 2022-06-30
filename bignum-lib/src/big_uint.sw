@@ -23,6 +23,12 @@ impl Zero for BigUint {
     }
 }
 
+pub fn get_zero() -> BigUint {
+    // Currently this is an empty vector, but could also be vector with the single coefficient 0;
+    // arithemtic code has to be adapted to his!
+    BigUint{data: ~Vec::new::<u32>()}
+}
+
 fn max(left: u64, right: u64) -> u64 {
     if(left >= right) { left } else { right }
 }
@@ -93,9 +99,11 @@ fn is_bigger_or_equal(a: BigUint, b: BigUint) -> bool {
                 looping = false; // we know b is bigger
             } else if a_val == b_val && i == 0 {
                 looping = false; // we have seen all elements and a & b are equal
-            } else {
+            } else if i > 0 {
                 // If we're not sure yet and the index is not yet 0; keep looping
                 i = i - 1;
+            } else { // this is just a safeguard. There should be no other case than aboce
+                looping = false;
             }
         }
         return a_is_bigger_or_equal;
@@ -266,3 +274,43 @@ pub fn karatsuba_1_level_deep(x: BigUint, y: BigUint) -> Option<BigUint> {
 }
 
 //https://aquarchitect.github.io/swift-algorithm-club/Karatsuba%20Multiplication/
+
+fn equals(a: BigUint, b: BigUint) -> bool {
+    if a.is_zero() && b.is_zero() {
+        true
+    } else if a.data.len() != b.data.len() {
+        false
+    } else {
+        let mut i = 0;
+        let mut equal = true;
+        let mut loop = true;
+        while i < a.data.len() && loop {
+            if (unpack_or_0(a.data.get(i)) != unpack_or_0(b.data.get(i))) {
+                equal = false;
+                loop = false;
+            }
+            i += 1;
+        }
+        equal
+    }
+}
+
+// Very naive, subtracting n until it's not possible anymore
+pub fn biguint_mod2(a: BigUint, n: BigUint) -> BigUint {   
+    let mut nk: BigUint = n; 
+    let mut temp: BigUint = get_zero();
+
+    if equals(a, n) { 
+        return get_zero();
+    }
+
+    let mut ak: BigUint = a;
+
+    while is_bigger_or_equal(ak, n) {
+        temp = add(nk, n);
+        nk = temp;
+        ak = sub(a, nk).unwrap();
+    }
+
+    normalized_biguint(ak)
+}

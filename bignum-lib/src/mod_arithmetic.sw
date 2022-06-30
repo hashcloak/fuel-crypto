@@ -10,9 +10,16 @@ use std::{assert::assert, option::*, vec::Vec};
 use std::logging::log;
 use core::num::*;
 
+
 //returns true if two BigUint are equal
 pub fn is_equal (a: BigUint, b: BigUint) -> bool {
 
+    // @Manish currently BigUint is interpreted as 0 when the data.len() == 0
+    // a and b could be equal if they are both 0. This can be checked with .is_zero()
+    // (the Zero trait is defined in helpers.sw, and the implementation of is_zero in big_uint.sw)
+    // This is not taking into account the case BigUint{data = [0]}, ie a coefficient vector with only a 0
+    // so we should decide what 0 really is :D 
+    // I implemented like this, because we always remove trailing zeroes, therefore 0 ends up being a BigUint with an empty vector
     if a.data.len() == 0 || b.data.len() == 0 {
         return false;
     }
@@ -21,10 +28,10 @@ pub fn is_equal (a: BigUint, b: BigUint) -> bool {
     } else {
 
         let mut flag = true;
-        let mut i = a.data.len() - 1;
-        while(i >= 0 && flag) {
+        let mut i = a.data.len() - 1; // if we change the first if check, we have to be careful here
+        while(i > 0 && flag) {
             if unpack_or_0(a.data.get(i)) != unpack_or_0(b.data.get(i)) {
-            flag = false;
+                flag = false;
             }
             i-=1;
         }
@@ -35,7 +42,10 @@ pub fn is_equal (a: BigUint, b: BigUint) -> bool {
 
 //multiplication of BigUint with u32 integer
 
-pub fn sclar_multiplication (a: BigUint, b: u32) -> BigUint {
+pub fn scalar_multiplication (a: BigUint, b: u32) -> BigUint {
+    if b == 0 {
+        return get_zero();
+    }
 
     let mut i = 0;
     let mut res: Vec<u32> = ~Vec::new::<u32>();
