@@ -61,10 +61,27 @@ pub fn mod_25519(e: Element) -> Element {
     carry0 = (red.l2 + carry0) >> 51;
     carry0 = (red.l3 + carry0) >> 51;
     carry0 = (red.l4 + carry0) >> 51;
-
+    // TODO: is this above correct?
+    // The addition test test_add_a_to_a doesn't seem to reduce correctly. Should check
+    
     if carry0 == 1 { // not sure if == 1 is necessary
         carry_propagate(red)
     } else {
         red
     }
+}
+
+/*
+return a + b mod 2^255 - 19
+*/
+pub fn add(a: Element, b: Element) -> Element {
+    let temp = Element{ 
+        l0: a.l0 + b.l0, 
+        l1: a.l1 + b.l1, 
+        l2: a.l2 + b.l2, 
+        l3: a.l3 + b.l3, 
+        l4: a.l4 + b.l4
+    };
+
+    mod_25519(temp)
 }
