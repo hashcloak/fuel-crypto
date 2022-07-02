@@ -14,7 +14,7 @@ pub struct Element {
 // But using the above expression gives the error "Could not evaluate initializer to a const declaration."
 const mask_low_51_bits: u64 = 2251799813685247;
 const zero: Element = Element{ l0: 0, l1: 0, l2: 0, l3: 0, l4: 0 };
-
+const one: Element = Element{ l0: 1, l1: 0, l2: 0, l3: 0, l4: 0 };
 /*Do 1 round of carrying
 This return an element of which all li have at most 52 bits.
 So the elm is at most:
@@ -52,7 +52,7 @@ pub fn carry_propagate(e: Element) -> Element {
 return reduced element mod 2^255-19
 */
 pub fn mod_25519(e: Element) -> Element {
-    let red: Element = carry_propagate(e);
+    let mut red: Element = carry_propagate(e);
 
     //Determine whether *red* is already completely reduced mod 2^255-19 or not
     // if v >= 2^255 - 19 => v + 19 >= 2^255
@@ -64,11 +64,24 @@ pub fn mod_25519(e: Element) -> Element {
     // TODO: is this above correct?
     // The addition test test_add_a_to_a doesn't seem to reduce correctly. Should check
     
-    if carry0 == 1 { // not sure if == 1 is necessary
+    if carry0 != 0 { // not sure if == 1 is necessary
         carry_propagate(red)
     } else {
         red
     }
+
+    // red.l0 += 19*carry0;
+    // red.l1 += red.l0 >>51;
+    // red.l0 += red.l0 & mask_low_51_bits;
+    // red.l2 += red.l1 >>51;
+    // red.l1 += red.l1 & mask_low_51_bits;
+    // red.l3 += red.l2 >>51;
+    // red.l2 += red.l2 & mask_low_51_bits;
+    // red.l4 += red.l3 >>51;
+    // red.l3 += red.l3 & mask_low_51_bits;
+    // red.l4 += red.l4 >>51;
+
+    return red;
 }
 
 /*
