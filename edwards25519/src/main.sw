@@ -28,8 +28,8 @@ fn test_get_zero() -> bool {
 }
 
 fn test_reductions() -> bool {
-    assert(test_carry_propagate_1());
-    assert(test_carry_propagate_2());
+    //assert(test_carry_propagate_1());
+    //assert(test_carry_propagate_2());
     assert(test_mod_25519());
     assert(test_mod_25519_2());
     //assert(test_mod_25519_3());
