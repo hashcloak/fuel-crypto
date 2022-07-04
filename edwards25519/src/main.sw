@@ -33,6 +33,7 @@ fn test_reductions() -> bool {
     assert(test_mod_25519());
     assert(test_mod_25519_2());
     assert(test_mod_25519_3());
+    assert(test_mod_25519_4());
     true
 }
 
@@ -182,6 +183,40 @@ fn test_mod_25519_3() -> bool {
     true
 }
 
+fn test_mod_25519_4() -> bool {
+    /*
+    4503599627370494 + 
+    4503599627370494 * 2^51 +
+    4503599627370494 * 2^102 +
+    4503599627370494 * 2^153 + 
+    4503599627370494 * 2^204
+    mod 2^255 - 19
+     
+    = 36 
+    */
+    let e = Element{ 
+        l0: 4503599627370494,
+        l1: 4503599627370494,
+        l2: 4503599627370494,
+        l3: 4503599627370494,
+        l4: 4503599627370494 };
+
+    let res = mod_25519(e);
+
+    /*
+    should be 36
+    */
+    res_equals(res, Element{ 
+        l0: 36, 
+        l1: 0, 
+        l2: 0, 
+        l3: 0, 
+        l4: 0 
+    });
+
+    true
+}
+
 fn tests_add() -> bool {
     assert(test_add_to_0());
     assert(test_add_0());
@@ -297,11 +332,26 @@ fn test_add_a_to_a() -> bool {
         l4: 2251799813685247 
         };
 
-    // a+a mod 2^255 -19 
-    // should be 
+    /* a+a mod 2^255 -19 =
+    double all coefficients gives:
+    4503599627370494 + 
+    4503599627370494 * 2^51 +
+    4503599627370494 * 2^102 +
+    4503599627370494 * 2^153 + 
+    4503599627370494 * 2^204
+    mod 2^255 - 19
+     
+    = 36 
+    */ 
     let res = add(a, a);
 
-    print_el(res);
+    res_equals(res, Element{ 
+        l0: 36, 
+        l1: 0, 
+        l2: 0, 
+        l3: 0, 
+        l4: 0 
+    });
 
     true
 }

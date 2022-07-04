@@ -49,26 +49,32 @@ pub fn carry_propagate(e: Element) -> Element {
 }
 
 /*
+returns a carry element neq 0 if the e represents a number larger than 2^255 -19
+*/
+fn get_carry(e: Element) -> u32 {
+    let mut carry = (e.l0 + 19) >> 51;
+    carry = (e.l1 + carry) >> 51;
+    carry = (e.l2 + carry) >> 51;
+    carry = (e.l3 + carry) >> 51;
+    carry = (e.l4 + carry) >> 51;
+    carry
+}
+
+/*
 return reduced element mod 2^255-19
 */
 pub fn mod_25519(e: Element) -> Element {
-    let red: Element = carry_propagate(e);
+    let mut red: Element = carry_propagate(e);
 
     //Determine whether *red* is already completely reduced mod 2^255-19 or not
     // if v >= 2^255 - 19 => v + 19 >= 2^255
-    let mut carry0 = (red.l0 + 19) >> 51;
-    carry0 = (red.l1 + carry0) >> 51;
-    carry0 = (red.l2 + carry0) >> 51;
-    carry0 = (red.l3 + carry0) >> 51;
-    carry0 = (red.l4 + carry0) >> 51;
-    // TODO: is this above correct?
-    // The addition test test_add_a_to_a doesn't seem to reduce correctly. Should check
-    
-    if carry0 == 1 { // not sure if == 1 is necessary
-        carry_propagate(red)
-    } else {
-        red
+    // keep reducing as long as it's necessary
+    let mut carry = get_carry(red);
+    while carry != 0 {
+        red = carry_propagate(red);
+        carry = get_carry(red);
     }
+    red
 }
 
 /*
