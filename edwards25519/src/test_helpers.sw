@@ -22,3 +22,9 @@ pub fn res_equals(res: Element, should_be: Element) -> bool {
     assert(res.l4 == should_be.l4);
     true
 }
+
+//converts element into array of bytes
+
+// pub fn bytes_convert (a: Element) -> [u8;32] {
+//     let a_mod = mod_25519(a);
+// }
