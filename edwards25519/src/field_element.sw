@@ -1,6 +1,7 @@
 library field_element;
 
 use std::u128::*;
+
 // Radix 51 representation of an integer:
 // l0 + l1*2^51 + l2*2^102 + l3*2^153 + l4*2^204
 pub struct Element {
@@ -245,3 +246,46 @@ pub fn multiply (a: Element, b: Element) -> Element {
 // pub fn square(a: Element) -> Element {
 //     multiply(a,a)
 // }
+
+// For a bignumber <= 102 bits stored in U128,
+// return the 51 bit coefficient and 51 bit carry
+fn get_coeff_and_carry(y: U128) -> (u64, u64) {
+    let coeff: u64 = y.lower & mask_low_51_bits;
+    let carry: u64 = (y.upper << 13 & mask_low_51_bits) | y.lower >> 51;
+    (coeff, carry)
+}
+
+// returns e with all limbs multiplied by scalar x, reduced p
+pub fn scalar_mult(e: Element, x: u32) -> Element {
+    let scalar_u128: U128 = ~U128::from(0, x);
+
+    // e is radix 51, so all limbs have max 51 bits. The scalar has max 32 bits.
+    // Their multiplication has max 84 bits and is stored as (upper, lower) in U128
+    let l0_temp: U128 = ~U128::from(0, e.l0) * scalar_u128;
+    let l1_temp: U128 = ~U128::from(0, e.l1) * scalar_u128;
+    let l2_temp: U128 = ~U128::from(0, e.l2) * scalar_u128;
+    let l3_temp: U128 = ~U128::from(0, e.l3) * scalar_u128;
+    let l4_temp: U128 = ~U128::from(0, e.l4) * scalar_u128;
+
+    let (coeff0, carry0) = get_coeff_and_carry(l0_temp);
+    let (coeff1, carry1) = get_coeff_and_carry(l1_temp);
+    let (coeff2, carry2) = get_coeff_and_carry(l2_temp);
+    let (coeff3, carry3) = get_coeff_and_carry(l3_temp);
+    let (coeff4, carry4) = get_coeff_and_carry(l4_temp);
+
+    let res0: u64 = coeff0 + 19 * carry4;
+    let res1: u64 = coeff1 + carry0;
+    let res2: u64 = coeff2 + carry1;
+    let res3: u64 = coeff3 + carry2;
+    let res4: u64 = coeff4 + carry3;
+
+    let res: Element = Element {
+        l0: res0,
+        l1: res1,
+        l2: res2,
+        l3: res3,
+        l4: res4
+    };
+
+    res
+}
