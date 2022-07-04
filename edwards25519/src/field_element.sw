@@ -90,8 +90,7 @@ pub fn add(a: Element, b: Element) -> Element {
         l4: a.l4 + b.l4
     };
 
-    //mod_25519(temp)
-    carry_propagate(temp)   //need to be checked
+    mod_25519(temp)
 }
 
 //subtract fn returns a - b
