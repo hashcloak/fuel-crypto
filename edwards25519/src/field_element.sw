@@ -17,6 +17,12 @@ pub struct Element {
 const mask_low_51_bits: u64 = 2251799813685247;
 const zero: Element = Element{ l0: 0, l1: 0, l2: 0, l3: 0, l4: 0 };
 const one: Element = Element{ l0: 1, l1: 0, l2: 0, l3: 0, l4: 0 };
+
+// from NaCl impl https://cr.yp.to/ecdh.html#use
+fn times19(x: u64) -> u64 {
+    (x << 4) + (x << 1) + x
+}
+
 /*Do 1 round of carrying
 This return an element of which all li have at most 52 bits.
 So the elm is at most:
@@ -41,7 +47,7 @@ pub fn carry_propagate(e: Element) -> Element {
 	// the final l0 will be at most 52 bits. Similarly for the rest.
 
     // c4 * 19 is at most 13 + 5 = 18 bits => l0 is at most 52 bits
-    let new_l0 = (e.l0 & mask_low_51_bits) + c4 * 19;
+    let new_l0 = (e.l0 & mask_low_51_bits) + times19(c4);
     Element{ l0: new_l0, 
     l1: (e.l1 & mask_low_51_bits) + c0, 
     l2: (e.l2 & mask_low_51_bits) + c1, 
@@ -54,7 +60,7 @@ pub fn carry_propagate(e: Element) -> Element {
 returns a carry element neq 0 if the e represents a number larger than 2^255 -19
 */
 fn get_carry(e: Element) -> u32 {
-    let mut carry = (e.l0 + 19) >> 51;
+    let mut carry = times19(e.l0) >> 51;
     carry = (e.l1 + carry) >> 51;
     carry = (e.l2 + carry) >> 51;
     carry = (e.l3 + carry) >> 51;
@@ -65,18 +71,34 @@ fn get_carry(e: Element) -> u32 {
 /*
 return reduced element mod 2^255-19
 */
-pub fn mod_25519(e: Element) -> Element {
+pub fn reduce(e: Element) -> Element {
     let mut red: Element = carry_propagate(e);
 
     //Determine whether *red* is already completely reduced mod 2^255-19 or not
     // if v >= 2^255 - 19 => v + 19 >= 2^255
-    // keep reducing as long as it's necessary
-    let mut carry = get_carry(red);
-    while carry != 0 {
-        red = carry_propagate(red);
-        carry = get_carry(red);
+    let mut carry = (red.l0 + 19) >> 51;
+    carry = (red.l1 + carry) >> 51;
+    carry = (red.l2 + carry) >> 51;
+    carry = (red.l3 + carry) >> 51;
+    carry = (red.l4 + carry) >> 51;
+
+    let mut v0 = red.l0 + times19(carry);
+    let mut v1 = red.l1 + (v0 >> 51);
+    v0 = v0 & mask_low_51_bits;
+    let mut v2 = red.l2 + (v1 >> 51);
+    v1 = v1 & mask_low_51_bits;
+    let mut v3 = red.l3 + (v2 >> 51);
+    v2 = v2 & mask_low_51_bits;
+    let mut v4 = (red.l4 + (v3 >> 51)) & mask_low_51_bits;
+    v3 = v3 & mask_low_51_bits;
+
+    Element{ 
+        l0: v0, 
+        l1: v1, 
+        l2: v2, 
+        l3: v3, 
+        l4: v4 
     }
-    red
 }
 
 /*
@@ -91,7 +113,7 @@ pub fn add(a: Element, b: Element) -> Element {
         l4: a.l4 + b.l4
     };
 
-    mod_25519(temp)
+    carry_propagate(temp)
 }
 
 //subtract fn returns a - b
@@ -273,7 +295,7 @@ pub fn scalar_mult(e: Element, x: u32) -> Element {
     let (coeff3, carry3) = get_coeff_and_carry(l3_temp);
     let (coeff4, carry4) = get_coeff_and_carry(l4_temp);
 
-    let res0: u64 = coeff0 + 19 * carry4;
+    let res0: u64 = coeff0 + times19(carry4);
     let res1: u64 = coeff1 + carry0;
     let res2: u64 = coeff2 + carry1;
     let res3: u64 = coeff3 + carry2;

@@ -31,10 +31,10 @@ fn test_get_zero() -> bool {
 fn test_reductions() -> bool {
     assert(test_carry_propagate_1());
     assert(test_carry_propagate_2());
-    assert(test_mod_25519());
-    assert(test_mod_25519_2());
-    assert(test_mod_25519_3());
-    assert(test_mod_25519_4());
+    assert(test_reduce());
+    assert(test_reduce_2());
+    assert(test_reduce_3());
+    assert(test_reduce_4());
     true
 }
 
@@ -96,7 +96,7 @@ fn test_carry_propagate_2() -> bool {
     true
 }
 
-fn test_mod_25519() -> bool {
+fn test_reduce() -> bool {
     // 2251799813685250 = 2 + 2^51
     let e = Element{ 
     l0: 2251799813685250, 
@@ -105,14 +105,14 @@ fn test_mod_25519() -> bool {
     l3: 0,
     l4: 0 };
 
-    let res = mod_25519(e);
+    let res = reduce(e);
 
     res_equals(res, Element{ l0: 2, l1: 1, l2: 0, l3: 0, l4: 0 });
 
     true
 }
 
-fn test_mod_25519_2() -> bool {
+fn test_reduce_2() -> bool {
     /*
     2^51 + 2 = 2251799813685250
 
@@ -130,7 +130,7 @@ fn test_mod_25519_2() -> bool {
         l3: 2251799813685250,
         l4: 2251799813685250 };
 
-    let res = mod_25519(e);
+    let res = reduce(e);
 
     /* equals
     21 + 
@@ -144,7 +144,7 @@ fn test_mod_25519_2() -> bool {
     true
 }
 
-fn test_mod_25519_3() -> bool {
+fn test_reduce_3() -> bool {
     /*
     2^64 -1 = 18446744073709551615
 
@@ -163,7 +163,7 @@ fn test_mod_25519_3() -> bool {
         l3: ~u64::max(),
         l4: ~u64::max() };
 
-    let res = mod_25519(e);
+    let res = reduce(e);
 
     /*
     155647 +
@@ -184,7 +184,7 @@ fn test_mod_25519_3() -> bool {
     true
 }
 
-fn test_mod_25519_4() -> bool {
+fn test_reduce_4() -> bool {
     /*
     4503599627370494 + 
     4503599627370494 * 2^51 +
@@ -202,7 +202,7 @@ fn test_mod_25519_4() -> bool {
         l3: 4503599627370494,
         l4: 4503599627370494 };
 
-    let res = mod_25519(e);
+    let res = reduce(e);
 
     /*
     should be 36
@@ -316,42 +316,30 @@ fn test_add_a_to_b() -> bool {
 }
 
 fn test_add_a_to_a() -> bool {
-    // coefficients are 2^51-1 
+    // 2^255 - 20 (the largest number) expressed in radix-51
     /*
-    2251799813685247 +
+    2251799813685228 +
     2251799813685247 * 2^51 +
     2251799813685247 * 2^102 +
     2251799813685247 * 2^153 + 
     2251799813685247 * 2^204
-    = 57896044618658097711785492504343953926634992332820282019728792003956564819967
     */
     let a = Element{ 
-        l0: 2251799813685247, 
+        l0: 2251799813685228, 
         l1: 2251799813685247, 
         l2: 2251799813685247,
         l3: 2251799813685247,
         l4: 2251799813685247 
         };
 
-    /* a+a mod 2^255 -19 =
-    double all coefficients gives:
-    4503599627370494 + 
-    4503599627370494 * 2^51 +
-    4503599627370494 * 2^102 +
-    4503599627370494 * 2^153 + 
-    4503599627370494 * 2^204
-    mod 2^255 - 19
-     
-    = 36 
-    */ 
     let res = add(a, a);
 
     res_equals(res, Element{ 
-        l0: 36, 
-        l1: 0, 
-        l2: 0, 
-        l3: 0, 
-        l4: 0 
+        l0: 2251799813685227, 
+        l1: 2251799813685247, 
+        l2: 2251799813685247, 
+        l3: 2251799813685247, 
+        l4: 2251799813685247
     });
 
     true
@@ -361,6 +349,7 @@ fn tests_scalar_mult() -> bool {
     assert(test_mult_by_0());
     assert(test_mult_by_1());
     assert(test_mult_by_2());
+    assert(test_mult_by_2_again());
     assert(test_mult_by_large_scalar());
     true
 }
@@ -423,6 +412,44 @@ fn test_mult_by_2() -> bool {
         l2: 2251799813685247, 
         l3: 1111110666666445, 
         l4: 2251799813685246
+    });
+
+    true
+}
+
+fn test_mult_by_2_again() -> bool {
+    // 2^255 - 20 (the largest number) expressed in radix-51
+    /*
+    2251799813685228 +
+    2251799813685247 * 2^51 +
+    2251799813685247 * 2^102 +
+    2251799813685247 * 2^153 + 
+    2251799813685247 * 2^204
+    */
+    let a = Element{ 
+        l0: 2251799813685228, 
+        l1: 2251799813685247, 
+        l2: 2251799813685247,
+        l3: 2251799813685247,
+        l4: 2251799813685247 
+        };
+
+
+    let res: Element = scalar_mult(a, 2);
+    
+    /*
+    2251799813685227
+    2251799813685247* 2^51 +
+    2251799813685247* 2^102 +
+    2251799813685247* 2^153 + 
+    2251799813685247 * 2^204
+    */
+    res_equals(res, Element{ 
+        l0: 2251799813685227, 
+        l1: 2251799813685247, 
+        l2: 2251799813685247, 
+        l3: 2251799813685247, 
+        l4: 2251799813685247
     });
 
     true
