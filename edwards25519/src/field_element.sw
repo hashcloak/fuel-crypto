@@ -311,3 +311,15 @@ pub fn scalar_mult(e: Element, x: u32) -> Element {
 
     res
 }
+
+// Constant time equals
+pub fn equals(a: Element, b: Element) -> bool {
+    let mut res: u64 = 0;
+    res = res + (a.l0 ^ b.l0);
+    res = res + (a.l1 ^ b.l1);
+    res = res + (a.l2 ^ b.l2);
+    res = res + (a.l3 ^ b.l3);
+    res = res + (a.l4 ^ b.l4);
+	
+	res == 0
+}
