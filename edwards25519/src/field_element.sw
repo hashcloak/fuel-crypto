@@ -124,10 +124,11 @@ pub fn subtract(a: Element, b: Element) -> Element {
         l1: (a.l1 + 0xFFFFFFFFFFFFE) - b.l1, 
         l2: (a.l2 + 0xFFFFFFFFFFFFE) - b.l2, 
         l3: (a.l3 + 0xFFFFFFFFFFFFE) - b.l3, 
-        l4: (a.l4 +0xFFFFFFFFFFFFE ) - b.l4
+        l4: (a.l4 + 0xFFFFFFFFFFFFE) - b.l4
     };
 
-    carry_propagate(res)
+    //carry_propagate(res)
+    reduce(res)
 }
 
 //negate return negaive of an element(-a)
@@ -138,23 +139,12 @@ pub fn negate (a: Element) -> Element {
 
 //returns 128-bit product of a and b
 pub fn multiply64 (a: u64, b: u64) -> U128 {
-    let mask32 = (1<<32) - 1;
-    let a0 = a & mask32;
-    let a1 = a >> 32;
-    let b0 = b & mask32;
-    let b1 = b >> 32;
 
-    let w0 = a0*b0;
-    let t = a1*b0 + (w0 >> 32);
-    let mut w1 = t & mask32;
-    let w2 = t >> 32;
-
-    w1 += a0*b1;
-
-    U128 {
-        upper: a1*b1 + w2 + (w1 >>32),
-        lower: a*b
-    }
+    let A: U128 = U128 {upper: 0, lower: a};
+    let B: U128 = U128 {upper: 0, lower: b};
+    let AB: U128 = A*B;
+    return AB
+    
 }
 
 //returns sum with carry of a and b
@@ -200,10 +190,10 @@ pub fn multiply (a: Element, b: Element) -> Element {
 	let b3 = b.l3;
 	let b4 = b.l4;
     
-	let a1_19 = a1 * 19;
-	let a2_19 = a2 * 19;
-	let a3_19 = a3 * 19;
-	let a4_19 = a4 * 19;
+	let a1_19 = times19(a1);
+	let a2_19 = times19(a2);
+	let a3_19 = times19(a3);
+	let a4_19 = times19(a4);
 
     // r0 = a0×b0 + 19×(a1×b4 + a2×b3 + a3×b2 + a4×b1)
     let mut r0: U128 = multiply64(a0, b0);

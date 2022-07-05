@@ -5,6 +5,7 @@ dep field_element;
 use field_element::*;
 use std::logging::log;
 use std::assert::assert;
+use std::u128::*;
 
 pub fn print_el(e: Element) {
     log(e.l0);
@@ -21,6 +22,11 @@ pub fn res_equals(res: Element, should_be: Element) -> bool {
     assert(res.l3 == should_be.l3);
     assert(res.l4 == should_be.l4);
     true
+}
+
+pub fn print_U128(a: U128) {
+    log(a.upper);
+    log(a.lower);
 }
 
 //converts element into array of bytes
