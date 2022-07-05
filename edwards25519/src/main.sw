@@ -18,8 +18,11 @@ fn main() {
     // assert(tests_add());
     // assert(tests_scalar_mult());
     // assert(tests_substract());
-    assert(tests_multiply64());
-    // assert(tests_multiply());
+    // assert(tests_multiply64());
+    assert(tests_multiply());
+    //assert(tests_add64());
+    // assert(tests_add_multiply64());
+    // assert(tests_shiftRightBy51());
 
 }
 
@@ -76,7 +79,7 @@ fn test_equals() -> bool {
 
     true
 }
-
+//------------------------------------------------------------------------------------------------
 fn test_reductions() -> bool {
     assert(test_carry_propagate_1());
     assert(test_carry_propagate_2());
@@ -266,7 +269,7 @@ fn test_reduce_4() -> bool {
 
     true
 }
-
+//-------------------------------------------------------------------------------------------
 fn tests_add() -> bool {
     assert(test_add_to_0());
     assert(test_add_0());
@@ -393,7 +396,7 @@ fn test_add_a_to_a() -> bool {
 
     true
 }
-
+//--------------------------------------------------------------------------------------------
 fn tests_scalar_mult() -> bool {
     assert(test_mult_by_0());
     assert(test_mult_by_1());
@@ -539,7 +542,7 @@ fn test_mult_by_large_scalar() -> bool {
     
     true
 }
-
+//--------------------------------------------------------------------------------------------
 fn tests_substract() -> bool {
     assert(test_subtraction_by_0());
     assert(test_subtraction_by_1());
@@ -720,29 +723,7 @@ fn test_subtraction_random() -> bool {
     //print_el(res2);
     true
 }
-
-fn tests_multiply() -> bool {
-    //assert(test_multiply_by_0());
-    //assert(test_multiply_by_1());
-    true
-}
-
-fn test_multiply_by_0() -> bool {
-
-    //a = 2^255 - 21
-    let a = Element{ 
-        l0: 2251799813685227, 
-        l1: 2251799813685247, 
-        l2: 2251799813685247,
-        l3: 2251799813685247,
-        l4: 2251799813685247 
-    };
-    let res: Element = multiply(a, zero);
-    res_equals(res, zero);
-    true
-}
-
-
+//-------------------------------------------------------------------------------------------------------------
 fn tests_multiply64() -> bool {
     assert(test_multiply64_random());
     true
@@ -766,19 +747,180 @@ a*b = 98471291840283423519614919326553453204
 
     true
 }
+//----------------------------------------------------------------------------------------------------
+fn tests_add64() -> bool {
+    assert(test_add64_random());
+    true
+}
 
-//---------------------------------------------------------------------------------------------------------------
-// fn test_multiply_by_1() -> bool {
+fn test_add64_random() -> bool {
+    let a = 9837491998535547791;
+    let b = 10009796384580774444;
+    let res:(u64,u64) = add64(a, b, 0);
+    let a_plus_b: (u64,u64) = (1, 1400544309406770619);
 
-//     //a = 2^255 - 21
-//     let a = Element{ 
-//         l0: 2251799813685227, 
-//         l1: 2251799813685247, 
-//         l2: 2251799813685247,
-//         l3: 2251799813685247,
-//         l4: 2251799813685247
+    log(res.0);
+    log(res.1);
+    true
+}
+//------------------------------------------------------------------------------------------------------------
+fn tests_add_multiply64() -> bool {
+    assert(test_add_multiply64_random());
+    assert(test_add_multiply64_max());
+    true
+}
+fn test_add_multiply64_max() -> bool {
+    /*
+    random 51 bit number a = 496009164746885
+    a*19 =  9424174130190815
+    random 107 bit number r = 46428403129198069714856710112646
+
+    res = [2770292668654, 9024291134538729057]
+    */
+
+    let a = 496009164746885;
+    let b = a*19;
+    let r = U128{upper: 2516888776885, lower: 8614063320694916486};
+
+    let mut res = add_multiply64(r,a,b);
+    // res = add_multiply64(r,a,b);
+    // res = add_multiply64(r,a,b);
+    // res = add_multiply64(r,a,b);
+    // res = add_multiply64(r,a,b);
+    print_U128(res);
+    true
+
+}
+
+fn test_add_multiply64_random() -> bool {
+    let a = 9837491998535547791;
+    let b = 10009796384580774444;
+    /*
+    a*b = 98471291840283423519614919326553453204
+        = [5338139427034470684, 5960040633016627860]
+
+    random r = 10598342506117936052
+
+    ab + r  = 98471291840283423530213261832671389256
+            = [5338139427034470684, 16558383139134563912]
+
+    */
+    let r:U128 = U128{upper: 0, lower: 10598342506117936052};
+    let res = add_multiply64(r, a, b);
+
+    print_U128(res);
+
+    true
+
+
+
+}
+//-----------------------------------------------------------------------------------------------------
+
+fn tests_shiftRightBy51() -> bool {
+    assert(test_shiftRightBy51_random());
+    true
+}
+
+fn test_shiftRightBy51_random() -> bool {
+    
+    let a = U128{upper: 16, lower:0};
+    let res = shiftRightBy51(a);
+    log(res);
+    true
+}
+//----------------------------------------------------------------------------------------------------
+fn tests_multiply() -> bool {
+    //assert(test_multiply_by_0());
+    assert(test_multiply_by_1());
+    // assert(test_multiply_random());
+    true
+}
+
+fn test_multiply_by_0() -> bool {
+
+    //a = 2^255 - 21
+    let a = Element{ 
+        l0: 2251799813685227, 
+        l1: 2251799813685247, 
+        l2: 2251799813685247,
+        l3: 2251799813685247,
+        l4: 2251799813685247 
+    };
+    let res: Element = multiply(a, zero);
+    res_equals(res, zero);
+    true
+}
+
+fn test_multiply_by_1() -> bool {
+
+    //a = 2^255 - 21
+    let a = Element{ 
+        l0: 2251799813685227, 
+        l1: 2251799813685247, 
+        l2: 2251799813685247,
+        l3: 2251799813685247,
+        l4: 2251799813685247
+    };
+    let res: Element = multiply(a, one);
+    print_el(res);
+    res_equals(res, a);
+    true
+}
+
+// fn test_multiply_random() -> bool {
+//     /*
+//     a = random({2^251}) = 1300760531839662334344262085631565818852980666446405835776058138544728770104
+//                         = [50591579140481, 601879629470779, 595911506101250, 1303372017735434, 1292655137982008]
+//                         = Element {
+//                         1292655137982008,
+//                         1303372017735434,
+//                         595911506101250,
+//                         601879629470779,
+//                         50591579140481
+//                         }
+
+//     b = random({2^251}) = 3527794837033309378261417350654351403080646879795459845564282655359926745351
+//                         = [137209507300112, 293961277766182, 335483569739384, 807899991388824, 1360902863141127]
+//                         = Element {
+//                         1360902863141127,
+//                         807899991388824,
+//                         335483569739384,
+//                         293961277766182,
+//                         137209507300112
+//                         }
+
+//     ab mod p            = 26419211797770492947925431317169526880133696901606348938375383866077151145114
+//                         = [1027544741541094, 806477788321681, 355992668009873, 1000789340506524, 896638975913114]
+
+//     */
+    
+//     let a = Element {
+//         l0: 1292655137982008,
+//         l1: 1303372017735434,
+//         l2: 595911506101250,
+//         l3: 601879629470779,
+//         l4: 50591579140481
 //     };
-//     let res: Element = multiply(a, one);
-//     res_equals(res, a);
+
+//     let b = Element {
+//         l0: 1360902863141127,
+//         l1: 807899991388824,
+//         l2: 335483569739384,
+//         l3: 293961277766182,
+//         l4: 137209507300112
+//     };
+
+//     let ab = Element {
+//         l0: 896638975913114,
+//         l1: 1000789340506524,
+//         l2: 355992668009873,
+//         l3: 806477788321681,
+//         l4: 1027544741541094
+//     };
+
+//     let res: Element = multiply(a, b);
+//     //print_el(res);
+//     res_equals(res, ab);
 //     true
 // }

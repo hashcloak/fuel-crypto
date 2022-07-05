@@ -144,16 +144,19 @@ pub fn multiply64 (a: u64, b: u64) -> U128 {
     let B: U128 = U128 {upper: 0, lower: b};
     let AB: U128 = A*B;
     return AB
-    
+
 }
 
 //returns sum with carry of a and b
-pub fn add64 (a: u64, b:u64, carry: u64) -> (u64, u64) {
-    let sum = a + b + carry;
-    // let carryOut =  ((a & b) | ((x | y) &^ sum)) >> 63; //dont know if NOT Operator is there otherwise needs to be defined manually 
+pub fn add64 (a: u64, b: u64, carry: u64) -> (u64, u64) {
+    let A:U128 = U128{upper: 0, lower: a};
+    let B:U128 = U128{upper: 0, lower: b};
 
-    // (sum, carryOut)
-    (0,0)
+    let sum: u64 = (A+B).lower;
+    let notSum = ~u64::max() - sum;
+    let carryOut =  ((a & b) | ((a | b) & sum)) >> 63; 
+
+    (sum, carryOut)
 }
 
 //returns res + a * b 
@@ -190,10 +193,10 @@ pub fn multiply (a: Element, b: Element) -> Element {
 	let b3 = b.l3;
 	let b4 = b.l4;
     
-	let a1_19 = times19(a1);
-	let a2_19 = times19(a2);
-	let a3_19 = times19(a3);
-	let a4_19 = times19(a4);
+	let a1_19 = 19*a1;
+	let a2_19 = 19*a2;
+	let a3_19 = 19*a3;
+	let a4_19 = 19*a4;
 
     // r0 = a0×b0 + 19×(a1×b4 + a2×b3 + a3×b2 + a4×b1)
     let mut r0: U128 = multiply64(a0, b0);
@@ -223,7 +226,7 @@ pub fn multiply (a: Element, b: Element) -> Element {
 	r3 = add_multiply64(r3, a3, b0);
 	r3 = add_multiply64(r3, a4_19, b4);
 
-    // r4 = a0×b4 + a1×b3 + a2×b2 + a3×b1 + a4×b0
+    //r4 = a0×b4 + a1×b3 + a2×b2 + a3×b1 + a4×b0
 	let mut r4: U128 = multiply64(a0, b4);
 	r4 = add_multiply64(r4, a1, b3);
 	r4 = add_multiply64(r4, a2, b2);
@@ -236,11 +239,36 @@ pub fn multiply (a: Element, b: Element) -> Element {
 	let c3 = shiftRightBy51(r3);
 	let c4 = shiftRightBy51(r4);
 
-	let rr0 = r0.lower & mask_low_51_bits + c4*19;
-	let rr1 = r1.lower & mask_low_51_bits + c0;
-	let rr2 = r2.lower & mask_low_51_bits + c1;
-	let rr3 = r3.lower & mask_low_51_bits + c2;
-	let rr4 = r4.lower & mask_low_51_bits + c3;
+//Overflow is happning here i think
+
+    let r0_mask: U128 = U128{upper: 0, lower: r0.lower & mask_low_51_bits};
+    let c4_19 = U128{upper: 0, lower: c4} * U128{upper: 0, lower: 19};
+    let rr0 = (r0_mask + c4_19).lower;
+
+    let r1_mask: U128 = U128{upper: 0, lower: r1.lower & mask_low_51_bits};
+    let c00 = U128{upper: 0, lower: c0};
+    let rr1 = (r1_mask + c00).lower;
+
+    let r2_mask: U128 = U128{upper: 0, lower: r2.lower & mask_low_51_bits};
+    let c11 = U128{upper: 0, lower: c1};
+    let rr2 = (r2_mask + c11).lower;
+
+    let r3_mask: U128 = U128{upper: 0, lower: r3.lower & mask_low_51_bits};
+    let c22 = U128{upper: 0, lower: c2};
+    let rr3 = (r3_mask + c22).lower;
+
+    let r4_mask: U128 = U128{upper: 0, lower: r4.lower & mask_low_51_bits};
+    let c33 = U128{upper: 0, lower: c3};
+    let rr4 = (r4_mask + c33).lower;
+
+
+
+
+	//let rr0 = (r0.lower & mask_low_51_bits) + 19*c4;
+	// let rr1 = (r1.lower & mask_low_51_bits) + c0;
+	// let rr2 = (r2.lower & mask_low_51_bits) + c1;
+	// let rr3 = (r3.lower & mask_low_51_bits) + c2;
+	// let rr4 = (r4.lower & mask_low_51_bits) + c3;
 
     let res: Element = Element {
         l0: rr0,
@@ -251,7 +279,7 @@ pub fn multiply (a: Element, b: Element) -> Element {
     };
 
     carry_propagate(res)
-
+    //reduce(res)
 }
 
 //returns square of an Element
@@ -285,7 +313,7 @@ pub fn scalar_mult(e: Element, x: u32) -> Element {
     let (coeff3, carry3) = get_coeff_and_carry(l3_temp);
     let (coeff4, carry4) = get_coeff_and_carry(l4_temp);
 
-    let res0: u64 = coeff0 + times19(carry4);
+    let res0: u64 = coeff0 + carry4*19;
     let res1: u64 = coeff1 + carry0;
     let res2: u64 = coeff2 + carry1;
     let res3: u64 = coeff3 + carry2;
