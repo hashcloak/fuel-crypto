@@ -14,7 +14,7 @@ use std::u128::*;
 
 fn main() {
     // THESE TESTS ARE ALL OK
-    assert(test_helpers());
+    // assert(test_helpers());
     // assert(test_reductions());
     // assert(tests_add());
     // assert(tests_scalar_mult());
@@ -25,10 +25,9 @@ fn main() {
     // assert(tests_substract());
 
     // Multiply functions only test OK if ran 1 at a time. (?!)
-    // assert(tests_multiply());
+    assert(tests_multiply());
     // assert(tests_square());
 
-    // NOT OK
 
 }
 
