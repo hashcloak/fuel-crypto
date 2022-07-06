@@ -177,6 +177,12 @@ pub fn shiftRightBy51(a: U128) -> u64 {
     (a.upper <<(64-51)) | (a.lower >> 51)
 }
 
+//returns square of an Element
+pub fn square(a: Element) -> Element {
+    multiply(a,a)
+}
+
+
 //returns a*b
 pub fn multiply (a: Element, b: Element) -> Element {
 
@@ -257,11 +263,6 @@ pub fn multiply (a: Element, b: Element) -> Element {
     carry_propagate(res)
 }
 
-//returns square of an Element
-// pub fn square(a: Element) -> Element {
-//     multiply(a,a)
-// }
-
 // For a bignumber <= 102 bits stored in U128,
 // return the 51 bit coefficient and 51 bit carry
 fn get_coeff_and_carry(y: U128) -> (u64, u64) {
@@ -316,3 +317,88 @@ pub fn equals(a: Element, b: Element) -> bool {
 	
 	res == 0
 }
+
+// //a^(-1) mod p = a^(p-2) mod p by  Fermat's theorem, Hence we  calculate a^(p-2) mod p
+// pub fn inverse(a: Element) -> Element {
+//     let mut i = 0;
+//     let z2 = square(a);                 //2
+//     let mut t = square(z2);             //4
+//     t = square(t);                      //8
+//     let z9 = multiply(t,a);             //9
+//     let z11 = multiply(z9, z2);         //11
+//     t = square(z11);                    //22
+
+//     let z2_5_0 = multiply(t, z9);       //31
+//     t = square(z2_5_0);                 // 62 = 2^6 - 2^1
+//     while i < 4 {
+//         t = square(t);                  // 2^10 - 2^5
+//         i+=1;                            
+//     }
+
+//     let z2_10_0 = multiply(t, z2_5_0);  // 2^10 - 2^0
+
+//     t = square(z2_10_0);                //2^11 - 2^1
+//     i = 0;
+//     while i < 9 {
+//         t = square(t);                  //2^20 - 2^10
+//         i += 1;
+//     }
+
+//     let z2_20_0 = multiply(t, z2_10_0); //2^20 - 2^0
+
+//     t = square(z2_20_0);                //2^21 - 2^1
+//     i = 0;
+//     while i < 19 {
+//         t = square(t);                  //2^40 - 2^20
+//         i += 1;
+//     }
+
+//     t = multiply(t, z2_20_0);           //2^40 - 2^0
+    
+//     i = 0;
+//     while i < 10 {
+//         t = square(t);                  //2^50 - 2^10
+//     }
+
+//     let z2_50_0 = multiply(t, z2_10_0); //2^50 - 2^0
+
+//     t = square(z2_50_0);                //2^51 - 2^1
+
+//     i = 0;
+//     while i < 49 {
+//         t = square(t);                  //2^100 - 2^50
+//         i += 1;
+//     }
+    
+//     let z2_100_0 = multiply(t, z2_50_0);//2^100 - 2^0
+
+//     t = square(z2_100_0);               //2^101 - 2^1
+
+//     i = 0;
+//     while i < 99 {
+//         t = square(t);                  //2^200 - 2^100
+//         i += 1;
+//     }
+
+//     t = multiply(t, z2_100_0);          //2^200 - 2^0
+
+//     t = square(t);                      //2^201 - 2^1
+
+//     i = 0;
+//     while i < 49 {
+//         t = square(t);                  //2^250 - 2^50
+//         i += 1;
+//     }
+
+//     t = multiply(t, z2_50_0);           //2^250 - 2^0
+
+//     i = 0;
+//     while i < 5 {
+//         t = square(t);                  //2^255 - 2^5
+//         i += 1;
+//     }
+
+//     t = multiply(t, z11);               //2^255 - 21 = p - 2
+
+//     return t;
+// }
