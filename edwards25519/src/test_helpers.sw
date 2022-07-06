@@ -29,6 +29,12 @@ pub fn print_U128(a: U128) {
     log(a.lower);
 }
 
+pub fn equals_U128(res: U128, lower: u64, upper: u64) -> bool {
+    assert(res.upper == upper);
+    assert(res.lower == lower);
+    true
+}
+
 //converts element into array of bytes
 
 // pub fn bytes_convert (a: Element) -> [u8;32] {
