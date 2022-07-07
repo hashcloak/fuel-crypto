@@ -1,11 +1,11 @@
 library test_helpers;
 
-dep fp;
+dep vec384;
 
-use fp::*;
+use vec384::*;
 use std::{logging::log, assert::assert};
 
-pub fn print_fp(a: Fp) {
+pub fn print_vec384(a: vec384) {
     log(a.ls[0]);
     log(a.ls[1]);
     log(a.ls[2]);
@@ -14,7 +14,7 @@ pub fn print_fp(a: Fp) {
     log(a.ls[5]);
 }
 
-pub fn equals_fp(a: Fp, b: Fp) {
+pub fn equals_vec384(a: vec384, b: vec384) {
     assert(a.ls[0] == b.ls[0]);
     assert(a.ls[1] == b.ls[1]);
     assert(a.ls[2] == b.ls[2]);
