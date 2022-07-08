@@ -3,8 +3,15 @@ library vec384;
 use std::u128::*;
 
 // Stores field element with max 384 bits
+// element in fp
 pub struct vec384 {
     ls: [u64; 6],
+}
+
+// element in fp2
+pub struct vec384x {
+    r: vec384, //"real" part
+    i: vec384 //"imaginary" part
 }
 
 const ZERO: vec384 = vec384 {ls: [0, 0, 0, 0, 0, 0]};
@@ -218,4 +225,23 @@ pub fn montgomery_reduction(t: [u64;12]) -> vec384 {
 
     subtract_p(vec384{ls: [r6.0, r7.0, r8.0, r9.0, r10.0, r11_12.0]}, BLS12_381_P)
 
+}
+
+pub fn mul_by_3_mod_384(a: vec384, p: vec384) -> vec384 {
+    let temp = add_mod_384(a, a, p);
+    add_mod_384(temp, a, p)
+}
+
+pub fn lshift_mod_384(a: vec384, n: u64, p: vec384) -> vec384 {
+    let mut i = 0;
+    let mut a_temp: vec384 = a;
+    while i < n {
+        a_temp = add_mod_384(a_temp, a_temp, p);
+        i += 1;
+    }
+    a_temp
+}
+
+pub fn mul_by_8_mod_384(a: vec384, p: vec384) -> vec384 {
+    lshift_mod_384(a, 3, p)
 }
