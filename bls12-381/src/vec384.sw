@@ -27,7 +27,16 @@ const BLS12_381_P: vec384 = vec384 {
 // If x >= y: x-y, else max::U128 - (y-x)
 pub fn subtract_wrap(x: U128, y: U128) -> U128 {
     if y > x {
-        ~U128::max() - (y - x)
+        ~U128::max() - (y - x - U128 { lower: 1, upper: 0})
+    } else {
+        x - y
+    }
+}
+
+// If x >= y: x-y, else max::U64 - (y-x)
+pub fn subtract_wrap_64(x: u64, y: u64) -> u64 {
+    if y > x {
+        ~u64::max() - (y - x - 1)
     } else {
         x - y
     }
@@ -83,6 +92,7 @@ pub fn adc(a: u64, b: u64, carry: u64) -> (u64, u64) {
     (sum, carry_res)
 }
 
+// from https://github.com/zkcrypto/bls12_381
 pub fn add_mod_384(a: vec384, b: vec384, p: vec384) -> vec384 {
     let (d0, carry) = adc(a.ls[0], b.ls[0], 0);
     let (d1, carry) = adc(a.ls[1], b.ls[1], carry);
@@ -95,3 +105,36 @@ pub fn add_mod_384(a: vec384, b: vec384, p: vec384) -> vec384 {
     subtract_p(vec384{ ls: [d0, d1, d2, d3, d4, d5] }, p)
 }
 
+// from https://github.com/zkcrypto/bls12_381
+pub fn neg(a: vec384, p: vec384) -> vec384 {
+    let (d0, borrow) = sbb(p.ls[0], a.ls[0], 0);
+    let (d1, borrow) = sbb(p.ls[1], a.ls[1], borrow);
+    let (d2, borrow) = sbb(p.ls[2], a.ls[2], borrow);
+    let (d3, borrow) = sbb(p.ls[3], a.ls[3], borrow);
+    let (d4, borrow) = sbb(p.ls[4], a.ls[4], borrow);
+    let (d5, _) = sbb(p.ls[5], a.ls[5], borrow);
+
+    // We need a mask that's 0 when a==p and 2^65-1 otherwise
+    // TODO improve this
+    let mut a_is_p = 0;
+    if (a.ls[0] | a.ls[1] | a.ls[2] | a.ls[3] | a.ls[4] | a.ls[5]) == 0 {
+        a_is_p = 1; //don't know is there's a native conversion
+    } else {
+        a_is_p = 0;
+    }
+
+    let mask = subtract_wrap_64(a_is_p, 1);
+
+    vec384{ ls: [
+        d0 & mask,
+        d1 & mask,
+        d2 & mask,
+        d3 & mask,
+        d4 & mask,
+        d5 & mask,
+    ]}
+}
+
+pub fn sub_mod_384(a: vec384, b: vec384, p: vec384) -> vec384 {
+    add_mod_384(a, neg(b, p), p)
+}

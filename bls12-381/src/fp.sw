@@ -13,3 +13,7 @@ https://github.com/supranational/blst
 pub fn add_fp(a: vec384, b: vec384) -> vec384 {
     add_mod_384(a, b, BLS12_381_P)
 }
+
+pub fn sub_fp(a: vec384, b: vec384) -> vec384 {
+    sub_mod_384(a, b, BLS12_381_P)
+}
