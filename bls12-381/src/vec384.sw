@@ -23,6 +23,8 @@ const BLS12_381_P: vec384 = vec384 {
     0x4b1ba7b6434bacd7,
     0x1a0111ea397fe69a]
 };
+/// INV = -(P^{-1} mod 2^64) mod 2^64
+const INV: u64 = 0x89f3fffcfffcfffd;
 
 // If x >= y: x-y, else max::U128 - (y-x)
 pub fn subtract_wrap(x: U128, y: U128) -> U128 {
@@ -137,4 +139,83 @@ pub fn neg(a: vec384, p: vec384) -> vec384 {
 
 pub fn sub_mod_384(a: vec384, b: vec384, p: vec384) -> vec384 {
     add_mod_384(a, neg(b, p), p)
+}
+
+//returns the result and new carry of a + b*c + carry
+pub fn mac (a: u64, b: u64, c: u64, carry: u64) -> (u64, u64) {
+    let A: U128 = U128 {upper: 0, lower: a};
+    let B: U128 = U128 {upper: 0, lower: b};
+    let C: U128 = U128 {upper: 0, lower: c};
+    let CARRY: U128 = U128 {upper: 0, lower: carry};
+    let res: U128 = A + B * C + CARRY;
+    (res.lower, res.upper)
+}
+
+//returns a*b mod(2^64) 
+pub fn multiply_wrap(a: u64, b:u64) -> u64 {
+    let A: U128 = U128{upper: 0, lower: a};
+    let B: U128 = U128{upper: 0, lower: b};
+
+    (A*B).lower
+}
+
+// from https://github.com/zkcrypto/bls12_381
+pub fn montgomery_reduction(t: [u64;12]) -> vec384 {
+    let mut k = multiply_wrap(t[0], INV);
+
+    let r0: (u64, u64) = mac(t[0], k, BLS12_381_P.ls[0], 0);
+    let r1: (u64, u64) = mac(t[1], k, BLS12_381_P.ls[1], r0.1);
+    let r2: (u64, u64) = mac(t[2], k, BLS12_381_P.ls[2], r1.1);
+    let r3: (u64, u64) = mac(t[3], k, BLS12_381_P.ls[3], r2.1);
+    let r4: (u64, u64) = mac(t[4], k, BLS12_381_P.ls[4], r3.1);
+    let r5: (u64, u64) = mac(t[5], k, BLS12_381_P.ls[5], r4.1);
+    let r6_7: (u64, u64) = adc(t[6], 0, r5.1);
+
+    let k = multiply_wrap(r1.0, INV);
+    let r0: (u64, u64) = mac(r1.0, k, BLS12_381_P.ls[0], 0);
+    let r2: (u64, u64) = mac(r2.0, k, BLS12_381_P.ls[1], r0.1);
+    let r3: (u64, u64) = mac(r3.0, k, BLS12_381_P.ls[2], r2.1);
+    let r4: (u64, u64) = mac(r4.0, k, BLS12_381_P.ls[3], r3.1);
+    let r5: (u64, u64) = mac(r5.0, k, BLS12_381_P.ls[4], r4.1);
+    let r6: (u64, u64) = mac(r6_7.0, k, BLS12_381_P.ls[5], r5.1);
+    let r7_8: (u64, u64) = adc(t[7], r6_7.1, r6.1);
+
+    let k = multiply_wrap(r2.0, INV);
+    let r0: (u64, u64) = mac(r2.0, k, BLS12_381_P.ls[0], 0);
+    let r3: (u64, u64) = mac(r3.0, k, BLS12_381_P.ls[1], r0.1);
+    let r4: (u64, u64) = mac(r4.0, k, BLS12_381_P.ls[2], r3.1);
+    let r5: (u64, u64) = mac(r5.0, k, BLS12_381_P.ls[3], r4.1);
+    let r6: (u64, u64) = mac(r6.0, k, BLS12_381_P.ls[4], r5.1);
+    let r7: (u64, u64) = mac(r7_8.0, k, BLS12_381_P.ls[5], r6.1);
+    let r8_9: (u64, u64) = adc(t[8], r7_8.1, r7.1);
+
+    let k = multiply_wrap(r3.0, INV);
+    let r0: (u64, u64) = mac(r3.0, k, BLS12_381_P.ls[0], 0);
+    let r4: (u64, u64) = mac(r4.0, k, BLS12_381_P.ls[1], r0.1);
+    let r5: (u64, u64) = mac(r5.0, k, BLS12_381_P.ls[2], r4.1);
+    let r6: (u64, u64) = mac(r6.0, k, BLS12_381_P.ls[3], r5.1);
+    let r7: (u64, u64) = mac(r7.0, k, BLS12_381_P.ls[4], r6.1);
+    let r8: (u64, u64) = mac(r8_9.0, k, BLS12_381_P.ls[5], r7.1);
+    let r9_10: (u64, u64) = adc(t[9], r8_9.1, r8.1);
+
+    let k = multiply_wrap(r4.0, INV);
+    let r0: (u64, u64) = mac(r4.0, k, BLS12_381_P.ls[0], 0);
+    let r5: (u64, u64) = mac(r5.0, k, BLS12_381_P.ls[1], r0.1);
+    let r6: (u64, u64) = mac(r6.0, k, BLS12_381_P.ls[2], r5.1);
+    let r7: (u64, u64) = mac(r7.0, k, BLS12_381_P.ls[3], r6.1);
+    let r8: (u64, u64) = mac(r8.0, k, BLS12_381_P.ls[4], r7.1);
+    let r9: (u64, u64) = mac(r9_10.0, k, BLS12_381_P.ls[5], r8.1);
+    let r10_11: (u64, u64) = adc(t[10], r9_10.1, r9.1);
+
+    let k = multiply_wrap(r5.0, INV);
+    let r0: (u64, u64) = mac(r5.0, k, BLS12_381_P.ls[0], 0);
+    let r6: (u64, u64) = mac(r6.0, k, BLS12_381_P.ls[1], r0.1);
+    let r7: (u64, u64) = mac(r7.0, k, BLS12_381_P.ls[2], r6.1);
+    let r8: (u64, u64) = mac(r8.0, k, BLS12_381_P.ls[3], r7.1);
+    let r9: (u64, u64) = mac(r9.0, k, BLS12_381_P.ls[4], r8.1);
+    let r10: (u64, u64) = mac(r10_11.0, k, BLS12_381_P.ls[5], r9.1);
+    let r11_12 = adc(t[11], r10_11.1, r10.1);
+
+    subtract_p(vec384{ls: [r6.0, r7.0, r8.0, r9.0, r10.0, r11_12.0]}, BLS12_381_P)
+
 }
