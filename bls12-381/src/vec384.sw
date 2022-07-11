@@ -14,7 +14,7 @@ pub struct vec384x {
     i: vec384 //"imaginary" part
 }
 
-const ZERO: vec384 = vec384 {ls: [0, 0, 0, 0, 0, 0]};
+pub const ZERO: vec384 = vec384 {ls: [0, 0, 0, 0, 0, 0]};
 
 /*
     z = -0xd201000000010000
@@ -22,7 +22,7 @@ const ZERO: vec384 = vec384 {ls: [0, 0, 0, 0, 0, 0]};
     4002409555221667393417789825735904156556882819939007885332058136124031650490837864442687629129015664037894272559787
     (381 bits)
 */
-const BLS12_381_P: vec384 = vec384 {
+pub const BLS12_381_P: vec384 = vec384 {
     ls: [0xb9feffffffffaaab,
     0x1eabfffeb153ffff,
     0x6730d2a0f6b0f624,
@@ -31,7 +31,7 @@ const BLS12_381_P: vec384 = vec384 {
     0x1a0111ea397fe69a]
 };
 /// INV = -(P^{-1} mod 2^64) mod 2^64
-const INV: u64 = 0x89f3fffcfffcfffd;
+pub const INV: u64 = 0x89f3fffcfffcfffd;
 
 // If x >= y: x-y, else max::U128 - (y-x)
 pub fn subtract_wrap(x: U128, y: U128) -> U128 {
@@ -154,7 +154,7 @@ pub fn mac (a: u64, b: u64, c: u64, carry: u64) -> (u64, u64) {
     let B: U128 = U128 {upper: 0, lower: b};
     let C: U128 = U128 {upper: 0, lower: c};
     let CARRY: U128 = U128 {upper: 0, lower: carry};
-    let res: U128 = A + B * C + CARRY;
+    let res: U128 = A + (B * C) + CARRY;
     (res.lower, res.upper)
 }
 
@@ -168,8 +168,8 @@ pub fn multiply_wrap(a: u64, b:u64) -> u64 {
 
 // from https://github.com/zkcrypto/bls12_381
 pub fn montgomery_reduction(t: [u64;12]) -> vec384 {
-    let mut k = multiply_wrap(t[0], INV);
-
+    let k = multiply_wrap(t[0], INV);
+    
     let r0: (u64, u64) = mac(t[0], k, BLS12_381_P.ls[0], 0);
     let r1: (u64, u64) = mac(t[1], k, BLS12_381_P.ls[1], r0.1);
     let r2: (u64, u64) = mac(t[2], k, BLS12_381_P.ls[2], r1.1);

@@ -14,7 +14,7 @@ use std::u128::*;
 
 fn main() {
     // THESE TESTS ARE ALL OK
-    // assert(test_helpers());
+    assert(test_helpers());
     // assert(test_reductions());
     // assert(tests_add());
     // assert(tests_scalar_mult());
@@ -25,8 +25,9 @@ fn main() {
     // assert(tests_substract());
 
     // Multiply functions only test OK if ran 1 at a time. (?!)
-    assert(tests_multiply());
+    // assert(tests_multiply());
     // assert(tests_square());
+    // assert(tests_inverse());
 
 
 }
@@ -1171,7 +1172,7 @@ fn test_multiply_elms_4() -> bool {
     true
 }
 
-/*
+
 fn test_multiply_random() -> bool {
     /*
     a = random({2^251}) = 1300760531839662334344262085631565818852980666446405835776058138544728770104
@@ -1229,7 +1230,7 @@ fn test_multiply_random() -> bool {
     res_equals(res, ab);
     true
 }
-*/
+
 //---------------------------------------------------------------------------------------------------------
 
 fn tests_square() -> bool {
@@ -1283,3 +1284,4 @@ fn test_square_random() -> bool {
     res_equals(res, a_square);
     true
 }
+
