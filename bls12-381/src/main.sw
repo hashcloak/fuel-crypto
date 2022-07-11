@@ -12,7 +12,10 @@ use std::logging::log;
 
 fn main() {
     // assert(fp_tests());
-    assert(fp2_tests());
+    // assert(fp2_tests());
+    // assert(tests_montgomery_reduction());
+    assert(test_multiply_wrap());
+    assert(test_mac());
 }
 
 fn fp_tests() -> bool {
@@ -542,5 +545,64 @@ fn test_250_lshift_p() -> bool {
     //879994519659111629345302542423123869141449003108211674743509876497540102414622865945836408424086377077979782833710
     let res = lshift_fp(a, 250);
     equals_vec384(res, vec384 { ls: [13113011510218319406, 16706544215516829647, 7984223107370075095, 1162337285386263785, 307447685117845313, 411984953494678179]});
+    true
+}
+
+fn test_mac() -> bool {
+    let a = 13282407956253574712;
+    let b = 7557322358563246340;
+    let c = 14991082624209354397;
+
+    let res = mac(a,b,c,0);
+    assert(res.0 == 15211181400380206508);
+    assert(res.1 == 6141595689857899799);
+
+    let carry = 1234555432334;
+    let res2 = mac(a,b,c,carry);
+    assert(res2.0 == 15211182634935638842);
+    assert(res2.1 == 6141595689857899799);
+
+    true
+}
+
+fn tests_montgomery_reduction() -> bool {
+
+    // assert(test_montgomery_reduction_small());
+    assert(test_montgomery_reduction_random());
+    true
+
+}
+
+fn test_montgomery_reduction_small() -> bool {
+    let a: [u64;12] = [10,0,0,0,0,0,0,0,0,0,0,0];
+    let res = montgomery_reduction(a);
+    let aModP: vec384 = vec384{ls: [10,0,0,0,0,0]};
+    equals_vec384(res, aModP);
+    //print_vec384(res);
+    true
+}
+fn test_montgomery_reduction_random() -> bool {
+
+    /*
+    a = 718573336991290032951448074998609563086566731583964696014352685991840357574242396134892012284985388079194282315681159870763888514734256711565361623988
+      = [988628306351829, 5278298332222909972, 8614063320694916486, 4063307077606482163, 959683757796537189, 2169871353760194456, 6743270311476307786, 10598342506117936052]
+    */
+    let a: [u64;12] = [10598342506117936052, 6743270311476307786, 2169871353760194456, 959683757796537189, 4063307077606482163, 8614063320694916486, 5278298332222909972, 988628306351829, 0, 0, 0, 0];
+
+    let ls: [u64;6] = [12961372860169786431, 10261575420116144142, 13643274042195959755, 209306746091908816, 4698088373397879190, 611003071541516788];
+    let aModP: vec384 = vec384{ls: ls};
+
+    let res: vec384 = montgomery_reduction(a);
+
+    equals_vec384(res, aModP);
+    //print_vec384(res);
+    true
+}
+
+fn test_multiply_wrap() -> bool {
+    let a: u64 = 562706585515371056;
+    let b: u64 = 2854579515609623853;
+    let res: u64 = multiply_wrap(a, b);
+    assert(res == 2259604989141998192);
     true
 }

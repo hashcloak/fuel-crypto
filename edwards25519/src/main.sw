@@ -35,7 +35,7 @@ use core::num::*;
 use std::u128::*;
 
 fn main() {
-    // assert(test_helpers());
+
     // assert(tests_add());
     // assert(test_helpers64());
     // assert(test_reductions());
@@ -43,10 +43,11 @@ fn main() {
     // assert(tests_scalar_mult());
     // assert(tests_substract());
 
-    // Multiply tests can't run all at the same time
-    assert(tests_multiply());
+
     // assert(tests_square());
+    // assert(tests_inverse());
 
     //Doesnt' terminate
     // assert(tests_inverse());
 }
+
