@@ -1,12 +1,14 @@
 script;
 
-dep vec384;
-dep fp;
+dep vect;
+dep fields;
 dep test_helpers;
+dep consts;
 
-use std::{assert::assert, u128::*};
-use ::fp::*;
-use ::vec384::*;
+use std::{assert::assert, u128::*, option::*};
+use ::fields::*;
+use ::vect::*;
+use ::consts::*;
 use ::test_helpers::*;
 use std::logging::log;
 

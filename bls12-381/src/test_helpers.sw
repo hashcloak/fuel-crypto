@@ -1,8 +1,8 @@
 library test_helpers;
 
-dep vec384;
+dep vect;
 
-use vec384::*;
+use vect::*;
 use std::{logging::log, assert::assert};
 
 pub fn print_vec384(a: vec384) {

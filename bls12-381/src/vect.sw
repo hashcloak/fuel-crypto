@@ -1,11 +1,15 @@
-library vec384;
+library vect;
 
-use std::u128::*;
+use std::{u128::*, vec::Vec};
 
 // Stores field element with max 384 bits
 // element in fp
 pub struct vec384 {
     ls: [u64; 6],
+}
+
+pub struct vec768 {
+    ls: [u64; 12],
 }
 
 // element in fp2
@@ -14,7 +18,9 @@ pub struct vec384x {
     i: vec384 //"imaginary" part
 }
 
+//TODO: remove these. Only for developing and testing atm
 pub const ZERO: vec384 = vec384 {ls: [0, 0, 0, 0, 0, 0]};
+pub const ZERO_X: vec384x = vec384x { r: ZERO, i: ZERO };
 
 /*
     z = -0xd201000000010000
@@ -32,6 +38,33 @@ pub const BLS12_381_P: vec384 = vec384 {
 };
 /// INV = -(P^{-1} mod 2^64) mod 2^64
 pub const INV: u64 = 0x89f3fffcfffcfffd;
+
+
+
+// START FUNCTIONS
+
+
+
+pub fn mul_mont_384(a: vec384, b: vec384, p: vec384, n0: u64) -> vec384 {
+    //TODO
+    ZERO
+}
+
+pub fn sqr_mont_384(a: vec384, b: vec384, p: vec384, n0: u64) -> vec384 {
+    //TODO
+    ZERO
+}
+
+pub fn redc_mont_384(a: vec768, p: vec384, n0: u64) -> vec384 {
+    //TODO
+    ZERO
+}
+
+pub fn from_mont_384(a: vec384, p: vec384, n0: u64) -> vec384 {
+    //TODO
+    ZERO
+}
+
 
 // If x >= y: x-y, else max::U128 - (y-x)
 pub fn subtract_wrap(x: U128, y: U128) -> U128 {
@@ -227,9 +260,18 @@ pub fn montgomery_reduction(t: [u64;12]) -> vec384 {
 
 }
 
+pub fn mul_by_8_mod_384(a: vec384, p: vec384) -> vec384 {
+    lshift_mod_384(a, 3, p)
+}
+
 pub fn mul_by_3_mod_384(a: vec384, p: vec384) -> vec384 {
     let temp = add_mod_384(a, a, p);
     add_mod_384(temp, a, p)
+}
+
+pub fn cneg_mod_384(a: vec384, flag: u64, p: vec384) -> vec384 {
+    //TODO
+    ZERO
 }
 
 pub fn lshift_mod_384(a: vec384, n: u64, p: vec384) -> vec384 {
@@ -242,6 +284,36 @@ pub fn lshift_mod_384(a: vec384, n: u64, p: vec384) -> vec384 {
     a_temp
 }
 
-pub fn mul_by_8_mod_384(a: vec384, p: vec384) -> vec384 {
-    lshift_mod_384(a, 3, p)
+pub fn rshift_mod_384(a: vec384, n: u64, p: vec384) -> vec384 {
+    //TODO
+    ZERO
+}
+
+pub fn div_by_2_mod_384(a: vec384, p: vec384) -> vec384 {
+    //TODO
+    ZERO
+}
+
+
+
+
+
+pub fn mul_by_8_mod_384x(a: vec384x, p: vec384) -> vec384x {
+    //TODO
+    ZERO_X
+}
+
+pub fn mul_by_3_mod_384x(a: vec384x, p: vec384) -> vec384x {
+    //TODO
+    ZERO_X
+}
+
+pub fn mul_mont_384x(a: vec384x, b: vec384x, p: vec384, n0: u64) -> vec384x {
+    //TODO. Has a non-assembly impl in blst in src/no_asm.h
+    ZERO_X
+}
+
+pub fn sqr_mont_384x(a: vec384x, p: vec384, n0: u64) -> vec384x {
+    //TODO. Has a non-assembly impl in blst in src/vect.c
+    ZERO_X
 }
