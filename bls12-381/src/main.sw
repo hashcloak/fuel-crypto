@@ -5,7 +5,7 @@ dep fields;
 dep test_helpers;
 dep consts;
 
-use std::{assert::assert, u128::*, option::*};
+use std::{assert::assert, u128::*, option::*, vec::Vec};
 use ::fields::*;
 use ::vect::*;
 use ::consts::*;
@@ -16,8 +16,9 @@ fn main() {
     // assert(fp_tests());
     // assert(fp2_tests());
     // assert(tests_montgomery_reduction());
-    assert(test_multiply_wrap());
-    assert(test_mac());
+    // assert(test_multiply_wrap());
+    // assert(test_mac());
+    assert(vect_subfunctions_tests());
 }
 
 fn fp_tests() -> bool {
@@ -36,6 +37,16 @@ fn fp_tests() -> bool {
 fn fp2_tests() -> bool {
     assert(tests_add_fp2());
     assert(tests_sub_fp2());
+    true
+}
+
+fn vect_subfunctions_tests() -> bool {
+    // add_mod_n tests. They have the same test values as add_fp
+    // which should be correct, but of course add_mod_n should do more
+    assert(test_add_zero_to_zero_addn());
+    assert(test_add_zero_to_random_addn());
+    assert(test_add_random_to_small_addn());
+
     true
 }
 
@@ -216,6 +227,79 @@ fn test_add_fp() -> bool {
 fn test_add_zero_to_zero() -> bool {
     let res: vec384 = add_fp(ZERO, ZERO);
     equals_vec384(res, ZERO);
+    true
+}
+
+fn get_test_vectors() -> (Vec<u64>, Vec<u64>) {
+    let mut zero_vec = ~Vec::new::<u64>();
+    zero_vec.push(0);
+    zero_vec.push(0);
+    zero_vec.push(0);
+    zero_vec.push(0);
+    zero_vec.push(0);
+    zero_vec.push(0);
+
+    let mut p_vec = ~Vec::new::<u64>();
+    p_vec.push(0xb9feffffffffaaab);
+    p_vec.push(0x1eabfffeb153ffff);
+    p_vec.push(0x6730d2a0f6b0f624);
+    p_vec.push(0x64774b84f38512bf);
+    p_vec.push(0x4b1ba7b6434bacd7);
+    p_vec.push(0x1a0111ea397fe69a);
+    
+    (zero_vec, p_vec)
+}
+
+fn test_add_zero_to_zero_addn() -> bool {
+    let (zero_vec, p_vec) = get_test_vectors();
+    
+    let res = add_mod_n(zero_vec, zero_vec, p_vec, 6);
+    equals_vec(res, zero_vec, 6);
+    true
+}
+
+fn test_add_zero_to_random_addn() -> bool {
+    let mut random_vec = ~Vec::new::<u64>();
+    random_vec.push(0x3e2528903ca1ef86);
+    random_vec.push(0x270fd67a03bf9e0a);
+    random_vec.push(0xdc70c19599cb699e);
+    random_vec.push(0xebefda8057d5747a);
+    random_vec.push(0xcf20e11f0b1c323);
+    random_vec.push(0xe979cbf960fe51d);
+    let (zero_vec, p_vec) = get_test_vectors();
+
+    let res = add_mod_n(random_vec, zero_vec, p_vec, 6);
+    equals_vec(res, random_vec, 6);
+    true
+}
+
+fn test_add_random_to_small_addn() -> bool {
+    let mut small_vec = ~Vec::new::<u64>();
+    small_vec.push(0x1);
+    small_vec.push(0x2);
+    small_vec.push(0x3);
+    small_vec.push(0x4);
+    small_vec.push(0x5);
+    small_vec.push(0x6);
+    let mut random_vec = ~Vec::new::<u64>();
+    random_vec.push(0x3e2528903ca1ef86);
+    random_vec.push(0x270fd67a03bf9e0a);
+    random_vec.push(0xdc70c19599cb699e);
+    random_vec.push(0xebefda8057d5747a);
+    random_vec.push(0xcf20e11f0b1c323);
+    random_vec.push(0xe979cbf960fe51d);
+    let mut res_vec = ~Vec::new::<u64>();
+    res_vec.push(4478030004447473543);
+    res_vec.push(2814704111667093004);
+    res_vec.push(15884408734010272161);
+    res_vec.push(17001047363111187582);
+    res_vec.push(932823543034528552);
+    res_vec.push(1051481384684610851);
+
+    let (_, p_vec) = get_test_vectors();
+
+    let res = add_mod_n(small_vec, random_vec, p_vec, 6);
+    equals_vec(res, res_vec, 6);
     true
 }
 

@@ -1,6 +1,6 @@
 library vect;
 
-use std::{u128::*, vec::Vec};
+use std::{u128::*, vec::Vec, option::*};
 
 // Stores field element with max 384 bits
 // element in fp
@@ -43,10 +43,59 @@ pub const INV: u64 = 0x89f3fffcfffcfffd;
 
 // START FUNCTIONS
 
+pub fn unpack_or_0(x: Option<u64>) -> u64 {
+    match x {
+        Option::Some(val) => val ,
+        Option::None => 0,
+    }
+}
 
+pub fn add_mod_n(a: Vec<u64>, b: Vec<u64>, p: Vec<u64>, n: u64) -> Vec<u64> {
+    let mut limbx: u64 = 0;
+    let mut carry: u64 = 0;
+    let mut tmp = ~Vec::new::<u64>();
+
+    let mut i = 0;
+    while i < n {
+        let (limb, temp_carry): (u64, u64) = adc(unpack_or_0(a.get(i)), unpack_or_0(b.get(i)), carry);
+        tmp.insert(i, limb);
+        carry = temp_carry;
+        i += 1;
+    }
+
+    let mut ret = ~Vec::new::<u64>();
+    let mut borrow: u64 = 0;
+    i = 0;
+    while i < n {
+        let (limb, temp_borrow): (u64, u64) = sbb(unpack_or_0(tmp.get(i)), unpack_or_0(p.get(i)), borrow);
+        ret.insert(i, limb);
+        borrow = temp_borrow;
+        i += 1;
+    }
+
+    let mask: u64 = borrow * ~u64::max();
+    let mut res = ~Vec::new::<u64>();
+    i = 0;
+    while i < n {
+        let value = (unpack_or_0(ret.get(i)) & not(mask)) | (unpack_or_0(tmp.get(i)) & mask);
+        res.insert(i, value);
+        i += 1;
+    }
+    res
+}
 
 pub fn mul_mont_384(a: vec384, b: vec384, p: vec384, n0: u64) -> vec384 {
-    //TODO
+    //WIP ELENA
+    //     vec384 aa, bb, cc;
+
+    // add_mod_n(aa, a[0], a[1], p, NLIMBS(384));
+    // add_mod_n(bb, b[0], b[1], p, NLIMBS(384));
+    // mul_mont_n(bb, bb, aa, p, n0, NLIMBS(384));
+    // mul_mont_n(aa, a[0], b[0], p, n0, NLIMBS(384));
+    // mul_mont_n(cc, a[1], b[1], p, n0, NLIMBS(384));
+    // sub_mod_n(ret[0], aa, cc, p, NLIMBS(384));
+    // sub_mod_n(ret[1], bb, aa, p, NLIMBS(384));
+    // sub_mod_n(ret[1], ret[1], cc, p, NLIMBS(384));
     ZERO
 }
 
@@ -65,6 +114,19 @@ pub fn from_mont_384(a: vec384, p: vec384, n0: u64) -> vec384 {
     ZERO
 }
 
+// Original impl:
+// static inline bool_t is_zero(limb_t l)
+// {   return (~l & (l - 1)) >> (LIMB_T_BITS - 1);   }
+//TODO
+pub fn is_zero(l: u64) -> u64 {
+    // (~l & (l-1)) >> 63 
+    0
+}
+
+pub fn vec_is_zero(a: Vec<u64>, num: u64) -> u64 {
+    //TODO
+    0
+}
 
 // If x >= y: x-y, else max::U128 - (y-x)
 pub fn subtract_wrap(x: U128, y: U128) -> U128 {
