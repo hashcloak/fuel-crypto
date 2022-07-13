@@ -15,7 +15,6 @@ use std::logging::log;
 fn main() {
     // assert(fp_tests());
     // assert(fp2_tests());
-    // assert(tests_montgomery_reduction());
     // assert(test_multiply_wrap());
     // assert(test_mac());
     assert(vect_subfunctions_tests());
@@ -648,40 +647,6 @@ fn test_mac() -> bool {
     assert(res2.0 == 15211182634935638842);
     assert(res2.1 == 6141595689857899799);
 
-    true
-}
-
-fn tests_montgomery_reduction() -> bool {
-
-    // assert(test_montgomery_reduction_small());
-    assert(test_montgomery_reduction_random());
-    true
-
-}
-
-fn test_montgomery_reduction_small() -> bool {
-    let a: [u64;12] = [10,0,0,0,0,0,0,0,0,0,0,0];
-    let res = montgomery_reduction(a);
-    let aModP: vec384 = vec384{ls: [10,0,0,0,0,0]};
-    equals_vec384(res, aModP);
-    //print_vec384(res);
-    true
-}
-fn test_montgomery_reduction_random() -> bool {
-
-    /*
-    a = 718573336991290032951448074998609563086566731583964696014352685991840357574242396134892012284985388079194282315681159870763888514734256711565361623988
-      = [988628306351829, 5278298332222909972, 8614063320694916486, 4063307077606482163, 959683757796537189, 2169871353760194456, 6743270311476307786, 10598342506117936052]
-    */
-    let a: [u64;12] = [10598342506117936052, 6743270311476307786, 2169871353760194456, 959683757796537189, 4063307077606482163, 8614063320694916486, 5278298332222909972, 988628306351829, 0, 0, 0, 0];
-
-    let ls: [u64;6] = [12961372860169786431, 10261575420116144142, 13643274042195959755, 209306746091908816, 4698088373397879190, 611003071541516788];
-    let aModP: vec384 = vec384{ls: ls};
-
-    let res: vec384 = montgomery_reduction(a);
-
-    equals_vec384(res, aModP);
-    //print_vec384(res);
     true
 }
 
