@@ -52,16 +52,30 @@ const BLS12_381_NEG_G1: POINTonE1 = {    /* negative generator [in Montgomery] *
     z: ONE_MONT_P
 };
 
+// TODO TEST
 // TODO: why is mul by b equal to *4? 
 // value of b is 4 << 384 mod p
 pub fn mul_by_b_onE1(in: vec384) -> vec384 {
     lshift_fp(in, 2)
 }
 
+// TODO TEST
 pub fn mul_by_4b_onE1(in: vec384) -> vec384 {
     lshift_fp(in, 4)
 }
 
-pub fn POINTonE1_cneg(in: vec384, cbit: u64) -> vec384 {
-    cneg_mod_384(in, cbit, BLS12_381_P)
+// TODO TEST
+pub fn POINTonE1_cneg(p: POINTonE1, cbit: u64) -> vec384 {
+    cneg_fp(p.y, cbit)
 }
+
+// TODO TEST
+pub fn blst_p1_cneg(a: POINTonE1, cbit: u32) -> vec384 {
+    POINTonE1_cneg(a, is_zero(cbit) ^1)
+}
+
+pub fn POINTonE1_from_Jacobian(in: POINTonE1) -> POINTonE1 {
+    //TODO
+    POINTonE1 { x: ONE_MONT_P, y: ONE_MONT_P, z: ONE_MONT_P }
+}
+
