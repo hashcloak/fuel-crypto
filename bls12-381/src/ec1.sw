@@ -14,11 +14,7 @@ B = (4 << 384) % P
 
 According to Zcash impl this is equal to 4
  */
-const B_E1: vec384 = {
-    ls: [0xaa270000000cfff3, 0x53cc0032fc34000a,
-    0x478fe97a6b0a807f, 0xb1d37ebee6ba24d7,
-    0x8ec9733bbf78ab2f, 0x09d645513d83de7e]
-};
+const B_E1: vec384 = {ls: [0xaa270000000cfff3, 0x53cc0032fc34000a, 0x478fe97a6b0a807f, 0xb1d37ebee6ba24d7, 0x8ec9733bbf78ab2f, 0x09d645513d83de7e]};
 
 const BLS12_381_G1: POINTonE1 = {    /* generator point [in Montgomery] */
     /* 
@@ -26,7 +22,7 @@ const BLS12_381_G1: POINTonE1 = {    /* generator point [in Montgomery] */
         a14e3a3f171bac586c55e83ff97a1aeffb3af00adb22c6bb << 384) % P
     = 2771334866125919199105806127325991204049638301394587550983394276622338185155646768704112188431188468948617777056790
     */
-    x: [0x5cb38790fd530c16, 0x7817fc679976fff5, 0x154f95c7143ba1c1, 0xf0ae6acdf3d0e747, 0xedce6ecc21dbf440, 0x120177419e0bfb75`],
+    x: [0x5cb38790fd530c16, 0x7817fc679976fff5, 0x154f95c7143ba1c1, 0xf0ae6acdf3d0e747, 0xedce6ecc21dbf440, 0x120177419e0bfb75],
     /*
     (0x08b3f481e3aaa0f1a09e30ed741d8ae4fcf5e095d5d00af6
         00db18cb2c04b3edd03cc744a2888ae40caa232946c5e7e1 << 384) % P

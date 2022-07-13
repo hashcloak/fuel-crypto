@@ -3,7 +3,7 @@ library test_helpers;
 dep vect;
 
 use vect::*;
-use std::{logging::log, assert::assert, vec::Vec};
+use std::{assert::assert, logging::log, vec::Vec};
 
 pub fn print_vec384(a: vec384) {
     log(a.ls[0]);
