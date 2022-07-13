@@ -11,7 +11,6 @@ pub fn fp_tests() -> bool {
 
     // assert(test_add_fp());
     // assert(test_sub_fp());
-    // assert(test_helpers());
     // assert(tests_mul_by_3_fp());
     // assert(tests_mul_by_8_fp());
     assert(test_lshift_p());

@@ -1,4 +1,4 @@
-library tests_helpers;
+library tests_small_functions;
 
 
 use ::fields::*;
@@ -7,7 +7,7 @@ use ::test_helpers::*;
 
 use std::{assert::assert, u128::*};
 
-pub fn test_helpers() -> bool {
+pub fn tests_small_functions() -> bool {
     assert(test_not());
     assert(tests_subtract_wrap());
     assert(tests_sbb());
