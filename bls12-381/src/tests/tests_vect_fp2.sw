@@ -3,18 +3,17 @@ library tests_vect_fp2;
 use ::fields::*;
 use ::vect::*;
 use ::test_helpers::*;
-
+use std::logging::log;
 use std::assert::assert;
 
 pub fn fp2_tests() -> bool {
-    assert(tests_add_fp2());
+    // assert(tests_add_fp2());
     // assert(tests_sub_fp2());
+    assert(tests_mul_fp2());
     true
 }
 
-fn tests_add_fp2() -> bool {
-    // the function should add the "real" and "imaginary" part separately
-    //2094911124722355591130592080039857597898930618341226282859888392249028304430218244612311046228146839310359642074358
+fn get_a1() -> vec384x {
     let r_1 = vec384 {
         ls: [14795151457364307190,
         6622185142386025417, 17709159039044576520, 1719961663313476946, 4148264363906786574, 980769587779429096]
@@ -28,6 +27,13 @@ fn tests_add_fp2() -> bool {
         r: r_1,
         i: i_1,
     };
+    a_1
+}
+
+fn tests_add_fp2() -> bool {
+    // the function should add the "real" and "imaginary" part separately
+    //2094911124722355591130592080039857597898930618341226282859888392249028304430218244612311046228146839310359642074358
+    let a_1 = get_a1();
 
     //4045376134997543930094609209908421750094711219583275861031869422142617896643947085410916305865237922018531567230463
     let r_2 = vec384 {
@@ -62,19 +68,7 @@ fn tests_add_fp2() -> bool {
 fn tests_sub_fp2() -> bool {
     // the function should subtract the "real" and "imaginary" part separately
     //2094911124722355591130592080039857597898930618341226282859888392249028304430218244612311046228146839310359642074358
-    let r_1 = vec384 {
-        ls: [14795151457364307190,
-        6622185142386025417, 17709159039044576520, 1719961663313476946, 4148264363906786574, 980769587779429096]
-    };
-    //1854013830343626212433083622699305309002946726548085159596712876339371488002438401231777242990713512722976854546804
-    let i_1 = vec384 {
-        ls: [8306319196692453748,
-        10328470218072223240, 3451314819045096133, 17542580433704256157, 9684937745078445131, 867989271079206780]
-    };
-    let a_1 = vec384x {
-        r: r_1,
-        i: i_1,
-    };
+    let a_1 = get_a1();
 
     //4045376134997543930094609209908421750094711219583275861031869422142617896643947085410916305865237922018531567230463
     let r_2 = vec384 {
@@ -104,3 +98,40 @@ fn tests_sub_fp2() -> bool {
     });
     true
 }
+
+fn tests_mul_fp2() -> bool {
+    // assert(mul_fp2_by_zero());
+    assert(mul_fp2_by_one());
+    // assert(mul_fp2_by_small());
+    true
+}
+
+fn mul_fp2_by_zero() -> bool {
+    let a_1 = get_a1();
+    let res = mul_fp2(a_1, ZERO_X);
+    equals_vec384(res.r, ZERO);
+    equals_vec384(res.i, ZERO);
+    true
+}
+
+fn mul_fp2_by_one() -> bool {
+    let a_1 = get_a1();
+    let one_384 = vec384 {ls: [1, 0, 0, 0, 0, 0]};
+    let one = vec384x {r: one_384, i: one_384 };
+
+    let res = mul_fp2(a_1, one);
+    print_vec384(res.r);
+    // equals_vec384(res.r, a_1.r);
+    // equals_vec384(res.i, a_1.i);
+    true
+}
+
+// fn mul_fp2_by_small() -> bool {
+//     let small = vec384 {
+//         ls: [0x1,
+//         0x2, 0x3, 0x4, 0x5, 0x6]
+//     };
+//     let smallx = vec384x {r: small, i: small };
+
+//     true
+// }

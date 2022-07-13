@@ -7,7 +7,7 @@ dep consts;
 dep tests/tests_vect_fp;
 dep tests/tests_vect_fp2;
 dep tests/tests_vect_subfunctions;
-dep tests/tests_helpers;
+dep tests/tests_small_functions;
 
 use std::{assert::assert, option::*, u128::*, vec::Vec};
 use ::fields::*;
@@ -19,16 +19,15 @@ use std::logging::log;
 use ::tests_vect_fp::fp_tests;
 use ::tests_vect_fp2::fp2_tests;
 use ::tests_vect_subfunctions::vect_subfunctions_tests;
-use ::tests_helpers::test_helpers;
+use ::tests_small_functions::tests_small_functions;
 
 fn main() {
-    log(78);
     // assert(fp_tests());
-    // assert(fp2_tests());
+    assert(fp2_tests());
     // assert(test_multiply_wrap());
     // assert(test_mac());
     // assert(vect_subfunctions_tests());
-    assert(test_helpers());
+    // assert(tests_small_functions());
 }
 
 fn test_mac() -> bool {

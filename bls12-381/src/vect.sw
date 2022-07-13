@@ -1,6 +1,9 @@
 library vect;
 
+dep consts;
+
 use std::{option::*, u128::*, vec::Vec};
+use consts::*;
 
 // Stores field element with max 384 bits
 // element in fp
@@ -260,18 +263,8 @@ pub fn sub_mod_n(a: Vec<u64>, b: Vec<u64>, p: Vec<u64>, n: u64) -> Vec<u64> {
     res
 }
 
+// TODO
 pub fn mul_mont_384(a: vec384, b: vec384, p: vec384, n0: u64) -> vec384 {
-    //WIP ELENA
-    //     vec384 aa, bb, cc;
-
-    // add_mod_n(aa, a[0], a[1], p, NLIMBS(384));
-    // add_mod_n(bb, b[0], b[1], p, NLIMBS(384));
-    // mul_mont_n(bb, bb, aa, p, n0, NLIMBS(384));
-    // mul_mont_n(aa, a[0], b[0], p, n0, NLIMBS(384));
-    // mul_mont_n(cc, a[1], b[1], p, n0, NLIMBS(384));
-    // sub_mod_n(ret[0], aa, cc, p, NLIMBS(384));
-    // sub_mod_n(ret[1], bb, aa, p, NLIMBS(384));
-    // sub_mod_n(ret[1], ret[1], cc, p, NLIMBS(384));
     ZERO
 }
 
@@ -523,8 +516,28 @@ pub fn mul_by_3_mod_384x(a: vec384x, p: vec384) -> vec384x {
     ZERO_X
 }
 
+fn to_vec(v: vec384) -> Vec<u64> {
+    let mut res = ~Vec::new::<u64>();
+    let mut i = 0;
+    while i < 6 {
+        res.push(v.ls[i]);
+        i += 1;
+    }
+    res
+}
+
 pub fn mul_mont_384x(a: vec384x, b: vec384x, p: vec384, n0: u64) -> vec384x {
-    //TODO. Has a non-assembly impl in blst in src/no_asm.h
+    let a0_vec = to_vec(a.r);
+    let a1_vec = to_vec(a.i);
+    let b0_vec = to_vec(b.r);
+    let b1_vec = to_vec(b.i);
+    let p_vec = to_vec(p);
+
+    let mut aa = add_mod_n(a0_vec, a1_vec, p_vec, NLIMBS_384);
+    let mut bb = add_mod_n(b0_vec, b1_vec, p_vec, NLIMBS_384);
+    // let bb_temp = mul_mont_n(bb, aa, p_vec, n0, NLIMBS_384);
+    // aa = mul_mont_n(a0_vec, b0_vec, p_vec, n0, NLIMBS_384);
+
     ZERO_X
 }
 
