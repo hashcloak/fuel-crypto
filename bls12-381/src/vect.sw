@@ -235,6 +235,31 @@ pub fn mul_mont_n(a: Vec<u64>, b: Vec<u64>, p: Vec<u64>, n0: u64, n: u64) -> Vec
     res
 }
 
+pub fn sub_mod_n(a: Vec<u64>, b: Vec<u64>, p: Vec<u64>, n: u64) -> Vec<u64> {
+    let mut limbx: u64 = 0;
+    let mut borrow: u64 = 0;
+    let mut i = 0;
+    let mut ret = ~Vec::new::<u64>();
+
+    while i < n {
+        let(limb, temp_borrow): (u64, u64) = sbb(unpack_or_0(a.get(i)), unpack_or_0(b.get(i)), borrow);
+        ret.insert(i, limb);
+        borrow = temp_borrow;
+        i += 1;
+    }
+
+    let mask: u64 = borrow * ~u64::max();
+    let mut res = ~Vec::new::<u64>();
+    let mut carry: u64 = 0;
+    while i < n {
+        let(limb, temp_carry): (u64, u64) = adc(unpack_or_0(ret.get(i)), unpack_or_0(p.get(i)) & mask, carry);
+        res.insert(i, limb);
+        carry = temp_carry;
+        i += 1;
+    }
+    res
+}
+
 pub fn mul_mont_384(a: vec384, b: vec384, p: vec384, n0: u64) -> vec384 {
     //WIP ELENA
     //     vec384 aa, bb, cc;
