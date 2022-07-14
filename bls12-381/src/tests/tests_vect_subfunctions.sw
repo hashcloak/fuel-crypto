@@ -3,7 +3,7 @@ library tests_vect_subfunctions;
 use ::fields::*;
 use ::vect::*;
 use ::test_helpers::*;
-
+use std::logging::log;
 use std::{assert::assert, vec::Vec};
 
 pub fn vect_subfunctions_tests() -> bool {
@@ -28,9 +28,10 @@ pub fn vect_subfunctions_tests() -> bool {
     // assert(test_sub_random_from_small_subn());
     assert(test_sub_2_randoms_subn());
     assert(test_sub_2_randoms_reverse_subn());
+
+    // assert(test_redc_mont_n_384());
     true
 }
-
 
 fn get_test_vectors() -> (Vec<u64>, Vec<u64>) {
     let mut zero_vec = ~Vec::new::<u64>();
@@ -300,8 +301,8 @@ fn get_r1_r2_vecs() -> (Vec<u64>, Vec<u64>) {
 }
 
 fn test_sub_2_randoms_subn() -> bool {
-    let (zero_vec, p_vec) = get_test_vectors();
-    let (r1_vec, r2_vec) = get_r1_r2_vecs();
+    let(zero_vec, p_vec) = get_test_vectors();
+    let(r1_vec, r2_vec) = get_r1_r2_vecs();
 
     //res =
     //1002743832932348530189846216995003876479805152999720341103262365158035101888321886653072707211741475881203867760418
@@ -321,15 +322,15 @@ fn test_sub_2_randoms_subn() -> bool {
 }
 
 fn test_sub_2_randoms_reverse_subn() -> bool {
-    let (zero_vec, p_vec) = get_test_vectors();
-    let (r1_vec, r2_vec) = get_r1_r2_vecs();
+    let(zero_vec, p_vec) = get_test_vectors();
+    let(r1_vec, r2_vec) = get_r1_r2_vecs();
 
     //res =
     //-1002743832932348530189846216995003876479805152999720341103262365158035101888321886653072707211741475881203867760418
     // => mod p
     //2999665722289318863227943608740900280077077666939287544228795770965996548602515977789614921917274188156690404799369
     //[16218017377765880713, 16446845525643458734, 5362707070494518163, 17941483866406818307, 6891395482468148831, 1404346408402259846]
-   let mut res_vec = ~Vec::new::<u64>();
+    let mut res_vec = ~Vec::new::<u64>();
     res_vec.push(16218017377765880713);
     res_vec.push(16446845525643458734);
     res_vec.push(5362707070494518163);
@@ -340,5 +341,36 @@ fn test_sub_2_randoms_reverse_subn() -> bool {
     let res = sub_mod_n(r2_vec, r1_vec, p_vec, 6);
     equals_vec(res, res_vec, 6);
 
+    true
+}
+
+fn test_redc_mont_n_384() -> bool {
+    let mut a_vec: Vec<u64> = ~Vec::new::<u64>();
+    a_vec.push(10);
+    a_vec.push(0);
+    a_vec.push(0);
+    a_vec.push(0);
+    a_vec.push(0);
+    a_vec.push(0);
+    a_vec.push(0);
+    a_vec.push(0);
+    a_vec.push(0);
+    a_vec.push(0);
+    a_vec.push(0);
+    a_vec.push(0);
+    let mut res_vec: Vec<u64> = ~Vec::new::<u64>();
+    res_vec.push(10);
+    res_vec.push(0);
+    res_vec.push(0);
+    res_vec.push(0);
+    res_vec.push(0);
+    res_vec.push(0);
+    //print_vec(res_vec);
+    let test_vec = get_test_vectors();
+    let res = redc_mont_n(a_vec, test_vec.1, 0x89f3fffcfffcfffd, 6);
+    print_vec(res);
+    log(unpack_or_0(res.get(0)));
+    
+    
     true
 }
