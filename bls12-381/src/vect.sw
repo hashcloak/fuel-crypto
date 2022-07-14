@@ -88,74 +88,38 @@ pub fn add_mod_n(a: Vec<u64>, b: Vec<u64>, p: Vec<u64>, n: u64) -> Vec<u64> {
 }
 
 pub fn mul_mont_n(a: Vec<u64>, b: Vec<u64>, p: Vec<u64>, n0: u64, n: u64) -> Vec<u64> {
-    let mut mx: U128 = U128 {
-        lower: unpack_or_0(b.get(0)),
-        upper: 0,
-    };
-    let mut hi: U128 = U128 {
-        lower: 0,
-        upper: 0,
-    };
+    let mut mx: U128 = ~U128::from(0, unpack_or_0(b.get(0)));
+    let mut hi: U128 = ~U128::from(0, 0);
     let mut tmp: Vec<u64> = ~Vec::new::<u64>();
     let mut i = 0;
     while i < n {
-        let ai: U128 = U128 {
-            lower: unpack_or_0(a.get(i)), upper: 0
-        };
+        let ai: U128 = ~U128::from(0, unpack_or_0(a.get(i)));
         let limbx = mx * ai + hi;
         tmp.insert(i, limbx.lower);
-        hi = U128 {
-            lower: limbx.upper, upper: 0
-        };
+        hi = ~U128::from(0, limbx.upper);
         i += 1;
     }
 
-    mx = U128 {
-        lower: n0, upper: 0
-    }
-    * U128 {
-        lower: unpack_or_0(tmp.get(0)), upper: 0
-    };
+    mx = ~U128::from(0, n0) * ~U128::from(0, unpack_or_0(tmp.get(0)));
     tmp.insert(i, hi.lower);
-
     let mut carry: u64 = 0;
     let mut j = 0;
-    let mut limbx: U128 = U128 {
-        lower: 0,
-        upper: 0,
-    };
+    let mut limbx: U128 = ~U128::from(0, 0);
     while true {
-        let p0: U128 = U128 {
-            lower: unpack_or_0(p.get(0)), upper: 0
-        };
-        let tmp0: U128 = U128 {
-            lower: unpack_or_0(tmp.get(0)), upper: 0
-        };
+        let p0: U128 = ~U128::from(0, unpack_or_0(p.get(0)));
+        let tmp0: U128 = ~U128::from(0, unpack_or_0(tmp.get(0)));
         limbx = (mx * p0) + tmp0;
-        hi = U128 {
-            lower: limbx.upper, upper: 0
-        };
+        hi = ~U128::from(0, limbx.upper);
         i = 1;
         while i < n {
-            let pi: U128 = U128 {
-                lower: unpack_or_0(p.get(i)), upper: 0
-            };
-            let tmpi: U128 = U128 {
-                lower: unpack_or_0(tmp.get(i)), upper: 0
-            };
+            let pi: U128 = ~U128::from(0, unpack_or_0(p.get(i)));
+            let tmpi: U128 = ~U128::from(0, unpack_or_0(tmp.get(i)));
             limbx = (mx * pi) + tmpi;
             tmp.insert(i - 1, limbx.lower);
-            hi = U128 {
-                lower: limbx.upper, upper: 0
-            };
+            hi = ~U128::from(0, limbx.upper);
             i += 1;
         }
-        limbx = U128 {
-            lower: unpack_or_0(tmp.get(i)), upper: 0
-        }
-        + (hi + U128 {
-            lower: carry, upper: 0
-        });
+        limbx = ~U128::from(0, unpack_or_0(tmp.get(i))) + (hi + ~U128::from(0, carry));
         tmp.insert(i - 1, limbx.lower);
         carry = limbx.lower;
 
@@ -163,62 +127,35 @@ pub fn mul_mont_n(a: Vec<u64>, b: Vec<u64>, p: Vec<u64>, n0: u64, n: u64) -> Vec
         if j == n {
             break;
         }
-
-        mx = U128 {
-            lower: unpack_or_0(b.get(j)), upper: 0
-        };
-        hi = U128 {
-            lower: 0, upper: 0
-        };
+        mx = ~U128::from(0, unpack_or_0(b.get(j)));
+        hi = ~U128::from(0, 0);
         i = 0;
         while i < n {
-            let ai: U128 = U128 {
-                lower: unpack_or_0(a.get(i)), upper: 0
-            };
-            let tmpi: U128 = U128 {
-                lower: unpack_or_0(tmp.get(i)), upper: 0
-            };
+            let ai: U128 = ~U128::from(0, unpack_or_0(a.get(i)));
+            let tmpi: U128 = ~U128::from(0, unpack_or_0(tmp.get(i)));
             limbx = (mx * (ai + hi)) + tmpi;
             tmp.insert(i, limbx.lower);
-            hi = U128 {
-                lower: limbx.upper, upper: 0
-            };
+            hi = ~U128::from(0, limbx.upper);
             i += 1;
         }
 
-        mx = U128 {
-            lower: n0, upper: 0
-        }
-        * U128 {
-            lower: unpack_or_0(tmp.get(0)), upper: 0
-        };
-        limbx = hi + U128 {
-            lower: carry, upper: 0
-        };
+        mx = ~U128::from(0, n0) * ~U128::from(0, unpack_or_0(tmp.get(0)));
+        limbx = hi + ~U128::from(0, carry);
         tmp.insert(i, limbx.lower);
         carry = limbx.upper;
     }
-
     let mut borrow: u64 = 0;
     i = 0;
     let mut ret: Vec<u64> = ~Vec::new::<u64>();
     while i < n {
-        let pi: U128 = U128 {
-            lower: unpack_or_0(p.get(i)), upper: 0
-        };
-        let tmpi: U128 = U128 {
-            lower: unpack_or_0(tmp.get(i)), upper: 0
-        };
-        let pi_w_borrow = pi + U128 {
-            lower: borrow, upper: 0
-        };
+        let pi: U128 = ~U128::from(0, unpack_or_0(p.get(i)));
+        let tmpi: U128 = ~U128::from(0, unpack_or_0(tmp.get(i)));
+        let pi_w_borrow = pi + ~U128::from(0, borrow);
         // Prevent underflow. When U256 arithmetic is available we can create sbb_256
         let(sub_res, b_res): (U128, u64) = if pi_w_borrow < tmpi {
             (tmpi - pi_w_borrow, 0)
         } else {
-            (~U128::max() - (pi_w_borrow - tmpi - U128 {
-                lower: 1, upper: 0
-            }), 1)
+            (~U128::max() - (pi_w_borrow - tmpi - ~U128::from(0,1)), 1)
         };
         limbx = sub_res;
         borrow = b_res;
