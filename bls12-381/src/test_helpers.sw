@@ -31,3 +31,12 @@ pub fn equals_vec(a: Vec<u64>, b: Vec<u64>, n: u64) -> bool {
     }
     true
 }
+pub fn print_vec(a: Vec<u64>) {
+    let mut i = 0;
+    let l = a.len();
+    while i < l {
+        log(unpack_or_0(a.get(i)));
+        i += 1;
+    }
+    
+}

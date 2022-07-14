@@ -23,6 +23,11 @@ pub struct vec384x {
     i: vec384, //"imaginary" part
 }
 
+//converts a u64 into U128
+pub fn u_128(a: u64) -> U128 {
+    U128{upper: 0, lower: a}
+}
+
 //TODO: remove these. Only for developing and testing atm
 pub const ZERO: vec384 = vec384 {
     ls: [0, 0, 0, 0, 0, 0]
@@ -271,6 +276,58 @@ pub fn mul_mont_384(a: vec384, b: vec384, p: vec384, n0: u64) -> vec384 {
 pub fn sqr_mont_384(a: vec384, b: vec384, p: vec384, n0: u64) -> vec384 {
     //TODO
     ZERO
+}
+
+
+pub fn redc_mont_n(a: Vec<u64>, p: Vec<u64>, n0: u64, n: u64) -> Vec<u64> {
+    let mut j = 0;
+    let mut i = 1;
+    let mut b: Vec<u64> = a;
+    let mut tmp: Vec<u64> = ~Vec::new::<u64>();
+    while j < n {
+        let mut mx: U128 = (u_128(n0) * u_128(unpack_or_0(b.get(0))));
+        let mut limbx = mx * u_128(unpack_or_0(p.get(0))) + u_128(unpack_or_0(b.get(0)));
+        let mut hi = limbx.upper;
+        i = 1;
+        while i < n {
+            limbx = mx * u_128(unpack_or_0(p.get(i))) + u_128(hi) + u_128(unpack_or_0(b.get(i)));
+            tmp.insert(i-1, limbx.lower);
+            hi = limbx.upper;
+            i += 1;
+        }
+        tmp.insert(i-1, hi);
+        j += 1;
+        b = tmp;
+    }
+
+    let mut tmp2: Vec<u64> = ~Vec::new::<u64>();
+    i = 0;
+    let mut carry = 0;
+    while i < n {
+        let mut limbx = u_128(unpack_or_0(a.get(n+i))) + u_128(unpack_or_0(tmp.get(i))) + u_128(carry);
+        tmp2.insert(i, limbx.lower);
+        carry = limbx.upper;
+        i += 1;
+    }
+
+    let mut borrow = 0;
+    let mut res: Vec<u64> = ~Vec::new::<u64>();
+    i = 0;
+    while i < n {
+        let mut limbx = u_128(unpack_or_0(tmp2.get(i))) - (u_128(unpack_or_0(p.get(i))) + u_128(borrow));
+        res.push(limbx.lower);
+        borrow = limbx.upper & 1;
+        i += 1;
+    }
+
+    let mut mask = carry - borrow;
+    let mut result: Vec<u64> = ~Vec::new::<u64>();
+    i = 0;
+    while i < n {
+        result.push((unpack_or_0(res.get(i)) & not(mask)) | (unpack_or_0(tmp2.get(i)) & mask));
+        i += 1;
+    }
+    result
 }
 
 pub fn redc_mont_384(a: vec768, p: vec384, n0: u64) -> vec384 {
