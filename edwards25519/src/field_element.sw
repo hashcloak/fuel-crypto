@@ -184,7 +184,7 @@ pub fn square(a: Element) -> Element {
 
 
 //returns a*b
-pub fn multiply (a: Element, b: Element) -> Element {
+pub fn multiply(a: Element, b: Element) -> Element {
 
     //https://cs.opensource.google/go/go/+/master:src/crypto/internal/edwards25519/field/fe_generic.go;l=34;bpv=0?q=feMul&sq=&ss=go%2Fgo
     

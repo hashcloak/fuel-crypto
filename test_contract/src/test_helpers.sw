@@ -1,8 +1,7 @@
 library test_helpers;
 
-dep field_element;
+use edwards25519::*;
 
-use field_element::*;
 use std::logging::log;
 use std::assert::assert;
 use std::u128::*;
@@ -34,3 +33,9 @@ pub fn equals_U128(res: U128, lower: u64, upper: u64) -> bool {
     assert(res.lower == lower);
     true
 }
+
+//converts element into array of bytes
+
+// pub fn bytes_convert (a: Element) -> [u8;32] {
+//     let a_mod = mod_25519(a);
+// }
