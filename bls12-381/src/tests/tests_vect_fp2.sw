@@ -116,8 +116,13 @@ fn mul_fp2_by_zero() -> bool {
 
 fn mul_fp2_by_one() -> bool {
     let a_1 = get_a1();
-    let one_384 = vec384 {ls: [1, 0, 0, 0, 0, 0]};
-    let one = vec384x {r: one_384, i: one_384 };
+    let one_384 = vec384 {
+        ls: [1, 0, 0, 0, 0, 0]
+    };
+    let one = vec384x {
+        r: one_384,
+        i: one_384,
+    };
 
     let res = mul_fp2(a_1, one);
     print_vec384(res.r);
