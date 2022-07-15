@@ -4,7 +4,7 @@ dep consts;
 
 use std::{option::*, u128::*, vec::Vec};
 use consts::*;
-
+use std::logging::log;
 // Stores field element with max 384 bits
 // element in fp
 pub struct vec384 {
@@ -23,10 +23,7 @@ pub struct vec384x {
     i: vec384, //"imaginary" part
 }
 
-//converts a u64 into U128
-pub fn u_128(a: u64) -> U128 {
-    U128{upper: 0, lower: a}
-}
+
 
 //TODO: remove these. Only for developing and testing atm
 pub const ZERO: vec384 = vec384 {
@@ -220,28 +217,35 @@ pub fn redc_mont_n(a: Vec<u64>, p: Vec<u64>, n0: u64, n: u64) -> Vec<u64> {
     let mut j = 0;
     let mut i = 1;
     let mut b: Vec<u64> = a;
+    //let mut limbx: U128 = ~U128::from(0,0);
     let mut tmp: Vec<u64> = ~Vec::new::<u64>();
     while j < n {
-        let mut mx: U128 = (u_128(n0) * u_128(unpack_or_0(b.get(0))));
-        let mut limbx = mx * u_128(unpack_or_0(p.get(0))) + u_128(unpack_or_0(b.get(0)));
-        let mut hi = limbx.upper;
+        let mx_temp: u64 = (~U128::from(0, n0) * ~U128::from(0, unpack_or_0(b.get(0)))).lower;
+        let mx: U128 = ~U128::from(0, mx_temp) ;
+        let mut limbx = mx * ~U128::from(0, unpack_or_0(p.get(0))) + ~U128::from(0, unpack_or_0(b.get(0)));
+        let mut hi: U128 = ~U128::from(0, limbx.upper);
         i = 1;
         while i < n {
-            limbx = mx * u_128(unpack_or_0(p.get(i))) + u_128(hi) + u_128(unpack_or_0(b.get(i)));
+            let pi: U128 = ~U128::from(0, unpack_or_0(p.get(i)));
+            let bi: U128 = ~U128::from(0, unpack_or_0(b.get(i)));
+            limbx = (mx * pi + hi) + bi;
             tmp.insert(i-1, limbx.lower);
-            hi = limbx.upper;
+            hi = ~U128::from(0, limbx.upper);
             i += 1;
         }
-        tmp.insert(i-1, hi);
-        j += 1;
+        tmp.insert(i-1, hi.lower);
         b = tmp;
+        j += 1;
     }
 
     let mut tmp2: Vec<u64> = ~Vec::new::<u64>();
-    i = 0;
     let mut carry = 0;
+    i = 0;
     while i < n {
-        let mut limbx = u_128(unpack_or_0(a.get(n+i))) + u_128(unpack_or_0(tmp.get(i))) + u_128(carry);
+        let ani: U128 = ~U128::from(0, unpack_or_0(a.get(n+i)));
+        let tmpi: U128 = ~U128::from(0, unpack_or_0(tmp.get(i)));
+        let carryi: U128 = ~U128::from(0, carry);
+        let limbx = ani + (tmpi + carryi);
         tmp2.insert(i, limbx.lower);
         carry = limbx.upper;
         i += 1;
@@ -251,19 +255,33 @@ pub fn redc_mont_n(a: Vec<u64>, p: Vec<u64>, n0: u64, n: u64) -> Vec<u64> {
     let mut res: Vec<u64> = ~Vec::new::<u64>();
     i = 0;
     while i < n {
-        let mut limbx = u_128(unpack_or_0(tmp2.get(i))) - (u_128(unpack_or_0(p.get(i))) + u_128(borrow));
-        res.push(limbx.lower);
-        borrow = limbx.upper & 1;
+        let tmp2i: U128 = ~U128::from(0, unpack_or_0(tmp2.get(i)));
+        let pi: U128 = ~U128::from(0, unpack_or_0(p.get(i)));
+        let borrow_i: U128 = ~U128::from(0, borrow);
+        let pi_w_borrow = pi + borrow_i;
+        // Prevent underflow. When U256 arithmetic is available we can create sbb_256
+        let(sub_res, b_res): (U128, u64) = if pi_w_borrow < tmp2i {
+            (tmp2i - pi_w_borrow, 0)
+        } else {
+            (~U128::max() - (pi_w_borrow - tmp2i - ~U128::from(0,1)), 1)
+        };
+        let mut limbx = sub_res;
+        //borrow = b_res;
+        borrow = limbx.upper & 0x1;
+        res.insert(i, limbx.lower);
         i += 1;
     }
-
-    let mut mask = carry - borrow;
+    //arithmetic overflow is happning
+    //let mut mask = carry - borrow;
+    let mask: u64 = borrow * ~u64::max();
     let mut result: Vec<u64> = ~Vec::new::<u64>();
     i = 0;
     while i < n {
-        result.push((unpack_or_0(res.get(i)) & not(mask)) | (unpack_or_0(tmp2.get(i)) & mask));
+        let result_i = (unpack_or_0(res.get(i)) & not(mask)) | (unpack_or_0(tmp2.get(i)) & mask);
+        result.insert(i, result_i);
         i += 1;
     }
+
     result
 }
 
