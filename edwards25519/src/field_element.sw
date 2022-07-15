@@ -15,8 +15,8 @@ pub struct Element {
 // = (1 << 51) - 1
 // But using the above expression gives the error "Could not evaluate initializer to a const declaration."
 const mask_low_51_bits: u64 = 2251799813685247;
-const zero: Element = Element{ l0: 0, l1: 0, l2: 0, l3: 0, l4: 0 };
-const one: Element = Element{ l0: 1, l1: 0, l2: 0, l3: 0, l4: 0 };
+pub const zero: Element = Element{ l0: 0, l1: 0, l2: 0, l3: 0, l4: 0 };
+pub const one: Element = Element{ l0: 1, l1: 0, l2: 0, l3: 0, l4: 0 };
 
 // from NaCl impl https://cr.yp.to/ecdh.html#use
 fn times19(x: u64) -> u64 {

@@ -5,8 +5,9 @@ use fuels_abigen_macro::abigen;
 abigen!(EdContract, "out/debug/test_edwards25519-abi.json");
 
 async fn get_contract_instance() -> (EdContract, ContractId) {
-    // Launch a local network and deploy the contract
-    let wallet = launch_provider_and_get_single_wallet().await;
+    let mut wallets =
+    launch_provider_and_get_wallets(WalletsConfig::new_single(Some(1), Some(1000000))).await;
+    let wallet = wallets.pop().unwrap();
 
     let id = Contract::deploy("./out/debug/test_edwards25519.bin", &wallet, TxParameters::default())
         .await
@@ -47,7 +48,7 @@ async fn test_equals() {
 
     let (_instance, _id) = get_contract_instance().await;
 
-    let a_b_equal = _instance.equals(a, b).call().await.unwrap().value;
+    let a_b_equal = _instance.equals_test(a, b).call().await.unwrap().value;
     assert!(a_b_equal);
 }
 
@@ -63,8 +64,8 @@ async fn test_multiply_by_0() {
         l_3: 2251799813685247,
         l_4: 2251799813685247 
     };
-    let res = _instance.multiply(a, zero)
-        .tx_params(TxParameters::new(None, Some(100), None, None))
+    let res = _instance.multiply_test(a, zero)
+        .tx_params(TxParameters::new(None, Some(100000), None, None))
         .call().await.unwrap().value;
 
     assert!(res_equals(res, zero));
