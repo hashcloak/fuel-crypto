@@ -5,6 +5,8 @@ use ::vect::*;
 use ::test_helpers::*;
 use std::logging::log;
 use std::{assert::assert, vec::Vec};
+use ::consts::*;
+
 
 pub fn vect_subfunctions_tests() -> bool {
     // NOTE: Don't run all at the same time, because will run out of gas
@@ -17,7 +19,7 @@ pub fn vect_subfunctions_tests() -> bool {
 
     // assert(test_mul_mont_n_by_zero());
     // assert(test_mul_mont_n_zero_by_one());
-    // assert(test_mul_mont_n_one_by_one());
+    assert(test_mul_mont_n_one_by_one());
     // assert(test_mul_mont_n_random_by_one());
     // assert(test_mul_mont_n_random_by_random());
 
@@ -29,7 +31,7 @@ pub fn vect_subfunctions_tests() -> bool {
     // assert(test_sub_2_randoms_subn());
     // assert(test_sub_2_randoms_reverse_subn());
 
-    assert(test_redc_mont_n_384());
+    // assert(test_redc_mont_n_384());
     true
 }
 
@@ -56,7 +58,7 @@ fn get_test_vectors() -> (Vec<u64>, Vec<u64>) {
 fn test_mul_mont_n_by_zero() -> bool {
     let(zero_vec, p_vec) = get_test_vectors();
 
-    let res = mul_mont_n(zero_vec, zero_vec, p_vec, 1, 6);
+    let res = mul_mont_n(zero_vec, zero_vec, p_vec, P0, 6);
     equals_vec(res, zero_vec, 6);
     true
 }
@@ -76,16 +78,17 @@ fn test_mul_mont_n_zero_by_one() -> bool {
     let(zero_vec, p_vec) = get_test_vectors();
     let one_vec = get_one_vec();
 
-    let res = mul_mont_n(zero_vec, one_vec, p_vec, 1, 6);
+    let res = mul_mont_n(zero_vec, one_vec, p_vec, P0, 6);
     equals_vec(res, zero_vec, 6);
     true
 }
 
 fn test_mul_mont_n_one_by_one() -> bool {
+    log(1);
     let(_, p_vec) = get_test_vectors();
     let one_vec = get_one_vec();
 
-    let res = mul_mont_n(one_vec, one_vec, p_vec, 1, 6);
+    let res = mul_mont_n(one_vec, one_vec, p_vec, P0, 6);
     equals_vec(res, one_vec, 6);
     true
 }
