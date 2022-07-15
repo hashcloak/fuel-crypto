@@ -13,23 +13,23 @@ pub fn vect_subfunctions_tests() -> bool {
     // which should be correct, but of course add_mod_n should do more
     // assert(test_add_zero_to_zero_addn());
     // assert(test_add_zero_to_random_addn());
-    assert(test_add_random_to_small_addn());
+    // assert(test_add_random_to_small_addn());
 
     // assert(test_mul_mont_n_by_zero());
     // assert(test_mul_mont_n_zero_by_one());
     // assert(test_mul_mont_n_one_by_one());
-    assert(test_mul_mont_n_random_by_one());
-    assert(test_mul_mont_n_random_by_random());
+    // assert(test_mul_mont_n_random_by_one());
+    // assert(test_mul_mont_n_random_by_random());
 
     // these tests are the same as for sub_fp and work. But they should support more values of n, thus more tests have to be added
     // assert(test_sub_zero_from_zero_subn());
     // assert(test_sub_zero_from_random_subn());
     // assert(test_sub_random_from_zero_subn());
     // assert(test_sub_random_from_small_subn());
-    assert(test_sub_2_randoms_subn());
-    assert(test_sub_2_randoms_reverse_subn());
+    // assert(test_sub_2_randoms_subn());
+    // assert(test_sub_2_randoms_reverse_subn());
 
-    // assert(test_redc_mont_n_384());
+    assert(test_redc_mont_n_384());
     true
 }
 
@@ -359,17 +359,32 @@ fn test_redc_mont_n_384() -> bool {
     a_vec.push(0);
     a_vec.push(0);
     let mut res_vec: Vec<u64> = ~Vec::new::<u64>();
-    res_vec.push(10);
-    res_vec.push(0);
-    res_vec.push(0);
-    res_vec.push(0);
-    res_vec.push(0);
-    res_vec.push(0);
-    //print_vec(res_vec);
+    // res_vec.push(0);
+    // res_vec.push(0);
+    // res_vec.push(0);
+    // res_vec.push(0);
+    // res_vec.push(0);
+    // res_vec.push(0);
+
+    // let mut p_vec = ~Vec::new::<u64>();
+    //     p_vec.push(0xb9feffffffffaaab);
+    //     p_vec.push(0x1eabfffeb153ffff);
+    //     p_vec.push(0x6730d2a0f6b0f624);
+    //     p_vec.push(0x64774b84f38512bf);
+    //     p_vec.push(0x4b1ba7b6434bacd7);
+    //     p_vec.push(0x1a0111ea397fe69a);
+    //     p_vec.push(0);
+    //     p_vec.push(0);
+    //     p_vec.push(0);
+    //     p_vec.push(0);
+    //     p_vec.push(0);
+    //     p_vec.push(0);
+
+    log(a_vec.get(0));
     let test_vec = get_test_vectors();
     let res = redc_mont_n(a_vec, test_vec.1, 0x89f3fffcfffcfffd, 6);
     print_vec(res);
-    log(unpack_or_0(res.get(0)));
+    //log(unpack_or_0(res.get(0)));
     
     
     true

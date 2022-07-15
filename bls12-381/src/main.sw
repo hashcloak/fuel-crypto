@@ -23,10 +23,10 @@ use ::tests_small_functions::tests_small_functions;
 
 fn main() {
     // assert(fp_tests());
-    assert(fp2_tests());
+    // assert(fp2_tests());
     // assert(test_multiply_wrap());
     // assert(test_mac());
-    // assert(vect_subfunctions_tests());
+    assert(vect_subfunctions_tests());
     // assert(tests_small_functions());
 }
 
