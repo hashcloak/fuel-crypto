@@ -19,7 +19,7 @@ pub fn vect_subfunctions_tests() -> bool {
 
     // assert(test_mul_mont_n_by_zero());
     // assert(test_mul_mont_n_zero_by_one());
-    assert(test_mul_mont_n_one_by_one());
+    // assert(test_mul_mont_n_one_by_one());
     // assert(test_mul_mont_n_random_by_one());
     // assert(test_mul_mont_n_random_by_random());
 
@@ -31,7 +31,7 @@ pub fn vect_subfunctions_tests() -> bool {
     // assert(test_sub_2_randoms_subn());
     // assert(test_sub_2_randoms_reverse_subn());
 
-    // assert(test_redc_mont_n_384());
+     assert(tests_redc_mont());
     true
 }
 
@@ -84,12 +84,13 @@ fn test_mul_mont_n_zero_by_one() -> bool {
 }
 
 fn test_mul_mont_n_one_by_one() -> bool {
-    log(1);
     let(_, p_vec) = get_test_vectors();
     let one_vec = get_one_vec();
 
     let res = mul_mont_n(one_vec, one_vec, p_vec, P0, 6);
     equals_vec(res, one_vec, 6);
+    //print_vec(res);
+    // print_vec(one_vec);
     true
 }
 
@@ -105,7 +106,8 @@ fn test_mul_mont_n_random_by_one() -> bool {
     r_vec.push(0xba78745dadd17a93);
     let one_vec = get_one_vec();
 
-    let res = mul_mont_n(r_vec, one_vec, p_vec, 1, 6);
+    let res = mul_mont_n(r_vec, one_vec, p_vec, P0, 6);
+    print_vec(res);
     equals_vec(res, r_vec, 6);
     true
 }
@@ -347,48 +349,138 @@ fn test_sub_2_randoms_reverse_subn() -> bool {
     true
 }
 
-fn test_redc_mont_n_384() -> bool {
+fn tests_redc_mont() -> bool {
+    assert(test_redc_mont_n_small());
+    // assert(test_redc_mont_n_p());
+    // assert(test_redc_mont_n_random());
+    // assert(test_redc_mont_n_random_large());
+
+    true
+}
+fn test_redc_mont_n_small() -> bool {
     let mut a_vec: Vec<u64> = ~Vec::new::<u64>();
+    a_vec.push(0);
+    a_vec.push(0);
+    a_vec.push(0);
+    a_vec.push(0);
+    a_vec.push(0);
+    a_vec.push(0);
+    a_vec.push(0);
+    a_vec.push(0);
+    a_vec.push(0);
+    a_vec.push(0);
+    a_vec.push(0);
     a_vec.push(10);
-    a_vec.push(0);
-    a_vec.push(0);
-    a_vec.push(0);
-    a_vec.push(0);
-    a_vec.push(0);
-    a_vec.push(0);
-    a_vec.push(0);
-    a_vec.push(0);
-    a_vec.push(0);
-    a_vec.push(0);
-    a_vec.push(0);
     let mut res_vec: Vec<u64> = ~Vec::new::<u64>();
-    // res_vec.push(0);
-    // res_vec.push(0);
-    // res_vec.push(0);
-    // res_vec.push(0);
-    // res_vec.push(0);
-    // res_vec.push(0);
+    res_vec.push(0);
+    res_vec.push(0);
+    res_vec.push(0);
+    res_vec.push(0);
+    res_vec.push(0);
+    res_vec.push(10);
+    let test_vec = get_test_vectors();
+    let res = redc_mont_n(a_vec, test_vec.1, 0x89f3fffcfffcfffd, 6);
+    equals_vec(res, res_vec, 6);
+    true
+}
 
-    // let mut p_vec = ~Vec::new::<u64>();
-    //     p_vec.push(0xb9feffffffffaaab);
-    //     p_vec.push(0x1eabfffeb153ffff);
-    //     p_vec.push(0x6730d2a0f6b0f624);
-    //     p_vec.push(0x64774b84f38512bf);
-    //     p_vec.push(0x4b1ba7b6434bacd7);
-    //     p_vec.push(0x1a0111ea397fe69a);
-    //     p_vec.push(0);
-    //     p_vec.push(0);
-    //     p_vec.push(0);
-    //     p_vec.push(0);
-    //     p_vec.push(0);
-    //     p_vec.push(0);
+fn test_redc_mont_n_p() -> bool {
+    
+    let mut p_vec = ~Vec::new::<u64>();
+    p_vec.push(0xb9feffffffffaaab);
+    p_vec.push(0x1eabfffeb153ffff);
+    p_vec.push(0x6730d2a0f6b0f624);
+    p_vec.push(0x64774b84f38512bf);
+    p_vec.push(0x4b1ba7b6434bacd7);
+    p_vec.push(0x1a0111ea397fe69a);
+    p_vec.push(0);
+    p_vec.push(0);
+    p_vec.push(0);
+    p_vec.push(0);
+    p_vec.push(0);
+    p_vec.push(0);
+    let test_vec = get_test_vectors();
+    let res = redc_mont_n(p_vec, test_vec.1, 0x89f3fffcfffcfffd, 6);
+    //equals_vec(res, get_test_vectors().0, 6);
+    print_vec(res);
+    true
+}
 
-    log(a_vec.get(0));
+fn test_redc_mont_n_random() -> bool {
+    /*
+    a_vec = 3696765165377537992548071770426871989328256175267415194498929704185983294358703155983657203868185085593368583538232
+          = [1730705806359781376, 10719928016004921607, 6631139461101160670, 14991082624209354397, 7557322358563246340, 13282407956253574712]
+          (using GP Pari)
+    a_vec mod P = 3696765165377537992548071770426871989328256175267415194498929704185983294358703155983657203868185085593368583538232
+                = [1730705806359781376, 10719928016004921607, 6631139461101160670, 14991082624209354397, 7557322358563246340, 13282407956253574712]
+    */
+    let mut a_vec = ~Vec::new::<u64>();
+    
+    a_vec.push(13282407956253574712);
+    a_vec.push(7557322358563246340);
+    a_vec.push(14991082624209354397);
+    a_vec.push(6631139461101160670);
+    a_vec.push(10719928016004921607);
+    a_vec.push(1730705806359781376);  
+    a_vec.push(0);
+    a_vec.push(0);
+    a_vec.push(0);
+    a_vec.push(0);
+    a_vec.push(0);
+    a_vec.push(0);
+    let mut result = ~Vec::new::<u64>();
+    result.push(13282407956253574712);
+    result.push(7557322358563246340);
+    result.push(14991082624209354397);
+    result.push(6631139461101160670);
+    result.push(10719928016004921607);
+    result.push(1730705806359781376);
+
     let test_vec = get_test_vectors();
     let res = redc_mont_n(a_vec, test_vec.1, 0x89f3fffcfffcfffd, 6);
     print_vec(res);
-    //log(unpack_or_0(res.get(0)));
-    
-    
+    //equals_vec(res, result, 6);
+    true
+
+}
+
+fn test_redc_mont_n_random_large() -> bool {
+
+    /*
+    a = random({2^384}) = 21380795309672530537064108666460268360580493838230277925224860893329212391422460281305468429766194371347271041959862
+                    = [10009796384580774444, 9837491998535547791, 12861376030615125811, 15982738825684268908, 17984324540840297179, 13142370077570254774]
+
+    a mod p = 1368747533564193569975159537780747577796079738535238498564570212709054138968270959092030284121116051157799679160927
+            = [640803296343075113, 1223717179891587930, 13558174375960666486, 15697854105282963640, 6933616983254254301, 1470447218309591647]
+
+                
+
+    */
+    let mut a_vec = ~Vec::new::<u64>();
+    a_vec.push(13142370077570254774);
+    a_vec.push(17984324540840297179);
+    a_vec.push(15982738825684268908);
+    a_vec.push(12861376030615125811);
+    a_vec.push(9837491998535547791);
+    a_vec.push(10009796384580774444);
+    a_vec.push(0);
+    a_vec.push(0);
+    a_vec.push(0);
+    a_vec.push(0);
+    a_vec.push(0);
+    a_vec.push(0);
+
+    let mut result = ~Vec::new::<u64>();
+    result.push(1470447218309591647);
+    result.push(6933616983254254301);
+    result.push(15697854105282963640);
+    result.push(13558174375960666486);
+    result.push(1223717179891587930);
+    result.push(640803296343075113);
+
+    let test_vec = get_test_vectors();
+    let res = redc_mont_n(a_vec, test_vec.1, 0x89f3fffcfffcfffd, 6);
+    //equals_vec(res, result, 6);
+    print_vec(res);
     true
 }
