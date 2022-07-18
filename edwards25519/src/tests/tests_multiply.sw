@@ -9,9 +9,9 @@ pub fn tests_multiply() -> bool {
     // assert(test_multiply_1_by_1());
     // assert(test_multiply_by_1_small());
     // assert(test_multiply_by_1_large());
-    assert(test_multiply_small_elms());
-    assert(test_multiply_small_elms_2());
-    assert(test_multiply_small_elms_3());
+    // assert(test_multiply_small_elms());
+    // assert(test_multiply_small_elms_2());
+    // assert(test_multiply_small_elms_3());
     assert(test_multiply_elms_4());
     // assert(test_multiply_random());
     true

@@ -303,7 +303,7 @@ pub fn scalar_mult(e: Element, x: u32) -> Element {
     let (coeff3, carry3) = get_coeff_and_carry(l3_temp);
     let (coeff4, carry4) = get_coeff_and_carry(l4_temp);
 
-    let res0: u64 = coeff0 + carry4*19;
+    let res0: u64 = coeff0 + times19(carry4);
     let res1: u64 = coeff1 + carry0;
     let res2: u64 = coeff2 + carry1;
     let res3: u64 = coeff3 + carry2;
@@ -332,7 +332,7 @@ pub fn equals(a: Element, b: Element) -> bool {
 	res == 0
 }
 
-/*
+
 //a^(-1) mod p = a^(p-2) mod p by  Fermat's theorem, Hence we  calculate a^(p-2) mod p
 pub fn inverse(a: Element) -> Element {
     let mut i = 0;
@@ -417,4 +417,3 @@ pub fn inverse(a: Element) -> Element {
 
     return t;
 }
-*/
