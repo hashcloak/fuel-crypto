@@ -12,7 +12,7 @@ pub struct Ge25519 {
     x: Element,
     y: Element,
     z: Element,
-    t: Element
+    t: Element,
 }
 
 // Completed point (https://doc-internal.dalek.rs/curve25519_dalek/backend/serial/curve_models/index.html)
@@ -20,7 +20,7 @@ pub struct Ge25519_p1p1 {
     x: Element,
     y: Element,
     z: Element,
-    t: Element
+    t: Element,
 }
 
 /* Projective point. Satisfies:
@@ -32,12 +32,12 @@ pub struct Ge25519_p1p1 {
 pub struct Ge25519_p2 {
     x: Element,
     y: Element,
-    z: Element
+    z: Element,
 }
 
 pub struct Ge25519_aff {
     x: Element,
-    y: Element
+    y: Element,
 }
 
 /*
@@ -62,6 +62,6 @@ pub fn double(p: Ge25519_p2) -> Ge25519_p1p1 {
         x: res_x,
         y: res_y,
         z: res_Z,
-        t: res_t
+        t: res_t,
     }
 }
