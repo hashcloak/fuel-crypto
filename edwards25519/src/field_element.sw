@@ -119,7 +119,7 @@ pub fn add(a: Element, b: Element) -> Element {
     carry_propagate(temp)
 }
 
-//subtract fn returns a - b
+//subtract fn returns a - b mod 2^255 - 19
 pub fn subtract(a: Element, b: Element) -> Element {
     // we add 2*p to avoid any underflow and then subtract b
     let res: Element = Element {
@@ -133,7 +133,7 @@ pub fn subtract(a: Element, b: Element) -> Element {
     reduce(res)
 }
 
-//negate return negaive of an element(-a)
+//negate return negaive of an element(-a) mod 2^255 - 19
 pub fn negate(a: Element) -> Element {
     subtract(ZERO, a)
 }
@@ -311,7 +311,7 @@ pub fn equals(a: Element, b: Element) -> bool {
 	res == 0
 }
 
-
+//Testing not done
 //a^(-1) mod p = a^(p-2) mod p by  Fermat's theorem, Hence we  calculate a^(p-2) mod p
 pub fn inverse(a: Element) -> Element {
     let mut i = 0;
