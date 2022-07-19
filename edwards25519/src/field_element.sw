@@ -15,6 +15,7 @@ pub struct Element {
 // = (1 << 51) - 1
 // But using the above expression gives the error "Could not evaluate initializer to a const declaration."
 const MASK_LOW_51_BITS: u64 = 2251799813685247;
+
 pub const ZERO: Element = Element {
     l0: 0, l1: 0, l2: 0, l3: 0, l4: 0
 };
@@ -129,7 +130,6 @@ pub fn subtract(a: Element, b: Element) -> Element {
         l4: (a.l4 + 0xFFFFFFFFFFFFE) - b.l4,
     };
 
-    //carry_propagate(res)
     reduce(res)
 }
 
@@ -164,10 +164,7 @@ pub fn add_multiply64(res: U128, a: u64, b: u64) -> U128 {
     let add_res: (u64, u64) = add64(mul_res.lower, res.lower, 0);
     let add_res2: (u64, u64) = add64(mul_res.upper, res.upper, add_res.1);
 
-    U128 {
-        upper: add_res2.0,
-        lower: add_res.0,
-    }
+    ~U128::from(add_res2.0, add_res.0)
 }
 
 //right shift by 51

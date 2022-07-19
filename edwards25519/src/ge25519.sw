@@ -43,6 +43,7 @@ pub struct Ge25519_aff {
 /*
 http://www.hyperelliptic.org/EFD/g1p/auto-twisted-extended-1.html#doubling-dbl-2008-hwcd
 */
+// TODO TEST!
 pub fn double(p: Ge25519_p2) -> Ge25519_p1p1 {
     let a = square(p.x);
     let b = square(p.y);

@@ -38,13 +38,13 @@ fn main() {
     // assert(test_helpers());
     // assert(tests_add());
     // assert(test_helpers64());
-    assert(test_reductions());
-    assert(tests_shift_right_by51());
-    assert(tests_scalar_mult());
-    assert(tests_substract());
+    // assert(test_reductions());
+    // assert(tests_shift_right_by51());
+    // assert(tests_scalar_mult());
+    // assert(tests_substract());
 
     // Multiply tests can't run all at the same time
-    // assert(tests_multiply());
+    assert(tests_multiply());
     // assert(tests_square());
 
     //Doesnt' terminate
