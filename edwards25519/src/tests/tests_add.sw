@@ -23,7 +23,7 @@ fn test_add_to_0() -> bool {
     l4: 85247 
     };
 
-    let res = add(zero, b);
+    let res = add(ZERO, b);
 
     assert(res_equals(res, b));
     true
@@ -38,7 +38,7 @@ fn test_add_0() -> bool {
     l4: 85247 
     };
 
-    let res = add(b, zero);
+    let res = add(b, ZERO);
 
     assert(res_equals(res, b));
     true
@@ -97,9 +97,7 @@ fn test_add_a_to_b() -> bool {
         l2: 155647, 
         l3: 81918191, 
         l4: 85247 
-    });
-
-    true
+    })
 }
 
 fn test_add_a_to_a() -> bool {
@@ -127,7 +125,5 @@ fn test_add_a_to_a() -> bool {
         l2: 2251799813685247, 
         l3: 2251799813685247, 
         l4: 2251799813685247
-    });
-
-    true
+    })
 }

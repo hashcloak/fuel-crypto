@@ -7,6 +7,10 @@ use std::logging::log;
 use std::assert::assert;
 use std::u128::*;
 
+pub const ONE: Element = Element {
+    l0: 1, l1: 0, l2: 0, l3: 0, l4: 0
+};
+
 pub fn print_el(e: Element) {
     log(e.l0);
     log(e.l1);
@@ -24,12 +28,7 @@ pub fn res_equals(res: Element, should_be: Element) -> bool {
     true
 }
 
-pub fn print_U128(a: U128) {
-    log(a.upper);
-    log(a.lower);
-}
-
-pub fn equals_U128(res: U128, lower: u64, upper: u64) -> bool {
+pub fn equals_u128(res: U128, lower: u64, upper: u64) -> bool {
     assert(res.upper == upper);
     assert(res.lower == lower);
     true

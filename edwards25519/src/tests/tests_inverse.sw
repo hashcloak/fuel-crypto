@@ -33,8 +33,8 @@ res
         l2: 1594711943325299,
         l3: 378203143193209,
         l4: 843416921835783
-    }
-    print_el(res);
+    };
+    // print_el(res);
     //res_equals(res, res_check);
     true
 }

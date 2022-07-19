@@ -20,7 +20,7 @@ use ::tests_helpers64::test_helpers64;
 use ::tests_multiply::tests_multiply;
 use ::tests_of_helpers::test_helpers;
 use ::tests_reductions::test_reductions;
-use ::tests_rshift::tests_shiftRightBy51;
+use ::tests_rshift::tests_shift_right_by51;
 use ::tests_scalar_mult::tests_scalar_mult;
 use ::tests_square::tests_square;
 use ::tests_sub::tests_substract;
@@ -34,18 +34,17 @@ use std::logging::log;
 use core::num::*;
 use std::u128::*;
 
-
 fn main() {
     // assert(test_helpers());
     // assert(tests_add());
     // assert(test_helpers64());
-    // assert(test_reductions());
-    // assert(tests_shiftRightBy51());
-    // assert(tests_scalar_mult());
-    // assert(tests_substract());
+    assert(test_reductions());
+    assert(tests_shift_right_by51());
+    assert(tests_scalar_mult());
+    assert(tests_substract());
 
     // Multiply tests can't run all at the same time
-    assert(tests_multiply());
+    // assert(tests_multiply());
     // assert(tests_square());
 
     //Doesnt' terminate

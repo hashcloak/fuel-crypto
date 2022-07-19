@@ -27,16 +27,13 @@ fn test_multiply_by_0() -> bool {
         l3: 2251799813685247,
         l4: 2251799813685247 
     };
-    let res: Element = multiply(a, zero);
-    res_equals(res, zero);
-    true
+    let res: Element = multiply(a, ZERO);
+    res_equals(res, ZERO)
 }
 
 fn test_multiply_1_by_1() -> bool {
-    let res: Element = multiply(one, one);
-    res_equals(res, one);
-
-    true
+    let res: Element = multiply(ONE, ONE);
+    res_equals(res, ONE)
 }
 
 fn test_multiply_by_1_small() -> bool {
@@ -48,9 +45,8 @@ fn test_multiply_by_1_small() -> bool {
         l3: 13,
         l4: 14
     };
-    let res: Element = multiply(a, one);
-    res_equals(res, a);
-    true
+    let res: Element = multiply(a, ONE);
+    res_equals(res, a)
 }
 
 fn test_multiply_by_1_large() -> bool {
@@ -63,9 +59,8 @@ fn test_multiply_by_1_large() -> bool {
         l3: 2251799813685247,
         l4: 2251799813685247
     };
-    let res: Element = multiply(a, one);
-    res_equals(res, a);
-    true
+    let res: Element = multiply(a, ONE);
+    res_equals(res, a)
 }
 
 fn test_multiply_small_elms() -> bool {
@@ -112,8 +107,7 @@ fn test_multiply_small_elms() -> bool {
         l2: 2909,
         l3: 1752,
         l4: 230
-    });
-    true
+    })
 }
 
 fn test_multiply_small_elms_2() -> bool {
@@ -160,8 +154,7 @@ fn test_multiply_small_elms_2() -> bool {
         l2: 995697840409273,
         l3: 333510462280559,
         l4: 1626165600260968
-    });
-    true
+    })
 }
 
 fn test_multiply_small_elms_3() -> bool {
@@ -208,8 +201,7 @@ fn test_multiply_small_elms_3() -> bool {
         l2: 376444288997219,
         l3: 169499236944723,
         l4: 548860478185542
-    });
-    true
+    })
 }
 
 fn test_multiply_elms_4() -> bool {
@@ -256,8 +248,7 @@ fn test_multiply_elms_4() -> bool {
         l2: 355992668009873,
         l3: 806477788321681,
         l4: 1027544741541094
-    });
-    true
+    })
 }
 
 /*
@@ -315,7 +306,6 @@ fn test_multiply_random() -> bool {
 
     let res: Element = multiply(a, b);
     // print_el(res);
-    res_equals(res, ab);
-    true
+    res_equals(res, ab)
 }
 */

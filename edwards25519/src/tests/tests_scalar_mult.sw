@@ -23,8 +23,7 @@ fn test_mult_by_0() -> bool {
     };
 
     let res: Element = scalar_mult(a, 0);
-    res_equals(res, zero);
-    true
+    res_equals(res, ZERO)
 }
 
 fn test_mult_by_1() -> bool {
@@ -37,8 +36,7 @@ fn test_mult_by_1() -> bool {
     };
 
     let res: Element = scalar_mult(a, 1);
-    res_equals(res, a);
-    true
+    res_equals(res, a)
 }
 
 fn test_mult_by_2() -> bool {
@@ -71,9 +69,7 @@ fn test_mult_by_2() -> bool {
         l2: 2251799813685247, 
         l3: 1111110666666445, 
         l4: 2251799813685246
-    });
-
-    true
+    })
 }
 
 fn test_mult_by_2_again() -> bool {
@@ -109,9 +105,7 @@ fn test_mult_by_2_again() -> bool {
         l2: 2251799813685247, 
         l3: 2251799813685247, 
         l4: 2251799813685247
-    });
-
-    true
+    })
 }
 
 fn test_mult_by_large_scalar() -> bool {
@@ -145,7 +139,5 @@ fn test_mult_by_large_scalar() -> bool {
         l2: 2251799813685247, 
         l3: 536152338865944, 
         l4: 2251796578355658
-    });
-    
-    true
+    })
 }

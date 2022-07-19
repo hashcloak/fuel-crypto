@@ -77,9 +77,7 @@ fn test_add_multiply64() -> bool {
     //58711607980754950933543316951356
     //[10881738262824685884, 3182762646142]
     let mut res = add_multiply64(r,a,b);
-    equals_U128(res, 10881738262824685884, 3182762646142);
-
-    true
+    equals_u128(res, 10881738262824685884, 3182762646142)
 }
 
 fn test_add_multiply64_2() -> bool {
@@ -96,7 +94,5 @@ fn test_add_multiply64_2() -> bool {
     //[18148778710141221224, 279563898809]
     let mut res = add_multiply64(r,a,b);
 
-    equals_U128(res, 18148778710141221224, 279563898809);
-
-    true
+    equals_u128(res, 18148778710141221224, 279563898809)
 }

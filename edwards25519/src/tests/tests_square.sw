@@ -12,15 +12,13 @@ pub fn tests_square() -> bool {
 }
 
 fn test_square_one() -> bool {
-    let res: Element = square(one);
-    res_equals(res, one);
-    true
+    let res: Element = square(ONE);
+    res_equals(res, ONE)
 }
 
 fn test_square_zero() -> bool {
-    let res: Element = square(zero);
-    res_equals(res, zero);
-    true
+    let res: Element = square(ZERO);
+    res_equals(res, ZERO)
 }
 
 fn test_square_random() -> bool {
@@ -52,6 +50,5 @@ fn test_square_random() -> bool {
     };
 
     let res: Element = square(a);
-    res_equals(res, a_square);
-    true
+    res_equals(res, a_square)
 }

@@ -14,12 +14,9 @@ pub struct Element {
 
 // = (1 << 51) - 1
 // But using the above expression gives the error "Could not evaluate initializer to a const declaration."
-const mask_low_51_bits: u64 = 2251799813685247;
-pub const zero: Element = Element {
+const MASK_LOW_51_BITS: u64 = 2251799813685247;
+pub const ZERO: Element = Element {
     l0: 0, l1: 0, l2: 0, l3: 0, l4: 0
-};
-pub const one: Element = Element {
-    l0: 1, l1: 0, l2: 0, l3: 0, l4: 0
 };
 
 // from NaCl impl https://cr.yp.to/ecdh.html#use
@@ -51,13 +48,13 @@ pub fn carry_propagate(e: Element) -> Element {
     // the final l0 will be at most 52 bits. Similarly for the rest.
 
     // c4 * 19 is at most 13 + 5 = 18 bits => l0 is at most 52 bits
-    let new_l0 = (e.l0 & mask_low_51_bits) + times19(c4);
+    let new_l0 = (e.l0 & MASK_LOW_51_BITS) + times19(c4);
     Element {
         l0: new_l0,
-        l1: (e.l1 & mask_low_51_bits) + c0,
-        l2: (e.l2 & mask_low_51_bits) + c1,
-        l3: (e.l3 & mask_low_51_bits) + c2,
-        l4: (e.l4 & mask_low_51_bits) + c3,
+        l1: (e.l1 & MASK_LOW_51_BITS) + c0,
+        l2: (e.l2 & MASK_LOW_51_BITS) + c1,
+        l3: (e.l3 & MASK_LOW_51_BITS) + c2,
+        l4: (e.l4 & MASK_LOW_51_BITS) + c3,
     }
 }
 
@@ -89,13 +86,13 @@ pub fn reduce(e: Element) -> Element {
 
     let mut v0 = red.l0 + times19(carry);
     let mut v1 = red.l1 + (v0 >> 51);
-    v0 = v0 & mask_low_51_bits;
+    v0 = v0 & MASK_LOW_51_BITS;
     let mut v2 = red.l2 + (v1 >> 51);
-    v1 = v1 & mask_low_51_bits;
+    v1 = v1 & MASK_LOW_51_BITS;
     let mut v3 = red.l3 + (v2 >> 51);
-    v2 = v2 & mask_low_51_bits;
-    let mut v4 = (red.l4 + (v3 >> 51)) & mask_low_51_bits;
-    v3 = v3 & mask_low_51_bits;
+    v2 = v2 & MASK_LOW_51_BITS;
+    let mut v4 = (red.l4 + (v3 >> 51)) & MASK_LOW_51_BITS;
+    v3 = v3 & MASK_LOW_51_BITS;
 
     Element {
         l0: v0,
@@ -138,38 +135,23 @@ pub fn subtract(a: Element, b: Element) -> Element {
 
 //negate return negaive of an element(-a)
 pub fn negate(a: Element) -> Element {
-    subtract(zero, a)
+    subtract(ZERO, a)
 }
 
 //returns 128-bit product of a and b
 pub fn multiply64(a: u64, b: u64) -> U128 {
-    let A: U128 = U128 {
-        upper: 0,
-        lower: a,
-    };
-    let B: U128 = U128 {
-        upper: 0,
-        lower: b,
-    };
-    A * B
+    let a_128: U128 = ~U128::from(0, a);
+    let b_128: U128 = ~U128::from(0, b);
+    a_128 * b_128
 }
 
 //returns sum with carry of a and b
 pub fn add64(a: u64, b: u64, carry: u64) -> (u64, u64) {
-    let A: U128 = U128 {
-        upper: 0,
-        lower: a,
-    };
-    let B: U128 = U128 {
-        upper: 0,
-        lower: b,
-    };
-    let Carry: U128 = U128 {
-        upper: 0,
-        lower: carry,
-    };
+    let a_128: U128 =  ~U128::from(0, a);
+    let b_128: U128 = ~U128::from(0, b);
+    let carry_128: U128 =  ~U128::from(0, carry);
 
-    let sum: u64 = (A + B + Carry).lower;
+    let sum: u64 = (a_128 + b_128 + carry_128).lower;
     let notSum = ~u64::max() - sum;
     let carryOut = ((a & b) | ((a | b) & notSum)) >> 63;
 
@@ -189,7 +171,7 @@ pub fn add_multiply64(res: U128, a: u64, b: u64) -> U128 {
 }
 
 //right shift by 51
-pub fn shiftRightBy51(a: U128) -> u64 {
+pub fn shift_right_by51(a: U128) -> u64 {
     (a.upper <<(64 - 51)) | (a.lower >> 51)
 }
 
@@ -254,17 +236,17 @@ pub fn multiply(a: Element, b: Element) -> Element {
     r4 = add_multiply64(r4, a3, b1);
     r4 = add_multiply64(r4, a4, b0);
 
-    let c0 = shiftRightBy51(r0);
-	let c1 = shiftRightBy51(r1);
-	let c2 = shiftRightBy51(r2);
-	let c3 = shiftRightBy51(r3);
-	let c4 = shiftRightBy51(r4);
+    let c0 = shift_right_by51(r0);
+	let c1 = shift_right_by51(r1);
+	let c2 = shift_right_by51(r2);
+	let c3 = shift_right_by51(r3);
+	let c4 = shift_right_by51(r4);
 
-	let rr0 = (r0.lower & mask_low_51_bits) + times19(c4);
-	let rr1 = (r1.lower & mask_low_51_bits) + c0;
-	let rr2 = (r2.lower & mask_low_51_bits) + c1;
-	let rr3 = (r3.lower & mask_low_51_bits) + c2;
-	let rr4 = (r4.lower & mask_low_51_bits) + c3;
+	let rr0 = (r0.lower & MASK_LOW_51_BITS) + times19(c4);
+	let rr1 = (r1.lower & MASK_LOW_51_BITS) + c0;
+	let rr2 = (r2.lower & MASK_LOW_51_BITS) + c1;
+	let rr3 = (r3.lower & MASK_LOW_51_BITS) + c2;
+	let rr4 = (r4.lower & MASK_LOW_51_BITS) + c3;
 
     let res: Element = Element {
         l0: rr0,
@@ -280,8 +262,8 @@ pub fn multiply(a: Element, b: Element) -> Element {
 // For a bignumber <= 102 bits stored in U128,
 // return the 51 bit coefficient and 51 bit carry
 pub fn get_coeff_and_carry(y: U128) -> (u64, u64) {
-    let coeff: u64 = y.lower & mask_low_51_bits;
-    let carry: u64 = (y.upper << 13 & mask_low_51_bits) | y.lower >> 51;
+    let coeff: u64 = y.lower & MASK_LOW_51_BITS;
+    let carry: u64 = (y.upper << 13 & MASK_LOW_51_BITS) | y.lower >> 51;
     (coeff, carry)
 }
 

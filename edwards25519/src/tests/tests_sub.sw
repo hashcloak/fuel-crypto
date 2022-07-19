@@ -21,10 +21,8 @@ fn test_subtraction_by_0() -> bool {
         l4: 100 
     };
 
-    let res: Element = subtract(a, zero);
-    res_equals(res, a);
-    
-    true
+    let res: Element = subtract(a, ZERO);
+    res_equals(res, a)
 }
 
 fn test_subtraction_by_1() -> bool {
@@ -44,9 +42,8 @@ fn test_subtraction_by_1() -> bool {
         l4: 100 
     };
 
-    let res: Element = subtract(a, one);
-    res_equals(res, b);
-    true
+    let res: Element = subtract(a, ONE);
+    res_equals(res, b)
 }
 
 fn test_subtraction_by_max() -> bool {
@@ -93,9 +90,7 @@ fn test_subtraction_by_max() -> bool {
     
     let res: Element = subtract(a, b);
     let res2: Element = subtract(b,a);
-    res_equals(res, b);
-    res_equals(res2, one);
-    true
+    res_equals(res, b) && res_equals(res2, ONE)
 }
 
 fn test_subtraction_random() -> bool {
@@ -176,7 +171,5 @@ fn test_subtraction_random() -> bool {
 
     let res: Element = subtract(a, b);
     let res2: Element = subtract(b,a);
-    res_equals(res, a_minus_b);
-    res_equals(res2, b_minus_a);
-    true
+    res_equals(res, a_minus_b) && res_equals(res2, b_minus_a)
 }

@@ -49,11 +49,8 @@ fn test_carry_propagate_1() -> bool {
         l2: 2251799813685247 + 8191, 
         l3: 2251799813685247 + 8191, 
         l4: 2251799813685247 + 8191 
-    });
-
+    })
     // Note that this result is >2^255-19 because the function only does 1 round of reduction
-
-    true
 }
 
 fn test_carry_propagate_2() -> bool {
@@ -67,9 +64,7 @@ fn test_carry_propagate_2() -> bool {
 
     let res = carry_propagate(e);
 
-    res_equals(res, Element{ l0: 2, l1: 1, l2: 0, l3: 0, l4: 0 });
-
-    true
+    res_equals(res, Element{ l0: 2, l1: 1, l2: 0, l3: 0, l4: 0 })
 }
 
 fn test_reduce() -> bool {
@@ -83,9 +78,7 @@ fn test_reduce() -> bool {
 
     let res = reduce(e);
 
-    res_equals(res, Element{ l0: 2, l1: 1, l2: 0, l3: 0, l4: 0 });
-
-    true
+    res_equals(res, Element{ l0: 2, l1: 1, l2: 0, l3: 0, l4: 0 })
 }
 
 fn test_reduce_2() -> bool {
@@ -115,9 +108,7 @@ fn test_reduce_2() -> bool {
     3 * 2^153 +
     3 * 2^204
     */
-    res_equals(res, Element{ l0: 21, l1: 3, l2: 3, l3: 3, l4: 3 });
-
-    true
+    res_equals(res, Element{ l0: 21, l1: 3, l2: 3, l3: 3, l4: 3 })
 }
 
 fn test_reduce_3() -> bool {
@@ -155,9 +146,7 @@ fn test_reduce_3() -> bool {
         l2: 8191, 
         l3: 8191, 
         l4: 8191 
-    });
-
-    true
+    })
 }
 
 fn test_reduce_4() -> bool {
@@ -189,7 +178,5 @@ fn test_reduce_4() -> bool {
         l2: 0, 
         l3: 0, 
         l4: 0 
-    });
-
-    true
+    })
 }

@@ -11,14 +11,13 @@ pub fn test_helpers() -> bool {
 }
 
 fn test_get_zero() -> bool {
-    res_equals(zero, Element{ l0: 0, l1: 0, l2: 0, l3: 0, l4: 0 });
-    true
+    res_equals(ZERO, Element{ l0: 0, l1: 0, l2: 0, l3: 0, l4: 0 })
 }
 
 fn test_equals() -> bool {
-    let zero_equals_zero = equals(zero, zero);
-    let zero_equals_one = equals(zero, one);
-    let one_equals_one = equals(one, one);
+    let zero_equals_zero = equals(ZERO, ZERO);
+    let zero_equals_one = equals(ZERO, ONE);
+    let ONE_equals_one = equals(ONE, ONE);
 
     let a = Element{ 
         l0: 2251799813685247, 
@@ -48,7 +47,7 @@ fn test_equals() -> bool {
 
     assert(zero_equals_zero);
     assert(!zero_equals_one);
-    assert(one_equals_one);
+    assert(ONE_equals_one);
 
     assert(a_equals_a);
     assert(a_equals_b);
