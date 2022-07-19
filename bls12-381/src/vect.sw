@@ -145,8 +145,8 @@ pub fn mul_mont_n(a: Vec<u64>, b: Vec<u64>, p: Vec<u64>, n0: u64, n: u64) -> Vec
         }
         limbx = ~U128::from(0, unpack_or_0(tmp.get(i))) + (hi + ~U128::from(0, carry));
         tmp2.insert(i - 1, limbx.lower);
-        carry = limbx.lower;
 
+        carry = limbx.upper;
         j += 1;
         if j == n {
             break;
@@ -199,7 +199,7 @@ pub fn mul_mont_n(a: Vec<u64>, b: Vec<u64>, p: Vec<u64>, n0: u64, n: u64) -> Vec
         limbx = sub_res;
         //borrow = b_res;
         ret.insert(i, limbx.lower);
-        borrow = limbx.upper & 0x1;
+        borrow = b_res & 0x1;
         i += 1;
     }
     //log(carry);
