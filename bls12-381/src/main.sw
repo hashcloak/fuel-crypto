@@ -9,6 +9,7 @@ dep tests/tests_vect_fp2;
 dep tests/tests_vect_subfunctions;
 dep tests/tests_small_functions;
 dep tests/tests_temp_mul;
+dep tests/tests_temp_fe_mont_mul;
 
 use std::{assert::assert, option::*, u128::*, vec::Vec};
 use ::fields::*;
@@ -22,16 +23,18 @@ use ::tests_vect_fp2::fp2_tests;
 use ::tests_vect_subfunctions::vect_subfunctions_tests;
 use ::tests_small_functions::tests_small_functions;
 use ::tests_temp_mul::tests_temp_mul;
+use ::tests_temp_fe_mont_mul::tests_temp_fe_mont_mul;
 
 fn main() {
     // assert(fp_tests());
     // assert(fp2_tests());
     // assert(test_multiply_wrap());
     // assert(test_mac());
-    assert(vect_subfunctions_tests());
+    // assert(vect_subfunctions_tests());
     // assert(tests_small_functions());
 
     // assert(tests_temp_mul());
+    assert(tests_temp_fe_mont_mul());
 }
 
 fn test_mac() -> bool {
