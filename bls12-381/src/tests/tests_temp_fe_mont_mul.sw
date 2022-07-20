@@ -3,6 +3,7 @@ library tests_temp_fe_mont_mul;
 use ::vect::*;
 use std::{assert::assert, vec::Vec};
 use ::test_helpers::*;
+use std::logging::log;
 
 pub fn tests_temp_fe_mont_mul() -> bool {
     assert(test_temp_mul_random_by_random());
@@ -35,21 +36,64 @@ fn test_temp_mul_random_by_random() -> bool {
     r2_vec.push(2211903887497377980);
     r2_vec.push(395875676649998273);
 
-    // a * b mod p
-    //941779891765169534644661530249600716619032215997678548055171344032200486581648291416343986992810576160191745532577
-    //[16494539950903960225, 6909894500484332639, 10854278113294925999, 10279541547892741855, 12499445441687670930, 440910865060157199]
     let a_mont = fe_to_mont(r1_vec);
+    // print_vec(a_mont);
+        /*
+17993655965713306301
+15604842006860479165
+10837926002905938402
+13429498400065700031
+1823694494885156540
+933350646299434799
+    */
+
     let b_mont = fe_to_mont(r2_vec);
+    // print_vec(b_mont);
+    /*
+5720430457560562798
+2568557665684583703
+15870134958983808442
+14065062413899436375
+12262047246709729804
+1303068506660090079
+    */
+
     let res = temp_fe_mont_mul(a_mont, b_mont);
-    let res_norm = fe_to_norm(res);
-    print_vec(res_norm);
+    print_vec(res);
+    /*
+8042921339150017446
+4899742317194411181
+11922910400151252689
+7736564210120511729
+10892349319971706476
+542573957820843489
+    */
+
+    /*
+    This is what res has as a value at this point, but running all the operations gives the error 
+    out of gas, so just run with this known value. All intermediate steps are correct with 
+    the ncc ref implementation
+    */
+    let mut intermediate_res_vec = ~Vec::new::<u64>();
+    intermediate_res_vec.push(8042921339150017446);
+    intermediate_res_vec.push(4899742317194411181);
+    intermediate_res_vec.push(11922910400151252689);
+    intermediate_res_vec.push(7736564210120511729);
+    intermediate_res_vec.push(10892349319971706476);
+    intermediate_res_vec.push(542573957820843489);
+    // let res_norm = fe_to_norm(res);
+    // let res_norm = fe_to_norm(intermediate_res_vec);
+    // print_vec(res_norm);
 /*
-current output...
-18417799008695130381
-18138064264643904941
-8275434384499309183
-7900175912883409568
-10537467630215797999
+16494539950903960225 + 
+6909894500484332639 * 2^64 +
+10854278113294925999 * 2^128 +
+10279541547892741855 * 2^192 +
+12499445441687670930 * 2^256 +
+440910865060157199 *2^320
+
+941779891765169534644661530249600716619032215997678548055171344032200486581648291416343986992810576160191745532577
+which is a*b mod p
 */
     true
 }
