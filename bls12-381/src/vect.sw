@@ -24,7 +24,6 @@ pub struct vec384x {
 }
 
 
-
 //TODO: remove these. Only for developing and testing atm
 pub const ZERO: vec384 = vec384 {
     ls: [0, 0, 0, 0, 0, 0]
@@ -273,12 +272,13 @@ pub fn temp_fe_mont_mul(a: Vec<u64>, b: Vec<u64>) -> Vec<u64> {
     let mut carry = 0u64; 
     while i < 6 {
         carry = 0;
+        j = 0;
         while j < 6 {
             let aj: U128 = ~U128::from(0, unpack_or_0(a.get(j)));
             let bi: U128 = ~U128::from(0, unpack_or_0(b.get(i)));
             let temp_ij = ~U128::from(0, unpack_or_0(temp.get(i + j)));
             let carry_128 = ~U128::from(0, carry);
-            let hilo: U128 = aj + bi + temp_ij + carry_128;
+            let hilo: U128 = aj * bi + temp_ij + carry_128;
             temp.remove(i+j);
             temp.insert(i+j, hilo.lower);
             carry = hilo.upper;
@@ -297,7 +297,7 @@ pub fn temp_fe_mont_mul(a: Vec<u64>, b: Vec<u64>) -> Vec<u64> {
             let nj: U128 = ~U128::from(0, BLS12_381_P.ls[j]);
             let temp_ij = ~U128::from(0, unpack_or_0(temp.get(i + j)));
             let carry_128 = ~U128::from(0, carry);
-            let hilo: U128 = m_128 + nj + temp_ij + carry_128;
+            let hilo: U128 = m_128 * nj + temp_ij + carry_128;
             temp.remove(i+j);
             temp.insert(i+j, hilo.lower);
             carry = hilo.upper;
@@ -320,7 +320,7 @@ pub fn temp_fe_mont_mul(a: Vec<u64>, b: Vec<u64>) -> Vec<u64> {
     }
 
     let mask: u64 = if borrow == 1 {
-        ~u64::max() - 1
+        ~u64::max()
     } else {
         0
     };
