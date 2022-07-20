@@ -223,6 +223,117 @@ pub fn mul_mont_n(a: Vec<u64>, b: Vec<u64>, p: Vec<u64>, n0: u64, n: u64) -> Vec
     res
 }
 
+fn zero_vec() -> Vec<u64> {
+    let mut temp: Vec<u64> = ~Vec::new::<u64>();
+    temp.push(0);
+    temp.push(0);
+    temp.push(0);
+    temp.push(0);
+    temp.push(0);
+    temp.push(0);
+    temp.push(0);
+    temp.push(0);
+    temp.push(0);
+    temp.push(0);
+    temp.push(0);
+    temp.push(0);
+    temp
+}
+
+// Effectively a_mont = (a_norm * R) mod N
+pub fn fe_to_mont(a: Vec<u64>) -> Vec<u64> {
+    let mut BLS12_381_RR: Vec<u64> = ~Vec::new::<u64>();
+    BLS12_381_RR.push(0xf4df1f341c341746);
+    BLS12_381_RR.push(0x0a76e6a609d104f1);
+    BLS12_381_RR.push(0x8de5476c4c95b6d5);
+    BLS12_381_RR.push(0x67eb88a9939d83c0);
+    BLS12_381_RR.push(0x9a793e85b519952d);
+    BLS12_381_RR.push(0x11988fe592cae3aa);
+    temp_fe_mont_mul(a, BLS12_381_RR)
+}
+
+// Effectively a_norm = (a_mont * R^{-1}) mod N
+pub fn fe_to_norm(a: Vec<u64>) -> Vec<u64> {
+    let mut ONE: Vec<u64> = ~Vec::new::<u64>();
+    ONE.push(0x1);
+    ONE.push(0);
+    ONE.push(0);
+    ONE.push(0);
+    ONE.push(0);
+    ONE.push(0);
+    temp_fe_mont_mul(a, ONE)
+}
+
+// temporary mont mult impl from https://research.nccgroup.com/2021/06/09/optimizing-pairing-based-cryptography-montgomery-arithmetic-in-rust/
+// with repo https://github.com/nccgroup/pairing
+pub fn temp_fe_mont_mul(a: Vec<u64>, b: Vec<u64>) -> Vec<u64> {
+    let mut temp: Vec<u64> = zero_vec();
+    let mut i = 0;
+    let mut j = 0;
+    let mut carry = 0u64; 
+    while i < 6 {
+        carry = 0;
+        while j < 6 {
+            let aj: U128 = ~U128::from(0, unpack_or_0(a.get(j)));
+            let bi: U128 = ~U128::from(0, unpack_or_0(b.get(i)));
+            let temp_ij = ~U128::from(0, unpack_or_0(temp.get(i + j)));
+            let carry_128 = ~U128::from(0, carry);
+            let hilo: U128 = aj + bi + temp_ij + carry_128;
+            temp.remove(i+j);
+            temp.insert(i+j, hilo.lower);
+            carry = hilo.upper;
+            j += 1;
+        }
+        let mut t = unpack_or_0(temp.get(i+6));
+        temp.remove(i+6);
+        temp.insert(i+6, t+carry);
+
+        let m: u64 = multiply_wrap(unpack_or_0(temp.get(i)), P0);
+        let m_128 = ~U128::from(0, m);
+
+        carry = 0;
+        j = 0;
+        while j < 6 {
+            let nj: U128 = ~U128::from(0, BLS12_381_P.ls[j]);
+            let temp_ij = ~U128::from(0, unpack_or_0(temp.get(i + j)));
+            let carry_128 = ~U128::from(0, carry);
+            let hilo: U128 = m_128 + nj + temp_ij + carry_128;
+            temp.remove(i+j);
+            temp.insert(i+j, hilo.lower);
+            carry = hilo.upper;
+            j += 1;
+        }
+        t = unpack_or_0(temp.get(i+6));
+        temp.remove(i+6);
+        temp.insert(i+6, t+carry);
+        i += 1;
+    }
+
+    let mut dec: Vec<u64> = zero_vec();
+    let mut borrow = 0u64;
+    j = 0;
+    while j < 6 {
+        let (diff, borrow_t0) = sbb(unpack_or_0(temp.get(j + 6)), BLS12_381_P.ls[j], borrow);
+        dec.insert(j, diff);
+        borrow = borrow_t0;
+        j += 1;
+    }
+
+    let mask: u64 = if borrow == 1 {
+        ~u64::max() - 1
+    } else {
+        0
+    };
+    let mut result: Vec<u64> = zero_vec();
+    j = 0;
+    while j < 6 {
+        let entry = (unpack_or_0(temp.get(j+6)) & mask) | (not(mask) & unpack_or_0(dec.get(j)));
+        result.insert(j, entry);
+        j += 1;
+    }
+    result
+}
+
 // from https://github.com/zkcrypto/bls12_381
 pub fn montgomery_reduction(t: [u64;12]) -> vec384 {
     let k = multiply_wrap(t[0], INV);
