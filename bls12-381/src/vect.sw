@@ -223,6 +223,131 @@ pub fn mul_mont_n(a: Vec<u64>, b: Vec<u64>, p: Vec<u64>, n0: u64, n: u64) -> Vec
     res
 }
 
+// from https://github.com/zkcrypto/bls12_381
+pub fn montgomery_reduction(t: [u64;12]) -> vec384 {
+    let k = multiply_wrap(t[0], INV);
+    
+    let r0: (u64, u64) = mac(t[0], k, BLS12_381_P.ls[0], 0);
+    let r1: (u64, u64) = mac(t[1], k, BLS12_381_P.ls[1], r0.1);
+    let r2: (u64, u64) = mac(t[2], k, BLS12_381_P.ls[2], r1.1);
+    let r3: (u64, u64) = mac(t[3], k, BLS12_381_P.ls[3], r2.1);
+    let r4: (u64, u64) = mac(t[4], k, BLS12_381_P.ls[4], r3.1);
+    let r5: (u64, u64) = mac(t[5], k, BLS12_381_P.ls[5], r4.1);
+    let r6_7: (u64, u64) = adc(t[6], 0, r5.1);
+
+    let k = multiply_wrap(r1.0, INV);
+    let r0: (u64, u64) = mac(r1.0, k, BLS12_381_P.ls[0], 0);
+    let r2: (u64, u64) = mac(r2.0, k, BLS12_381_P.ls[1], r0.1);
+    let r3: (u64, u64) = mac(r3.0, k, BLS12_381_P.ls[2], r2.1);
+    let r4: (u64, u64) = mac(r4.0, k, BLS12_381_P.ls[3], r3.1);
+    let r5: (u64, u64) = mac(r5.0, k, BLS12_381_P.ls[4], r4.1);
+    let r6: (u64, u64) = mac(r6_7.0, k, BLS12_381_P.ls[5], r5.1);
+    let r7_8: (u64, u64) = adc(t[7], r6_7.1, r6.1);
+
+    let k = multiply_wrap(r2.0, INV);
+    let r0: (u64, u64) = mac(r2.0, k, BLS12_381_P.ls[0], 0);
+    let r3: (u64, u64) = mac(r3.0, k, BLS12_381_P.ls[1], r0.1);
+    let r4: (u64, u64) = mac(r4.0, k, BLS12_381_P.ls[2], r3.1);
+    let r5: (u64, u64) = mac(r5.0, k, BLS12_381_P.ls[3], r4.1);
+    let r6: (u64, u64) = mac(r6.0, k, BLS12_381_P.ls[4], r5.1);
+    let r7: (u64, u64) = mac(r7_8.0, k, BLS12_381_P.ls[5], r6.1);
+    let r8_9: (u64, u64) = adc(t[8], r7_8.1, r7.1);
+
+    let k = multiply_wrap(r3.0, INV);
+    let r0: (u64, u64) = mac(r3.0, k, BLS12_381_P.ls[0], 0);
+    let r4: (u64, u64) = mac(r4.0, k, BLS12_381_P.ls[1], r0.1);
+    let r5: (u64, u64) = mac(r5.0, k, BLS12_381_P.ls[2], r4.1);
+    let r6: (u64, u64) = mac(r6.0, k, BLS12_381_P.ls[3], r5.1);
+    let r7: (u64, u64) = mac(r7.0, k, BLS12_381_P.ls[4], r6.1);
+    let r8: (u64, u64) = mac(r8_9.0, k, BLS12_381_P.ls[5], r7.1);
+    let r9_10: (u64, u64) = adc(t[9], r8_9.1, r8.1);
+
+    let k = multiply_wrap(r4.0, INV);
+    let r0: (u64, u64) = mac(r4.0, k, BLS12_381_P.ls[0], 0);
+    let r5: (u64, u64) = mac(r5.0, k, BLS12_381_P.ls[1], r0.1);
+    let r6: (u64, u64) = mac(r6.0, k, BLS12_381_P.ls[2], r5.1);
+    let r7: (u64, u64) = mac(r7.0, k, BLS12_381_P.ls[3], r6.1);
+    let r8: (u64, u64) = mac(r8.0, k, BLS12_381_P.ls[4], r7.1);
+    let r9: (u64, u64) = mac(r9_10.0, k, BLS12_381_P.ls[5], r8.1);
+    let r10_11: (u64, u64) = adc(t[10], r9_10.1, r9.1);
+
+    let k = multiply_wrap(r5.0, INV);
+    let r0: (u64, u64) = mac(r5.0, k, BLS12_381_P.ls[0], 0);
+    let r6: (u64, u64) = mac(r6.0, k, BLS12_381_P.ls[1], r0.1);
+    let r7: (u64, u64) = mac(r7.0, k, BLS12_381_P.ls[2], r6.1);
+    let r8: (u64, u64) = mac(r8.0, k, BLS12_381_P.ls[3], r7.1);
+    let r9: (u64, u64) = mac(r9.0, k, BLS12_381_P.ls[4], r8.1);
+    let r10: (u64, u64) = mac(r10_11.0, k, BLS12_381_P.ls[5], r9.1);
+    let r11_12 = adc(t[11], r10_11.1, r10.1);
+
+    subtract_p(vec384{ls: [r6.0, r7.0, r8.0, r9.0, r10.0, r11_12.0]}, BLS12_381_P)
+
+}
+
+// Naive multiplication implementation following zkcrypto. 
+// stand-in until we figure our how to make mul_mont_n work
+pub fn mul_temp(a: Vec<u64>, b: Vec<u64>, p: Vec<u64>, n: u64) -> vec384 {
+
+    let a0 = unpack_or_0(a.get(0));
+    let a1 = unpack_or_0(a.get(1));
+    let a2 = unpack_or_0(a.get(2));
+    let a3 = unpack_or_0(a.get(3));
+    let a4 = unpack_or_0(a.get(4));
+    let a5 = unpack_or_0(a.get(5));
+
+    let b0 = unpack_or_0(b.get(0));
+    let b1 = unpack_or_0(b.get(1));
+    let b2 = unpack_or_0(b.get(2));
+    let b3 = unpack_or_0(b.get(3));
+    let b4 = unpack_or_0(b.get(4));
+    let b5 = unpack_or_0(b.get(5));
+
+    let (t0, carry) = mac(0, a0, b0, 0);
+    let (t1, carry) = mac(0, a0, b1, carry);
+    let (t2, carry) = mac(0, a0, b2, carry);
+    let (t3, carry) = mac(0, a0, b3, carry);
+    let (t4, carry) = mac(0, a0, b4, carry);
+    let (t5, t6) = mac(0, a0, b5, carry);
+        
+    let (t1, carry) = mac(t1, a1, b0, 0);
+    let (t2, carry) = mac(t2, a1, b1, carry);
+    let (t3, carry) = mac(t3, a1, b2, carry);
+    let (t4, carry) = mac(t4, a1, b3, carry);
+    let (t5, carry) = mac(t5, a1, b4, carry);
+    let (t6, t7) = mac(t6, a1, b5, carry);
+
+    let (t2, carry) = mac(t2, a2, b0, 0);
+    let (t3, carry) = mac(t3, a2, b1, carry);
+    let (t4, carry) = mac(t4, a2, b2, carry);
+    let (t5, carry) = mac(t5, a2, b3, carry);
+    let (t6, carry) = mac(t6, a2, b4, carry);
+    let (t7, t8) = mac(t7, a2, b5, carry);
+
+    let (t3, carry) = mac(t3, a3, b0, 0);
+    let (t4, carry) = mac(t4, a3, b1, carry);
+    let (t5, carry) = mac(t5, a3, b2, carry);
+    let (t6, carry) = mac(t6, a3, b3, carry);
+    let (t7, carry) = mac(t7, a3, b4, carry);
+    let (t8, t9) = mac(t8, a3, b5, carry);
+
+    let (t4, carry) = mac(t4, a4, b0, 0);
+    let (t5, carry) = mac(t5, a4, b1, carry);
+    let (t6, carry) = mac(t6, a4, b2, carry);
+    let (t7, carry) = mac(t7, a4, b3, carry);
+    let (t8, carry) = mac(t8, a4, b4, carry);
+    let (t9, t10) = mac(t9, a4, b5, carry);
+
+    let (t5, carry) = mac(t5, a5, b0, 0);
+    let (t6, carry) = mac(t6, a5, b1, carry);
+    let (t7, carry) = mac(t7, a5, b2, carry);
+    let (t8, carry) = mac(t8, a5, b3, carry);
+    let (t9, carry) = mac(t9, a5, b4, carry);
+    let (t10, t11) = mac(t10, a5, b5, carry);
+
+    let res: [u64;12] = [t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11];
+    montgomery_reduction(res)
+}
+
 pub fn sub_mod_n(a: Vec<u64>, b: Vec<u64>, p: Vec<u64>, n: u64) -> Vec<u64> {
     let mut limbx: u64 = 0;
     let mut borrow: u64 = 0;
@@ -501,23 +626,12 @@ pub fn sub_mod_384(a: vec384, b: vec384, p: vec384) -> vec384 {
 
 //returns the result and new carry of a + b*c + carry
 pub fn mac(a: u64, b: u64, c: u64, carry: u64) -> (u64, u64) {
-    let A: U128 = U128 {
-        upper: 0,
-        lower: a,
-    };
-    let B: U128 = U128 {
-        upper: 0,
-        lower: b,
-    };
-    let C: U128 = U128 {
-        upper: 0,
-        lower: c,
-    };
-    let CARRY: U128 = U128 {
-        upper: 0,
-        lower: carry,
-    };
-    let res: U128 = A + (B * C) + CARRY;
+    let a_128: U128 = ~U128::from(0, a);
+    let b_128: U128 = ~U128::from(0, b);
+    let c_128: U128 = ~U128::from(0, c);
+    let carry_128: U128 = ~U128::from(0, carry);
+
+    let res: U128 = a_128 + (b_128 * c_128) + carry_128;
     (res.lower, res.upper)
 }
 
