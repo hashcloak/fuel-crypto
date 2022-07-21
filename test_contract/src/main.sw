@@ -16,6 +16,10 @@ abi EdContract {
     #[storage()]fn add(a: Element, b: Element) -> Element;
     #[storage()]fn carry_propagate(a: Element) -> Element;
     #[storage()]fn reduce(a: Element) -> Element;
+    #[storage()]fn multiply64(a: u64, b: u64) -> U128;
+    #[storage()]fn add64(a: u64, b: u64, carry: u64) -> (u64, u64);
+    #[storage()]fn add_multiply64(res: U128, a: u64, b: u64) -> U128;
+    #[storage()]fn scalar_mult(a: Element, x: u32) -> Element;
 
 }
 
@@ -46,5 +50,21 @@ impl EdContract for Contract {
 
     #[storage()]fn reduce(a: Element) -> Element {
         reduce(a)
+    }
+
+    #[storage()]fn multiply64(a: u64, b: u64) -> U128 {
+        multiply64(a, b)
+    }
+
+    #[storage()]fn add64(a: u64, b: u64, carry: u64) -> (u64, u64) {
+        add64(a, b, carry)
+    }
+
+    #[storage()]fn add_multiply64(res: U128, a: u64, b: u64) -> U128 {
+        add_multiply64(res, a, b)
+    }
+
+    #[storage()]fn scalar_mult(a: Element, x: u32) -> Element {
+        scalar_mult(a, x)
     }
 }
