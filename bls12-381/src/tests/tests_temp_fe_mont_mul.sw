@@ -6,7 +6,61 @@ use ::test_helpers::*;
 use std::logging::log;
 
 pub fn tests_temp_fe_mont_mul() -> bool {
-    assert(test_temp_mul_random_by_random());
+    // assert(test_temp_mul_random_by_random());
+    assert(test_temp_mul_mont_n());
+    true
+}
+
+fn test_temp_mul_mont_n() -> bool {
+    //28700440645560700010247999350858186656965165501286811298915027297835050275063552879691348405696442872566701753802544
+    let mut r1_vec = ~Vec::new::<u64>();
+    r1_vec.push(6071868568151433008);
+    r1_vec.push(12105094901188801210);
+    r1_vec.push(2389211775905699303);
+    r1_vec.push(7838417195104481535);
+    r1_vec.push(5826366508043997497);
+    r1_vec.push(13436617433956842131);
+    //845585313160814446158446407435059620350609671735802091463220815564059525214346533476776130630310896229502998576879
+    let mut r2_vec = ~Vec::new::<u64>();
+    r2_vec.push(16964885827015180015);
+    r2_vec.push(12035734743809705289);
+    r2_vec.push(10517060043363161601);
+    r2_vec.push(1119606639881808286);
+    r2_vec.push(2211903887497377980);
+    r2_vec.push(395875676649998273);
+
+    //Sway can't handle this. Error:
+    /*
+  {
+    "Panic": {
+      "id": "0000000000000000000000000000000000000000000000000000000000000000",
+      "is": 10352,
+      "pc": 169804,
+      "reason": {
+        "instruction": {
+          "imm06": 0,
+          "imm12": 0,
+          "imm18": 0,
+          "imm24": 0,
+          "op": 96,
+          "ra": 0,
+          "rb": 0,
+          "rc": 0,
+          "rd": 0
+        },
+        "reason": "OutOfGas"
+      }
+    }
+  },
+  {
+    "ScriptResult": {
+      "gas_used": 100000000,
+      "result": "Panic"
+    }
+  }
+    */
+    let res = temp_mul_mont_n(r1_vec, r2_vec);
+    print_vec(res);
     true
 }
 
@@ -36,7 +90,7 @@ fn test_temp_mul_random_by_random() -> bool {
     r2_vec.push(2211903887497377980);
     r2_vec.push(395875676649998273);
 
-    let a_mont = fe_to_mont(r1_vec);
+    // let a_mont = fe_to_mont(r1_vec);
     // print_vec(a_mont);
         /*
 17993655965713306301
@@ -47,7 +101,7 @@ fn test_temp_mul_random_by_random() -> bool {
 933350646299434799
     */
 
-    let b_mont = fe_to_mont(r2_vec);
+    // let b_mont = fe_to_mont(r2_vec);
     // print_vec(b_mont);
     /*
 5720430457560562798
@@ -58,8 +112,8 @@ fn test_temp_mul_random_by_random() -> bool {
 1303068506660090079
     */
 
-    let res = temp_fe_mont_mul(a_mont, b_mont);
-    print_vec(res);
+    // let res = temp_fe_mont_mul(a_mont, b_mont);
+    // print_vec(res);
     /*
 8042921339150017446
 4899742317194411181
@@ -82,7 +136,7 @@ fn test_temp_mul_random_by_random() -> bool {
     intermediate_res_vec.push(10892349319971706476);
     intermediate_res_vec.push(542573957820843489);
     // let res_norm = fe_to_norm(res);
-    // let res_norm = fe_to_norm(intermediate_res_vec);
+    let res_norm = fe_to_norm(intermediate_res_vec);
     // print_vec(res_norm);
 /*
 16494539950903960225 + 
