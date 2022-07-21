@@ -20,6 +20,7 @@ abi EdContract {
     #[storage()]fn add64(a: u64, b: u64, carry: u64) -> (u64, u64);
     #[storage()]fn add_multiply64(res: U128, a: u64, b: u64) -> U128;
     #[storage()]fn scalar_mult(a: Element, x: u32) -> Element;
+    #[storage()]fn shift_right_by51(a: U128) -> u64;
 
 }
 
@@ -66,5 +67,9 @@ impl EdContract for Contract {
 
     #[storage()]fn scalar_mult(a: Element, x: u32) -> Element {
         scalar_mult(a, x)
+    }
+
+    #[storage()]fn shift_right_by51(a: U128) -> u64 {
+        shift_right_by51(a)
     }
 }
