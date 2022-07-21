@@ -1,20 +1,13 @@
 use fuels::{prelude::*, tx::ContractId};
 use fuels_abigen_macro::abigen;
 
-// Load abi from json
 abigen!(EdContract, "out/debug/test_edwards25519-abi.json");
 
 async fn get_contract_instance() -> (EdContract, ContractId) {
-    let mut wallets =
-    launch_provider_and_get_wallets(WalletsConfig::new_single(Some(1), Some(1000000))).await;
+    let mut wallets = launch_provider_and_get_wallets(WalletsConfig::new_single(Some(1), Some(1000000))).await;
     let wallet = wallets.pop().unwrap();
-
-    let id = Contract::deploy("./out/debug/test_edwards25519.bin", &wallet, TxParameters::default())
-        .await
-        .unwrap();
-
+    let id = Contract::deploy("./out/debug/test_edwards25519.bin", &wallet, TxParameters::default()).await.unwrap();
     let instance = EdContract::new(id.to_string(), wallet);
-
     (instance, id)
 }
 

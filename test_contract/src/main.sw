@@ -12,6 +12,7 @@ abi EdContract {
     #[storage()]fn equals(a: Element, b: Element) -> bool;
     #[storage()]fn multiply(a: Element, b: Element) -> Element;
     #[storage()]fn square(a: Element) -> Element;
+    #[storage()]fn subtract(a: Element, b: Element) -> Element;
 }
 
 impl EdContract for Contract {
@@ -25,5 +26,9 @@ impl EdContract for Contract {
 
     #[storage()]fn square(a: Element) -> Element {
         square(a)
+    }
+
+    #[storage()]fn subtract(a: Element, b: Element) -> Element {
+        subtract(a, b)
     }
 }
