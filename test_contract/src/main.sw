@@ -13,6 +13,8 @@ abi EdContract {
     #[storage()]fn multiply(a: Element, b: Element) -> Element;
     #[storage()]fn square(a: Element) -> Element;
     #[storage()]fn subtract(a: Element, b: Element) -> Element;
+    #[storage()]fn add(a: Element, b: Element) -> Element;
+
 }
 
 impl EdContract for Contract {
@@ -30,5 +32,9 @@ impl EdContract for Contract {
 
     #[storage()]fn subtract(a: Element, b: Element) -> Element {
         subtract(a, b)
+    }
+
+    #[storage()]fn add(a: Element, b: Element) -> Element {
+        add(a, b)
     }
 }
