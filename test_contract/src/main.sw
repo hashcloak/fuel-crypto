@@ -14,6 +14,8 @@ abi EdContract {
     #[storage()]fn square(a: Element) -> Element;
     #[storage()]fn subtract(a: Element, b: Element) -> Element;
     #[storage()]fn add(a: Element, b: Element) -> Element;
+    #[storage()]fn carry_propagate(a: Element) -> Element;
+    #[storage()]fn reduce(a: Element) -> Element;
 
 }
 
@@ -36,5 +38,13 @@ impl EdContract for Contract {
 
     #[storage()]fn add(a: Element, b: Element) -> Element {
         add(a, b)
+    }
+
+    #[storage()]fn carry_propagate(a: Element) -> Element {
+        carry_propagate(a)
+    }
+
+    #[storage()]fn reduce(a: Element) -> Element {
+        reduce(a)
     }
 }
