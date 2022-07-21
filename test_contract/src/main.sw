@@ -22,6 +22,9 @@ abi EdContract {
     #[storage()]fn scalar_mult(a: Element, x: u32) -> Element;
     #[storage()]fn shift_right_by51(a: U128) -> u64;
 
+    #[storage()]fn inverse(a: Element) -> Element;
+
+
 }
 
 impl EdContract for Contract {
@@ -71,5 +74,9 @@ impl EdContract for Contract {
 
     #[storage()]fn shift_right_by51(a: U128) -> u64 {
         shift_right_by51(a)
+    }
+
+    #[storage()]fn inverse(a: Element) -> Element {
+        inverse(a)
     }
 }

@@ -318,81 +318,158 @@ pub fn inverse(a: Element) -> Element {
     let z2 = square(a);                 //2
     let mut t = square(z2);             //4
     t = square(t);                      //8
-    let z9 = multiply(t,a);             //9
-    let z11 = multiply(z9, z2);         //11
-    t = square(z11);                    //22
 
-    let z2_5_0 = multiply(t, z9);       //31
-    t = square(z2_5_0);                 // 62 = 2^6 - 2^1
-    while i < 4 {
-        t = square(t);                  // 2^10 - 2^5
-        i+=1;                            
-    }
+// Comment Elena: when I run inverse until here, it gives me the error: Immediate18TooLarge
 
-    let z2_10_0 = multiply(t, z2_5_0);  // 2^10 - 2^0
 
-    t = square(z2_10_0);                //2^11 - 2^1
-    i = 0;
-    while i < 9 {
-        t = square(t);                  //2^20 - 2^10
-        i += 1;
-    }
+    // let z9 = multiply(t,a);             //9
+    // let z11 = multiply(z9, z2);         //11
+    // t = square(z11);                    //22
 
-    let z2_20_0 = multiply(t, z2_10_0); //2^20 - 2^0
+    // let z2_5_0 = multiply(t, z9);       //31
+    // t = square(z2_5_0);                 // 62 = 2^6 - 2^1
+    // while i < 4 {
+    //     t = square(t);                  // 2^10 - 2^5
+    //     i+=1;                            
+    // }
 
-    t = square(z2_20_0);                //2^21 - 2^1
-    i = 0;
-    while i < 19 {
-        t = square(t);                  //2^40 - 2^20
-        i += 1;
-    }
+    // let z2_10_0 = multiply(t, z2_5_0);  // 2^10 - 2^0
 
-    t = multiply(t, z2_20_0);           //2^40 - 2^0
+    // t = square(z2_10_0);                //2^11 - 2^1
+    // i = 0;
+    // while i < 9 {
+    //     t = square(t);                  //2^20 - 2^10
+    //     i += 1;
+    // }
+
+    // let z2_20_0 = multiply(t, z2_10_0); //2^20 - 2^0
+
+    // t = square(z2_20_0);                //2^21 - 2^1
+    // i = 0;
+    // while i < 19 {
+    //     t = square(t);                  //2^40 - 2^20
+    //     i += 1;
+    // }
+
+    // t = multiply(t, z2_20_0);           //2^40 - 2^0
+
+    // t = square(t); // 2^41 - 2^1
     
-    i = 0;
-    while i < 10 {
-        t = square(t);                  //2^50 - 2^10
-    }
+    // i = 0;
+    // while i < 10 {
+    //     t = square(t);                  //2^50 - 2^10
+    // }
 
-    let z2_50_0 = multiply(t, z2_10_0); //2^50 - 2^0
+    // let z2_50_0 = multiply(t, z2_10_0); //2^50 - 2^0
 
-    t = square(z2_50_0);                //2^51 - 2^1
+    // t = square(z2_50_0);                //2^51 - 2^1
 
-    i = 0;
-    while i < 49 {
-        t = square(t);                  //2^100 - 2^50
-        i += 1;
-    }
+    // i = 0;
+    // while i < 49 {
+    //     t = square(t);                  //2^100 - 2^50
+    //     i += 1;
+    // }
     
-    let z2_100_0 = multiply(t, z2_50_0);//2^100 - 2^0
+    // let z2_100_0 = multiply(t, z2_50_0);//2^100 - 2^0
 
-    t = square(z2_100_0);               //2^101 - 2^1
+    // t = square(z2_100_0);               //2^101 - 2^1
 
-    i = 0;
-    while i < 99 {
-        t = square(t);                  //2^200 - 2^100
-        i += 1;
-    }
+    // i = 0;
+    // while i < 99 {
+    //     t = square(t);                  //2^200 - 2^100
+    //     i += 1;
+    // }
 
-    t = multiply(t, z2_100_0);          //2^200 - 2^0
+    // t = multiply(t, z2_100_0);          //2^200 - 2^0
 
-    t = square(t);                      //2^201 - 2^1
+    // t = square(t);                      //2^201 - 2^1
 
-    i = 0;
-    while i < 49 {
-        t = square(t);                  //2^250 - 2^50
-        i += 1;
-    }
+    // i = 0;
+    // while i < 49 {
+    //     t = square(t);                  //2^250 - 2^50
+    //     i += 1;
+    // }
 
-    t = multiply(t, z2_50_0);           //2^250 - 2^0
+    // t = multiply(t, z2_50_0);           //2^250 - 2^0
 
-    i = 0;
-    while i < 5 {
-        t = square(t);                  //2^255 - 2^5
-        i += 1;
-    }
+    // i = 0;
+    // while i < 5 {
+    //     t = square(t);                  //2^255 - 2^5
+    //     i += 1;
+    // }
 
-    t = multiply(t, z11);               //2^255 - 21 = p - 2
+    // t = multiply(t, z11);               //2^255 - 21 = p - 2
 
     return t;
 }
+
+// Invert sets v = 1/z mod p, and returns v.
+//
+// If z == 0, Invert returns v = 0.
+/*
+func (v *Element) Invert(z *Element) *Element {
+	// Inversion is implemented as exponentiation with exponent p − 2. It uses the
+	// same sequence of 255 squarings and 11 multiplications as [Curve25519].
+	var z2, z9, z11, z2_5_0, z2_10_0, z2_20_0, z2_50_0, z2_100_0, t Element
+
+	z2.Square(z)             // 2
+
+	t.Square(&z2)            // 4
+
+	t.Square(&t)             // 8
+
+	z9.Multiply(&t, z)       // 9
+	z11.Multiply(&z9, &z2)   // 11
+	t.Square(&z11)           // 22
+	z2_5_0.Multiply(&t, &z9) // 31 = 2^5 - 2^0
+
+	t.Square(&z2_5_0) // 2^6 - 2^1
+	for i := 0; i < 4; i++ {
+		t.Square(&t) // 2^10 - 2^5
+	}
+	z2_10_0.Multiply(&t, &z2_5_0) // 2^10 - 2^0
+
+	t.Square(&z2_10_0) // 2^11 - 2^1
+	for i := 0; i < 9; i++ {
+		t.Square(&t) // 2^20 - 2^10
+	}
+	z2_20_0.Multiply(&t, &z2_10_0) // 2^20 - 2^0
+
+	t.Square(&z2_20_0) // 2^21 - 2^1
+	for i := 0; i < 19; i++ {
+		t.Square(&t) // 2^40 - 2^20
+	}
+	t.Multiply(&t, &z2_20_0) // 2^40 - 2^0
+
+	t.Square(&t) // 2^41 - 2^1
+	for i := 0; i < 9; i++ {
+		t.Square(&t) // 2^50 - 2^10
+	}
+	z2_50_0.Multiply(&t, &z2_10_0) // 2^50 - 2^0
+
+	t.Square(&z2_50_0) // 2^51 - 2^1
+	for i := 0; i < 49; i++ {
+		t.Square(&t) // 2^100 - 2^50
+	}
+	z2_100_0.Multiply(&t, &z2_50_0) // 2^100 - 2^0
+
+	t.Square(&z2_100_0) // 2^101 - 2^1
+	for i := 0; i < 99; i++ {
+		t.Square(&t) // 2^200 - 2^100
+	}
+	t.Multiply(&t, &z2_100_0) // 2^200 - 2^0
+
+	t.Square(&t) // 2^201 - 2^1
+	for i := 0; i < 49; i++ {
+		t.Square(&t) // 2^250 - 2^50
+	}
+	t.Multiply(&t, &z2_50_0) // 2^250 - 2^0
+
+	t.Square(&t) // 2^251 - 2^1
+	t.Square(&t) // 2^252 - 2^2
+	t.Square(&t) // 2^253 - 2^3
+	t.Square(&t) // 2^254 - 2^4
+	t.Square(&t) // 2^255 - 2^5
+
+	return v.Multiply(&t, &z11) // 2^255 - 21
+}*/
