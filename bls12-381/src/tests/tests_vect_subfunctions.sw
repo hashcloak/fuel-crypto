@@ -22,6 +22,7 @@ pub fn vect_subfunctions_tests() -> bool {
     // assert(test_mul_mont_n_one_by_one());
     // assert(test_mul_mont_n_random_by_one());
     // assert(test_mul_mont_n_random_by_random());
+    assert(test_mont_mul_partial());
 
     // these tests are the same as for sub_fp and work. But they should support more values of n, thus more tests have to be added
     // assert(test_sub_zero_from_zero_subn());
@@ -31,7 +32,7 @@ pub fn vect_subfunctions_tests() -> bool {
     // assert(test_sub_2_randoms_subn());
     // assert(test_sub_2_randoms_reverse_subn());
 
-     assert(tests_redc_mont());
+    //  assert(tests_redc_mont());
     true
 }
 
@@ -98,17 +99,26 @@ fn test_mul_mont_n_random_by_one() -> bool {
     let(_, p_vec) = get_test_vectors();
     //28700440645560700010247999350858186656965165501286811298915027297835050275063552879691348405696442872566701753802544
     let mut r_vec = ~Vec::new::<u64>();
-    r_vec.push(0x54439c4ae7869f30);
-    r_vec.push(0xa7fdefad55c032ba);
-    r_vec.push(0x21282f739c0a15e7);
-    r_vec.push(0x6cc7a6e8c38430ff);
-    r_vec.push(0x50db69783b321139);
-    r_vec.push(0xba78745dadd17a93);
+    r_vec.push(0x54439c4ae7869f30); //6071868568151433008
+    r_vec.push(0xa7fdefad55c032ba); //12105094901188801210
+    r_vec.push(0x21282f739c0a15e7); //2389211775905699303
+    r_vec.push(0x6cc7a6e8c38430ff); //7838417195104481535
+    r_vec.push(0x50db69783b321139); //5826366508043997497
+    r_vec.push(0xba78745dadd17a93); //13436617433956842131
     let one_vec = get_one_vec();
 
     let res = mul_mont_n(r_vec, one_vec, p_vec, P0, 6);
-    print_vec(res);
-    equals_vec(res, r_vec, 6);
+    // print_vec(res);
+    /*
+
+    */
+    // let b = equals_vec(res, r_vec, 6);
+    // log(b);
+    let mut i = 0;
+    while i < 6 {
+        assert(unpack_or_0(res.get(i)) == unpack_or_0(r_vec.get(i)));
+        i += 1;
+    }
     true
 }
 
@@ -116,31 +126,100 @@ fn test_mul_mont_n_random_by_random() -> bool {
     let(_, p_vec) = get_test_vectors();
     //28700440645560700010247999350858186656965165501286811298915027297835050275063552879691348405696442872566701753802544
     let mut r1_vec = ~Vec::new::<u64>();
-    r1_vec.push(0x54439c4ae7869f30);
-    r1_vec.push(0xa7fdefad55c032ba);
-    r1_vec.push(0x21282f739c0a15e7);
-    r1_vec.push(0x6cc7a6e8c38430ff);
-    r1_vec.push(0x50db69783b321139);
-    r1_vec.push(0xba78745dadd17a93);
+    r1_vec.push(6071868568151433008);
+    r1_vec.push(12105094901188801210);
+    r1_vec.push(2389211775905699303);
+    r1_vec.push(7838417195104481535);
+    r1_vec.push(5826366508043997497);
+    r1_vec.push(13436617433956842131);
     //845585313160814446158446407435059620350609671735802091463220815564059525214346533476776130630310896229502998576879
     let mut r2_vec = ~Vec::new::<u64>();
-    r2_vec.push(0xeb6f61c69e4c7eef);
-    r2_vec.push(0xa70784fb3f9ac549);
-    r2_vec.push(0x91f41a633e1d9601);
-    r2_vec.push(0xf89a44e9a52e99e);
-    r2_vec.push(0x1eb242ddd39638bc);
-    r2_vec.push(0x57e6ed499f0c7c1);
+    r2_vec.push(16964885827015180015);
+    r2_vec.push(12035734743809705289);
+    r2_vec.push(10517060043363161601);
+    r2_vec.push(1119606639881808286);
+    r2_vec.push(2211903887497377980);
+    r2_vec.push(395875676649998273);
 
     //1128153310087946582770541547041113021655162062067663357733024411531633319713239944238808860915038256082620363451095
+    //[4793585148327242455, 2837967030551533581, 1626660158106644623, 
+    //15384342728939744618, 1826521055323312182, 528164867630647501]
+
+    // mult by p0
+    //241244430210532575562827373868655963084727802841779217074318408842127082994632785925923353131362216879147315212775676243090892648326992525470904388378004276874316175983655739522130737118499414971959740231422333803704862166384557102941841719958128272
+    // mod p
+    //1233002344306172478209354248697859329250780126726480993298462574958424022710616415994206080732967265541051783400711
+//[1734233419737550087, 7827676449723675145, 5835727259298429301, 3992373620040751347, 13994230039556723943, 577251792061825638]
     let mut res_vec = ~Vec::new::<u64>();
-    res_vec.push(0x42863c4b7ea22ad7);
-    res_vec.push(0x27627bfa644b580d);
-    res_vec.push(0x16930ecb9e3a308f);
-    res_vec.push(0xd5802a33c5512d6a);
-    res_vec.push(0x19591b38f5515036);
-    res_vec.push(0x7546b2615f748cd);
-    let res = mul_mont_n(r1_vec, r2_vec, p_vec, 1, 6);
-    equals_vec(res, res_vec, 6);
+    res_vec.push(0x42863c4b7ea22ad7);//4793585148327242455
+    res_vec.push(0x27627bfa644b580d);//2837967030551533581
+    res_vec.push(0x16930ecb9e3a308f);//1626660158106644623
+    res_vec.push(0xd5802a33c5512d6a);//15384342728939744618
+    res_vec.push(0x19591b38f5515036);//1826521055323312182
+    res_vec.push(0x7546b2615f748cd);//528164867630647501
+    let res = mul_mont_n(r1_vec, r2_vec, p_vec, P0, 6);
+    print_vec(res);
+    /*
+10466566815393401694
+14579313370948138685
+11816151785009594293
+7246864926219872143
+15908820384664990112
+328568623818015453
+
+blst impl
+3517150968681791168
+13347192682519393737
+4541454005160136609
+16590274403525876995
+17086414653262144931
+16572945458942657492
+    */
+    // equals_vec(res, res_vec, 6);
+    
+    true
+}
+
+fn test_mont_mul_partial() -> bool {
+    let(_, p_vec) = get_test_vectors();
+
+    let mut intermediate_res_vec = ~Vec::new::<u64>();
+    intermediate_res_vec.push(8042921339150017446);
+    intermediate_res_vec.push(4899742317194411181);
+    intermediate_res_vec.push(11922910400151252689);
+    intermediate_res_vec.push(7736564210120511729);
+    intermediate_res_vec.push(10892349319971706476);
+    intermediate_res_vec.push(542573957820843489);
+
+    let mut ONE: Vec<u64> = ~Vec::new::<u64>();
+    ONE.push(0x1);
+    ONE.push(0);
+    ONE.push(0);
+    ONE.push(0);
+    ONE.push(0);
+    ONE.push(0);
+
+    let res = mul_mont_n(intermediate_res_vec, ONE, p_vec, P0, 6);
+    print_vec(res);
+
+/*
+Should be
+16494539950903960225
+6909894500484332639
+10854278113294925999
+10279541547892741855
+12499445441687670930
+440910865060157199
+
+//Current output is:
+4899742317194411181
+11922910400151252689
+7736564210120511729
+10892349319971706476
+542573957820843489
+0
+This is almost the input vector...
+*/
     true
 }
 
