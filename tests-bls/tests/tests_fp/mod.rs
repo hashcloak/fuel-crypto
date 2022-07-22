@@ -19,9 +19,27 @@ pub const ZERO: vec384 = vec384 {
 async fn test_add_zero_to_zero() {
     let (_instance, _id) = get_contract_instance().await;
 
-    let res = _instance.add(ZERO, ZERO)
+    let res = _instance.add_fp(ZERO, ZERO)
         .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
         .call_params(CallParameters::new(None, None, Some(100_000_000)))
         .call().await.unwrap().value;
     assert!(res_equals(res, ZERO));
 }
+
+// #[tokio::test]
+// async fn test_add_zero_to_random() {
+//     let random = vec384{ 
+//         ls: [0x3e2528903ca1ef86, 0x270fd67a03bf9e0a, 0xdc70c19599cb699e, 0xebefda8057d5747a, 0xcf20e11f0b1c323, 0xe979cbf960fe51d]
+//     };
+//     let expected_res = vec384{ 
+//         ls: [0x3e2528903ca1ef86, 0x270fd67a03bf9e0a, 0xdc70c19599cb699e, 0xebefda8057d5747a, 0xcf20e11f0b1c323, 0xe979cbf960fe51d]
+//     };
+
+//     let (_instance, _id) = get_contract_instance().await;
+
+//     let res = _instance.add_fp(random, ZERO)
+//         .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
+//         .call_params(CallParameters::new(None, None, Some(100_000_000)))
+//         .call().await.unwrap().value;
+//     assert!(res_equals(res, expected_res));
+// }
