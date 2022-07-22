@@ -1,6 +1,6 @@
 contract;
 
-use bls::*;
+use bls::{fields::*, vect::*};
 
 abi BlsContract {
     //Fp

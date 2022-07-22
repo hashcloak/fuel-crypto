@@ -17,3 +17,10 @@ Various Cryptographic Primitives in Sway for the Fuel VM
  forc test
  ```
  
+## BLS
+
+ To run tests for bls folder: 
+ ```
+ cd tests-bls
+ forc test
+ ```

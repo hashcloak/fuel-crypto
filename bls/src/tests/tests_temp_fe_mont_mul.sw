@@ -72,7 +72,7 @@ fn test_temp_mul_random_by_random() -> bool {
     p_vec.push(0x64774b84f38512bf);
     p_vec.push(0x4b1ba7b6434bacd7);
     p_vec.push(0x1a0111ea397fe69a);
-    
+
     //28700440645560700010247999350858186656965165501286811298915027297835050275063552879691348405696442872566701753802544
     let mut r1_vec = ~Vec::new::<u64>();
     r1_vec.push(6071868568151433008);
@@ -92,7 +92,7 @@ fn test_temp_mul_random_by_random() -> bool {
 
     // let a_mont = fe_to_mont(r1_vec);
     // print_vec(a_mont);
-        /*
+    /*
 17993655965713306301
 15604842006860479165
 10837926002905938402
@@ -138,7 +138,7 @@ fn test_temp_mul_random_by_random() -> bool {
     // let res_norm = fe_to_norm(res);
     let res_norm = fe_to_norm(intermediate_res_vec);
     // print_vec(res_norm);
-/*
+    /*
 16494539950903960225 + 
 6909894500484332639 * 2^64 +
 10854278113294925999 * 2^128 +

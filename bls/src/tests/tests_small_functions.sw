@@ -1,6 +1,5 @@
 library tests_small_functions;
 
-
 use ::fields::*;
 use ::vect::*;
 use ::test_helpers::*;

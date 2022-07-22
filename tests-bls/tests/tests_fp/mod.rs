@@ -11,19 +11,34 @@ async fn get_contract_instance() -> (BlsContract, ContractId) {
     (instance, id)
 }
 
-pub const ZERO: vec384 = vec384 {
-    ls: [0, 0, 0, 0, 0, 0]
-};
+pub fn res_equals(res: vec384, should_be: vec384) -> bool {
+    assert!(res.ls[0] == should_be.ls[0]);
+    assert!(res.ls[1] == should_be.ls[1]);
+    assert!(res.ls[2] == should_be.ls[2]);
+    assert!(res.ls[3] == should_be.ls[3]);
+    assert!(res.ls[4] == should_be.ls[4]);
+    assert!(res.ls[5] == should_be.ls[5]);
+    true
+}
 
 #[tokio::test]
 async fn test_add_zero_to_zero() {
+    let ZERO_1: vec384 = vec384 {
+        ls: [0, 0, 0, 0, 0, 0].to_vec()
+    };
+    let ZERO_2: vec384 = vec384 {
+        ls: [0, 0, 0, 0, 0, 0].to_vec()
+    };
+    let ZERO_3: vec384 = vec384 {
+        ls: [0, 0, 0, 0, 0, 0].to_vec()
+    };
     let (_instance, _id) = get_contract_instance().await;
 
-    let res = _instance.add_fp(ZERO, ZERO)
+    let res = _instance.add_fp(ZERO_1, ZERO_2)
         .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
         .call_params(CallParameters::new(None, None, Some(100_000_000)))
         .call().await.unwrap().value;
-    assert!(res_equals(res, ZERO));
+    assert!(res_equals(res, ZERO_3));
 }
 
 // #[tokio::test]
