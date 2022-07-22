@@ -1,0 +1,8 @@
+[project]
+authors = ["Hashcloak"]
+entry = "main.sw"
+license = "Apache-2.0"
+name = "tests-bls"
+
+[dependencies]
+bls = { path = "../bls" }

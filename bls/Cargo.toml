@@ -1,5 +1,5 @@
 [project]
-name = "bls12-381"
+name = "bls"
 version = "0.1.0"
 authors = ["HashCloak"]
 edition = "2021"
