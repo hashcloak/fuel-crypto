@@ -136,7 +136,6 @@ a+b< p is true
     true
 }
 
-
 fn tests_mul_by_3_fp() -> bool {
     //3*0=0
     let three_times_0 = mul_by_3_fp(ZERO);

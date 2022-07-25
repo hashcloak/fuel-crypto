@@ -12,7 +12,7 @@ pub struct Ge25519 {
     x: Element,
     y: Element,
     z: Element,
-    t: Element
+    t: Element,
 }
 
 // Completed point (https://doc-internal.dalek.rs/curve25519_dalek/backend/serial/curve_models/index.html)
@@ -20,7 +20,7 @@ pub struct Ge25519_p1p1 {
     x: Element,
     y: Element,
     z: Element,
-    t: Element
+    t: Element,
 }
 
 /* Projective point. Satisfies:
@@ -32,17 +32,18 @@ pub struct Ge25519_p1p1 {
 pub struct Ge25519_p2 {
     x: Element,
     y: Element,
-    z: Element
+    z: Element,
 }
 
 pub struct Ge25519_aff {
     x: Element,
-    y: Element
+    y: Element,
 }
 
 /*
 http://www.hyperelliptic.org/EFD/g1p/auto-twisted-extended-1.html#doubling-dbl-2008-hwcd
 */
+// TODO TEST!
 pub fn double(p: Ge25519_p2) -> Ge25519_p1p1 {
     let a = square(p.x);
     let b = square(p.y);
@@ -62,6 +63,6 @@ pub fn double(p: Ge25519_p2) -> Ge25519_p1p1 {
         x: res_x,
         y: res_y,
         z: res_Z,
-        t: res_t
+        t: res_t,
     }
 }

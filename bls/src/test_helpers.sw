@@ -38,5 +38,4 @@ pub fn print_vec(a: Vec<u64>) {
         log(unpack_or_0(a.get(i)));
         i += 1;
     }
-    
 }
