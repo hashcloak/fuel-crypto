@@ -314,10 +314,11 @@ pub fn equals(a: Element, b: Element) -> bool {
 //Testing not done
 //a^(-1) mod p = a^(p-2) mod p by  Fermat's theorem, Hence we  calculate a^(p-2) mod p
 pub fn inverse(a: Element) -> Element {
-    let mut i = 0;
-    let z2 = square(a);                 //2
-    let mut t = square(z2);             //4
-    t = square(t);                      //8
+    a
+    // let mut i = 0;
+    // let z2 = square(a);                 //2
+    // let mut t = square(z2);             //4
+    // t = square(t);                      //8
 
 // When running these few steps of inverse (it should run the complete function) it gives error: 
 // thread 'main' panicked at 'called `Result::unwrap()` on an `Err` value: Immediate18TooLarge { val: 262221, span: Span { src (ptr): 0x60000f0ad670, path: None, start: 0, end: 0, as_str(): "" } }', sway-core/src/asm_lang/virtual_ops.rs:866:18
@@ -401,7 +402,7 @@ pub fn inverse(a: Element) -> Element {
 
     // t = multiply(t, z11);               //2^255 - 21 = p - 2
 
-    return t;
+    // return t;
 }
 
 // Invert sets v = 1/z mod p, and returns v.

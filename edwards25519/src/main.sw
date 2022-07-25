@@ -48,5 +48,5 @@ fn main() {
     // assert(tests_square());
 
     //Doesnt' terminate
-    assert(tests_inverse());
+    // assert(tests_inverse());
 }

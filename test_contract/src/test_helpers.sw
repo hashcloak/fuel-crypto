@@ -1,6 +1,6 @@
 library test_helpers;
 
-use edwards25519::*;
+use edwards25519::{field_element::*, fe25519::*, ge25519::*};
 
 use std::logging::log;
 use std::assert::assert;

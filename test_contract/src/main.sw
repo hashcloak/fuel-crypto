@@ -1,7 +1,7 @@
 contract;
 dep test_helpers;
 
-use edwards25519::*;
+use edwards25519::{field_element::*, fe25519::*, ge25519::*};
 
 use std::assert::assert;
 use std::u128::*;
@@ -24,6 +24,7 @@ abi EdContract {
 
     #[storage()]fn inverse(a: Element) -> Element;
 
+    #[storage()]fn dbl_p1p1(p: ge25519_p2) -> ge25519_p1p1;
 
 }
 
@@ -78,5 +79,9 @@ impl EdContract for Contract {
 
     #[storage()]fn inverse(a: Element) -> Element {
         inverse(a)
+    }
+
+    #[storage()]fn dbl_p1p1(p: ge25519_p2) -> ge25519_p1p1 {
+        dbl_p1p1(p)
     }
 }
