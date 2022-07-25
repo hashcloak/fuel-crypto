@@ -87,6 +87,7 @@ pub fn add_mod_n(a: Vec<u64>, b: Vec<u64>, p: Vec<u64>, n: u64) -> Vec<u64> {
     res
 }
 
+
 /*
 WIP
 
@@ -239,7 +240,7 @@ pub fn mul_mont_n(a: Vec<u64>, b: Vec<u64>, p: Vec<u64>, n0: u64, n: u64) -> Vec
 
 // TEMP MONTGOMERY MULT FROM NCC impl
 // Repo: https://github.com/nccgroup/pairing
-// Blogpost: https://research.nccgroup.com/2021/06/09/optimizing-pairing-based-cryptography-montgomery-arithmetic-in-rust/
+// Blogpost: https://research.nccgroup.com/2021/06/09/optimizing-pairing-based-cryptography-montgomery-arithmetic-in-rust/ 
 fn zero_vec() -> Vec<u64> {
     let mut temp: Vec<u64> = ~Vec::new::<u64>();
     temp.push(0);
@@ -715,9 +716,9 @@ pub fn subtract_p(a: vec384, p: vec384) -> vec384 {
 //TODO this function is also in edwards25519/src/field_element.sw (called add64). Where do we want to place these overlapping functions?
 //returns sum with carry of a and b
 pub fn adc(a: u64, b: u64, carry: u64) -> (u64, u64) {
-    let a_128: U128 = ~U128::from(0, a);
+    let a_128: U128 =  ~U128::from(0, a);
     let b_128: U128 = ~U128::from(0, b);
-    let carry_128: U128 = ~U128::from(0, carry);
+    let carry_128: U128 =  ~U128::from(0, carry);
 
     let sum: u64 = (a_128 + b_128 + carry_128).lower;
     let carry_res = ((a & b) | ((a | b) & not(sum))) >> 63;

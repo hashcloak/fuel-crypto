@@ -1,15 +1,14 @@
 contract;
 
 use bls::{fields::*, vect::*};
-use std::vec::*;
+
 abi BlsContract {
     //Fp
     #[storage()]fn add_fp(a: vec384, b: vec384) -> vec384;
-    #[storage()]fn sub_fp(a: vec384, b: vec384) -> vec384;
-    #[storage()]fn mul_by_3_fp(a: vec384) -> vec384;
-    #[storage()]fn mul_by_8_fp(a: vec384) -> vec384;
-    #[storage()]fn lshift_fp(a: vec384, count: u64) -> vec384;
-    // #[storage()]fn temp_fe_mont_mul(a: Vec<u64>, b: Vec<u64>) -> Vec<u64>;
+    // #[storage()]fn sub_fp(a: vec384, b: vec384) -> vec384;
+    // #[storage()]fn mul_by_3_fp(a: vec384) -> vec384;
+    // #[storage()]fn mul_by_8_fp(a: vec384) -> vec384;
+    // #[storage()]fn lshift_fp(a: vec384, count: u64) -> vec384;
     // #[storage()]fn rshift_fp(a: vec384, count: u64) -> vec384;
     // #[storage()]fn div_by_2_fp(a: vec384) -> vec384;
     // #[storage()]fn mul_fp(a: vec384, b: vec384) -> vec384;
@@ -37,24 +36,20 @@ impl BlsContract for Contract {
         add_fp(a, b)
     }
 
-    #[storage()]fn sub_fp(a: vec384, b: vec384) -> vec384 {
-        sub_fp(a, b)
-    }
+    // #[storage()]fn add_fp(a: vec384, b: vec384) -> vec384 {
+    //     add_fp(a, b)
+    // }
 
-    #[storage()]fn mul_by_3_fp(a: vec384) -> vec384 {
-        mul_by_3_fp(a)
-    }
+    // #[storage()]fn mul_by_3_fp(a: vec384) -> vec384 {
+    //     mul_by_3_fp(a)
+    // }
 
-    #[storage()]fn mul_by_8_fp(a: vec384) -> vec384 {
-        mul_by_8_fp(a)
-    }
+    // #[storage()]fn mul_by_8_fp(a: vec384) -> vec384 {
+    //     mul_by_8_fp(a)
+    // }
 
-    #[storage()]fn lshift_fp(a: vec384, count: u64) -> vec384 {
-        lshift_fp(a, count)
-    }
-
-    // #[storage()]fn temp_fe_mont_mul(a: Vec<u64>, b: Vec<u64>) -> Vec<u64> {
-    //     temp_fe_mont_mul(a, b)
+    // #[storage()]fn lshift_fp(a: vec384, count: u64) -> vec384 {
+    //     lshift_fp(a, count)
     // }
 
     // #[storage()]fn rshift_fp(a: vec384, count: u64) -> vec384 {
