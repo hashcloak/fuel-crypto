@@ -319,7 +319,8 @@ pub fn inverse(a: Element) -> Element {
     let mut t = square(z2);             //4
     t = square(t);                      //8
 
-// Comment Elena: when I run inverse until here, it gives me the error: Immediate18TooLarge
+// When running these few steps of inverse (it should run the complete function) it gives error: 
+// thread 'main' panicked at 'called `Result::unwrap()` on an `Err` value: Immediate18TooLarge { val: 262221, span: Span { src (ptr): 0x60000f0ad670, path: None, start: 0, end: 0, as_str(): "" } }', sway-core/src/asm_lang/virtual_ops.rs:866:18
 
 
     // let z9 = multiply(t,a);             //9

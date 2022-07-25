@@ -44,9 +44,9 @@ fn main() {
     // assert(tests_substract());
 
     // Multiply tests can't run all at the same time
-    assert(tests_multiply());
+    // assert(tests_multiply());
     // assert(tests_square());
 
     //Doesnt' terminate
-    // assert(tests_inverse());
+    assert(tests_inverse());
 }
