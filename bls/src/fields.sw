@@ -50,8 +50,8 @@ pub fn mul_fp(a: vec384, b: vec384) -> vec384 {
 }
 
 //TODO TEST
-pub fn sqr_fp(a: vec384, b: vec384) -> vec384 {
-    sqr_mont_384(a, b, BLS12_381_P, P0)
+pub fn sqr_fp(a: vec384) -> vec384 {
+    sqr_mont_384(a, BLS12_381_P, P0)
 }
 
 //TODO TEST

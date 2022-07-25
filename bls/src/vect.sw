@@ -545,7 +545,7 @@ pub fn mul_mont_384(a: vec384, b: vec384, p: vec384, n0: u64) -> vec384 {
     ZERO
 }
 
-pub fn sqr_mont_384(a: vec384, b: vec384, p: vec384, n0: u64) -> vec384 {
+pub fn sqr_mont_384(a: vec384, p: vec384, n0: u64) -> vec384 {
     //TODO
     ZERO
 }
