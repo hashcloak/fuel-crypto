@@ -261,14 +261,37 @@ fn zero_vec() -> Vec<u64> {
 /*
 The mul_mont_n is not working yet, so this would be a temporary solution but using montgomery mult. 
 */
-pub fn temp_mul_mont_n(a: Vec<u64>, b: Vec<u64>) -> Vec<u64> {
+//pub fn temp_mul_mont_n(a: Vec<u64>, b: Vec<u64>) -> Vec<u64> {
+pub fn temp_mul_mont_n(a_vec: vec384, b_vec: vec384) -> vec384 {
+    let mut a: Vec<u64> = ~Vec::new::<u64>();
+    a.push(a_vec.ls[0]);
+    a.push(a_vec.ls[1]);
+    a.push(a_vec.ls[2]);
+    a.push(a_vec.ls[3]);
+    a.push(a_vec.ls[4]);
+    a.push(a_vec.ls[5]);
+
+    let mut b: Vec<u64> = ~Vec::new::<u64>();
+    b.push(b_vec.ls[0]);
+    b.push(b_vec.ls[1]);
+    b.push(b_vec.ls[2]);
+    b.push(b_vec.ls[3]);
+    b.push(b_vec.ls[4]);
+    b.push(b_vec.ls[5]);
+    
+
     // To mont form
     let a_mont = fe_to_mont(a);
     let b_mont = fe_to_mont(b);
     // Mult
     let res = temp_fe_mont_mul(a_mont, b_mont);
     // Transform back
-    fe_to_norm(res)
+    let res = fe_to_norm(res);
+    let res_vec = vec384{
+        ls: [unpack_or_0(res.get(0)),unpack_or_0(res.get(1)),unpack_or_0(res.get(2)),unpack_or_0(res.get(3)),unpack_or_0(res.get(4)),unpack_or_0(res.get(5))]
+    };
+
+    res_vec
 }
 
 // Effectively a_mont = (a_norm * R) mod N

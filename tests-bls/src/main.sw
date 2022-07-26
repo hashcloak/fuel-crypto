@@ -20,7 +20,7 @@ abi BlsContract {
     // #[storage()]fn redc_fp(a: vec384) -> vec384;
 
     // Temp mul functions
-    // #[storage()]fn temp_fe_mont_mul(a: Vec<u64>, b: Vec<u64>) -> Vec<u64>;
+    #[storage()]fn temp_mul_mont_n(a: vec384, b: vec384) -> vec384;
 
     // // Fp2
     // #[storage()]fn add_fp2(a: vec384, b: vec384) -> vec384;
@@ -81,9 +81,9 @@ impl BlsContract for Contract {
         from_fp(a)
     }
 
-    // #[storage()]fn temp_fe_mont_mul(a: Vec<u64>, b: Vec<u64>) -> Vec<u64> {
-    //     temp_fe_mont_mul(a, b)
-    // }
+    #[storage()]fn temp_mul_mont_n(a: vec384, b: vec384) -> vec384 {
+        temp_mul_mont_n(a, b)
+    }
 
     // #[storage()]fn redc_fp(a: vec384) -> vec384 {
     //     redc_fp(a)
