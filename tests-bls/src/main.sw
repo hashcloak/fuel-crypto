@@ -1,6 +1,8 @@
 contract;
 
 use bls::{fields::*, vect::*};
+// unsure why this isn't working, bit it's needed for temp_fe_mont_mul
+// use std::vec::Vec;
 
 abi BlsContract {
     //Fp
@@ -16,6 +18,9 @@ abi BlsContract {
     #[storage()]fn cneg_fp(a: vec384, flag: u64) -> vec384;
     #[storage()]fn from_fp(a: vec384) -> vec384;
     // #[storage()]fn redc_fp(a: vec384) -> vec384;
+
+    // Temp mul functions
+    // #[storage()]fn temp_fe_mont_mul(a: Vec<u64>, b: Vec<u64>) -> Vec<u64>;
 
     // // Fp2
     // #[storage()]fn add_fp2(a: vec384, b: vec384) -> vec384;
@@ -75,6 +80,10 @@ impl BlsContract for Contract {
     #[storage()]fn from_fp(a: vec384) -> vec384 {
         from_fp(a)
     }
+
+    // #[storage()]fn temp_fe_mont_mul(a: Vec<u64>, b: Vec<u64>) -> Vec<u64> {
+    //     temp_fe_mont_mul(a, b)
+    // }
 
     // #[storage()]fn redc_fp(a: vec384) -> vec384 {
     //     redc_fp(a)

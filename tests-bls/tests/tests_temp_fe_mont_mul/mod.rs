@@ -21,17 +21,17 @@ pub fn res_equals(res: vec384, should_be: vec384) -> bool {
     true
 }
 
-// #[tokio::test]
-// async fn temp_fe_mont_mul_random() {
-//     let p_vec = [0xb9feffffffffaaab, 0x1eabfffeb153ffff, 0x6730d2a0f6b0f624, 0x64774b84f38512bf, 0x4b1ba7b6434bacd7, 0x1a0111ea397fe69a].to_vec();
-//     let r1_vec = [17993655965713306301, 15604842006860479165, 10837926002905938402, 13429498400065700031, 1823694494885156540, 933350646299434799].to_vec();
-//     let r2_vec = [5720430457560562798, 2568557665684583703, 15870134958983808442, 14065062413899436375, 12262047246709729804, 1303068506660090079].to_vec();
-//     let expected_res = [8042921339150017446, 4899742317194411181, 11922910400151252689, 7736564210120511729, 10892349319971706476, 542573957820843489].to_vec()
-//     let (_instance, _id) = get_contract_instance().await;
+#[tokio::test]
+async fn test_temp_mul_random_by_random() {
+    let p_vec = [0xb9feffffffffaaab, 0x1eabfffeb153ffff, 0x6730d2a0f6b0f624, 0x64774b84f38512bf, 0x4b1ba7b6434bacd7, 0x1a0111ea397fe69a].to_vec();
+    let r1_vec = [17993655965713306301, 15604842006860479165, 10837926002905938402, 13429498400065700031, 1823694494885156540, 933350646299434799].to_vec();
+    let r2_vec = [5720430457560562798, 2568557665684583703, 15870134958983808442, 14065062413899436375, 12262047246709729804, 1303068506660090079].to_vec();
+    let expected_res = [8042921339150017446, 4899742317194411181, 11922910400151252689, 7736564210120511729, 10892349319971706476, 542573957820843489].to_vec();
+    let (_instance, _id) = get_contract_instance().await;
 
-//     let res = _instance.temp_fe_mont_mul(r1_vec, r2_vec)
-//         .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
-//         .call_params(CallParameters::new(None, None, Some(100_000_000)))
-//         .call().await.unwrap().value;
-//     assert!(res_equals(res, expected_res));
-// }
+    let res = _instance.temp_fe_mont_mul(r1_vec, r2_vec)
+        .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
+        .call_params(CallParameters::new(None, None, Some(100_000_000)))
+        .call().await.unwrap().value;
+    assert!(res_equals(res, expected_res));
+}
