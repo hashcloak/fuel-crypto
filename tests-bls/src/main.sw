@@ -1,7 +1,6 @@
 contract;
 
 use bls::{fields::*, vect::*};
-// unsure why this isn't working, bit it's needed for temp_fe_mont_mul
 use std::u128::*;
 
 abi BlsContract {
@@ -12,6 +11,9 @@ abi BlsContract {
     #[storage()]fn adc(a: u64, b: u64, carry: u64) -> (u64, u64);
     #[storage()]fn subtract_p(a: vec384, p: vec384) -> vec384;
     #[storage()]fn neg(a: vec384, p: vec384) -> vec384;
+    
+    // Vec can't be used yet here WIP in Sway https://github.com/FuelLabs/fuels-rs/issues/353
+    // #[storage()]fn add_mod_n(a: Vec<u64>, b: Vec<u64>, p: Vec<u64>, n: u64) -> Vec<u64>;
 
     //Fp
     #[storage()]fn add_fp(a: vec384, b: vec384) -> vec384;
@@ -34,8 +36,8 @@ abi BlsContract {
 
 
     // // Fp2
-    // #[storage()]fn add_fp2(a: vec384, b: vec384) -> vec384;
-    // #[storage()]fn sub_fp2(a: vec384, b: vec384) -> vec384;
+    #[storage()]fn add_fp2(a: vec384x, b: vec384x) -> vec384x;
+    #[storage()]fn sub_fp2(a: vec384x, b: vec384x) -> vec384x;
     // #[storage()]fn mul_by_3_fp2(a: vec384) -> vec384;
     // #[storage()]fn mul_by_8_fp2(a: vec384) -> vec384;
     // #[storage()]fn lshift_fp2(a: vec384, count: u64) -> vec384;
@@ -72,6 +74,11 @@ impl BlsContract for Contract {
     #[storage()]fn neg(a: vec384, p: vec384) -> vec384 {
         neg(a, p)
     }
+
+// Vec can't be used yet here WIP in Sway https://github.com/FuelLabs/fuels-rs/issues/353
+    // #[storage()]fn add_mod_n(a: Vec<u64>, b: Vec<u64>, p: Vec<u64>, n: u64) -> Vec<u64> {
+    //     add_mod_n(a, b, p, n)
+    // }
 
     // Fp
     #[storage()]fn add_fp(a: vec384, b: vec384) -> vec384 {
@@ -136,13 +143,13 @@ impl BlsContract for Contract {
     // }
 
     // // Fp2
-    // #[storage()]fn add_fp2(a: vec384, b: vec384) -> vec384 {
-    //     add_fp2(a, b)
-    // }
+    #[storage()]fn add_fp2(a: vec384x, b: vec384x) -> vec384x {
+        add_fp2(a, b)
+    }
 
-    // #[storage()]fn add_fp2(a: vec384, b: vec384) -> vec384 {
-    //     add_fp2(a, b)
-    // }
+    #[storage()]fn sub_fp2(a: vec384x, b: vec384x) -> vec384x {
+        sub_fp2(a, b)
+    }
 
     // #[storage()]fn mul_by_3_fp2(a: vec384) -> vec384 {
     //     mul_by_3_fp2(a)

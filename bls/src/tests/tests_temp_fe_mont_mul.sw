@@ -5,6 +5,9 @@ use std::{assert::assert, vec::Vec};
 use ::test_helpers::*;
 use std::logging::log;
 
+// COMMENT: this runs out of gas in contract testing as well 
+// Keeping this for now, because it hasn't been converted yet
+
 pub fn tests_temp_fe_mont_mul() -> bool {
     // assert(test_temp_mul_random_by_random());
     assert(test_temp_mul_mont_n());

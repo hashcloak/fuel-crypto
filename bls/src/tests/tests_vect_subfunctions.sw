@@ -7,6 +7,8 @@ use std::logging::log;
 use std::{assert::assert, vec::Vec};
 use ::consts::*;
 
+// COMMENT: these tests can't be converted to contract testing yet because they don't support Vec yet
+
 pub fn vect_subfunctions_tests() -> bool {
     // NOTE: Don't run all at the same time, because will run out of gas
 
