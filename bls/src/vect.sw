@@ -839,8 +839,55 @@ pub fn lshift_mod_384(a: vec384, n: u64, p: vec384) -> vec384 {
 }
 
 pub fn rshift_mod_384(a: vec384, n: u64, p: vec384) -> vec384 {
-    //TODO
-    ZERO
+    let mut limbx: U128 = ~U128::from(0, 0);
+    let mut mask = 0;
+    let mut carry = 0;
+    let mut limb = 0;
+    let mut next = 0;
+    let mut i = 0;
+    let mut m = n;
+    //let mut res_vec: (u64, u64, u64, u64, u64, u64) = (0,0,0,0,0,0);
+    let mut res_vec: Vec<u64> = ~Vec::new::<u64>();
+    while m > 0 {
+
+        if a.ls[0] & 1 > 0 {
+            mask = 1<<64 - 1;
+        } else {
+            mask = 0;
+        }
+        //mask = 0 - (a.ls[0] & 1);
+        //launder(mask)??
+        carry = 0;
+        i = 0;
+        while i < 6 {
+            limbx = ~U128::from(0,a.ls[i]) + (~U128::from(0,(p.ls[i] & mask)) + ~U128::from(0,carry));
+            //res_vec.i = limbx;
+            res_vec.insert(i, limbx.lower);
+            carry = limbx.upper;
+            i += 1;
+        }
+        //next = res_vec.0;
+        next = unpack_or_0(res_vec.get(0));
+        i = 0;
+        while i <  5 {
+            limb = next >> 1;
+            //next = res_vec.(i+1);
+            next = unpack_or_0(res_vec.get(i+1));
+            //res_vec.i = limb | next << 31; 
+            res_vec.remove(i);
+            res_vec.insert(i,limb | next << 31);
+            i += 1;
+        }
+        //res_vec.i = next >> 1 | carry << 31;
+        res_vec.remove(i);
+        res_vec.insert(i,next >> 1 | carry << 31);
+        m -= 1;
+    }
+    vec384 {
+        //ls: [res_vec.0, res_vec.1, res_vec.2, res_vec.3, res_vec.4, res_vec.5],
+        ls: [unpack_or_0(res_vec.get(0)), unpack_or_0(res_vec.get(1)), unpack_or_0(res_vec.get(2)), unpack_or_0(res_vec.get(3)), unpack_or_0(res_vec.get(4)), unpack_or_0(res_vec.get(5))],
+    }
+    // ZERO
 }
 
 pub fn div_by_2_mod_384(a: vec384, p: vec384) -> vec384 {
