@@ -30,6 +30,9 @@ abi BlsContract {
     // Temp mul functions
     #[storage()]fn temp_mul_mont_n(a: vec384, b: vec384) -> vec384;
     #[storage()]fn rshift_mod_384(a: vec384, n: u64, p: vec384) -> vec384;
+    #[storage()]fn mul_temp_wrapper(a: vec384, b:vec384, p: vec384, n: u64) -> vec384;
+
+
     // // Fp2
     // #[storage()]fn add_fp2(a: vec384, b: vec384) -> vec384;
     // #[storage()]fn sub_fp2(a: vec384, b: vec384) -> vec384;
@@ -115,6 +118,7 @@ impl BlsContract for Contract {
         from_fp(a)
     }
 
+    // Temp mul functions
     #[storage()]fn temp_mul_mont_n(a: vec384, b: vec384) -> vec384 {
         temp_mul_mont_n(a, b)
     }
@@ -122,6 +126,11 @@ impl BlsContract for Contract {
     #[storage()]fn rshift_mod_384(a: vec384, n: u64, p: vec384) -> vec384 {
         rshift_mod_384(a, n, p)
     }
+
+    #[storage()]fn mul_temp_wrapper(a: vec384, b:vec384, p: vec384, n: u64) -> vec384 {
+        mul_temp_wrapper(a, b, p, n)
+    }
+
     // #[storage()]fn redc_fp(a: vec384) -> vec384 {
     //     redc_fp(a)
     // }

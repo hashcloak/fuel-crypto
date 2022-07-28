@@ -294,6 +294,7 @@ pub fn temp_mul_mont_n(a_vec: vec384, b_vec: vec384) -> vec384 {
     res_vec
 }
 
+// Same functionality as mul_temp
 // Effectively a_mont = (a_norm * R) mod N
 pub fn fe_to_mont(a: Vec<u64>) -> Vec<u64> {
     let mut BLS12_381_RR: Vec<u64> = ~Vec::new::<u64>();
@@ -473,6 +474,46 @@ pub fn montgomery_reduction(t: [u64;
     BLS12_381_P)
 }
 
+pub fn mul_temp_wrapper(a: vec384, b:vec384, p: vec384, n: u64) -> vec384 {
+    let mut a_temp: Vec<u64> = ~Vec::new::<u64>();
+    a_temp.push(a.ls[0]);
+    a_temp.push(a.ls[1]);
+    a_temp.push(a.ls[2]);
+    a_temp.push(a.ls[3]);
+    a_temp.push(a.ls[4]);
+    a_temp.push(a.ls[5]);
+
+    let mut b_temp: Vec<u64> = ~Vec::new::<u64>();
+    b_temp.push(b.ls[0]);
+    b_temp.push(b.ls[1]);
+    b_temp.push(b.ls[2]);
+    b_temp.push(b.ls[3]);
+    b_temp.push(b.ls[4]);
+    b_temp.push(b.ls[5]);
+
+    let mut p_temp: Vec<u64> = ~Vec::new::<u64>();
+    p_temp.push(p.ls[0]);
+    p_temp.push(p.ls[1]);
+    p_temp.push(p.ls[2]);
+    p_temp.push(p.ls[3]);
+    p_temp.push(p.ls[4]);
+    p_temp.push(p.ls[5]);
+
+    //  mul_temp and temp_fe_mont_mul give the same result
+
+    // mul_temp(a_temp, b_temp, p_temp, n)
+    let temp_vec = temp_fe_mont_mul(a_temp, b_temp);
+    vec384 {
+        ls: [unpack_or_0(temp_vec.get(0)),
+        unpack_or_0(temp_vec.get(1)),
+        unpack_or_0(temp_vec.get(2)),
+        unpack_or_0(temp_vec.get(3)),
+        unpack_or_0(temp_vec.get(4)),
+        unpack_or_0(temp_vec.get(5))
+        ]
+    }
+}
+// Same functionality as fe_to_mont
 // TEMP NAIVE MULT IMPL
 // Naive multiplication implementation following zkcrypto.
 // Can be used as stand-in until we figure our how to make mul_mont_n work or the NCC mult with conversions before and after is feasible
