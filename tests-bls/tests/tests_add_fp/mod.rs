@@ -4,8 +4,31 @@ use fuels_abigen_macro::abigen;
 abigen!(BlsContract, "out/debug/tests-bls-abi.json");
 
 async fn get_contract_instance() -> (BlsContract, ContractId) {
-    let mut wallets = launch_provider_and_get_wallets(WalletsConfig::new_single(Some(1), Some(1_000_000))).await;
-    let wallet = wallets.pop().unwrap();
+
+    // This is the address of a running node.
+    let server_address = "127.0.0.1:4000"
+        .parse()
+        .expect("Unable to parse socket address");
+
+    // Create the provider using the client.
+    let provider = Provider::connect(server_address).await.unwrap();
+
+    // Create the wallet.
+    let wallet = LocalWallet::new_random(Some(provider));
+    let num_assets = 1;
+    let coins_per_asset = 100_000_000;
+    let amount_per_coin = 1;
+
+    let (coins, asset_ids) = setup_multiple_assets_coins(
+        wallet.address(),
+        num_assets,
+        coins_per_asset,
+        amount_per_coin,
+    );
+
+
+    // let mut wallets = launch_provider_and_get_wallets(WalletsConfig::new_single(Some(1), Some(1_000_000))).await;
+    // let wallet = wallets.pop().unwrap();
     let id = Contract::deploy("./out/debug/tests-bls.bin", &wallet, TxParameters::default()).await.unwrap();
     let instance = BlsContract::new(id.to_string(), wallet);
     (instance, id)
