@@ -2,9 +2,17 @@ contract;
 
 use bls::{fields::*, vect::*};
 // unsure why this isn't working, bit it's needed for temp_fe_mont_mul
-// use std::vec::Vec;
+use std::u128::*;
 
 abi BlsContract {
+    //Small helper functions
+    #[storage()]fn not(input: u64) -> u64;
+    #[storage()]fn subtract_wrap(x: U128, y: U128) -> U128;
+    #[storage()]fn sbb(a: u64, b: u64, borrow: u64) -> (u64, u64);
+    #[storage()]fn adc(a: u64, b: u64, carry: u64) -> (u64, u64);
+    #[storage()]fn subtract_p(a: vec384, p: vec384) -> vec384;
+    #[storage()]fn neg(a: vec384, p: vec384) -> vec384;
+
     //Fp
     #[storage()]fn add_fp(a: vec384, b: vec384) -> vec384;
     #[storage()]fn sub_fp(a: vec384, b: vec384) -> vec384;
@@ -36,6 +44,32 @@ abi BlsContract {
 }
 
 impl BlsContract for Contract {
+
+    //Small helper functions
+    #[storage()]fn not(input: u64) -> u64 {
+        not(input)
+    }
+
+    #[storage()]fn subtract_wrap(x: U128, y: U128) -> U128 {
+        subtract_wrap(x, y)
+    }
+
+    #[storage()]fn sbb(a: u64, b: u64, borrow: u64) -> (u64, u64) {
+        sbb(a, b, borrow)
+    }
+
+    #[storage()]fn adc(a: u64, b: u64, carry: u64) -> (u64, u64) {
+        adc(a, b, carry)
+    }
+
+    #[storage()]fn subtract_p(a: vec384, p: vec384) -> vec384 {
+        subtract_p(a, p)
+    }
+
+    #[storage()]fn neg(a: vec384, p: vec384) -> vec384 {
+        neg(a, p)
+    }
+
     // Fp
     #[storage()]fn add_fp(a: vec384, b: vec384) -> vec384 {
         add_fp(a, b)
