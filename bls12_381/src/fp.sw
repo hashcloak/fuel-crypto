@@ -85,17 +85,14 @@ pub fn sbb(a: u64, b: u64, borrow: u64) -> (u64, u64) {
     (res.lower, res.upper >> 63) //(result, borrow)
 }
 
-//TODO this function is also in edwards25519/src/field_element.sw (called add64). Where do we want to place these overlapping functions?
 //returns sum with carry of a and b
 pub fn adc(a: u64, b: u64, carry: u64) -> (u64, u64) {
     let a_128: U128 =  ~U128::from(0, a);
     let b_128: U128 = ~U128::from(0, b);
     let carry_128: U128 =  ~U128::from(0, carry);
 
-    let sum: u64 = (a_128 + b_128 + carry_128).lower;
-    let carry_res = ((a & b) | ((a | b) & not(sum))) >> 63;
-
-    (sum, carry_res)
+    let sum = a_128 + b_128 + carry_128;
+    (sum.lower, sum.upper)
 }
 
 
@@ -260,6 +257,56 @@ impl Fp {
         let(t8, carry) = mac(t8, self5, rhs3, carry);
         let(t9, carry) = mac(t9, self5, rhs4, carry);
         let(t10, t11) = mac(t10, self5, rhs5, carry);
+
+        let res: [u64;12] = [t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11];
+        montgomery_reduce(res)
+    }
+
+    pub fn square(self) -> Fp {
+        let (t1, carry) = mac(0, self.ls[0], self.ls[1], 0);
+        let (t2, carry) = mac(0, self.ls[0], self.ls[2], carry);
+        let (t3, carry) = mac(0, self.ls[0], self.ls[3], carry);
+        let (t4, carry) = mac(0, self.ls[0], self.ls[4], carry);
+        let (t5, t6) = mac(0, self.ls[0], self.ls[5], carry);
+
+        let (t3, carry) = mac(t3, self.ls[1], self.ls[2], 0);
+        let (t4, carry) = mac(t4, self.ls[1], self.ls[3], carry);
+        let (t5, carry) = mac(t5, self.ls[1], self.ls[4], carry);
+        let (t6, t7) = mac(t6, self.ls[1], self.ls[5], carry);
+
+        let (t5, carry) = mac(t5, self.ls[2], self.ls[3], 0);
+        let (t6, carry) = mac(t6, self.ls[2], self.ls[4], carry);
+        let (t7, t8) = mac(t7, self.ls[2], self.ls[5], carry);
+
+        let (t7, carry) = mac(t7, self.ls[3], self.ls[4], 0);
+        let (t8, t9) = mac(t8, self.ls[3], self.ls[5], carry);
+
+        let (t9, t10) = mac(t9, self.ls[4], self.ls[5], 0);
+
+        let t11 = t10 >> 63;
+        let t10 = (t10 << 1) | (t9 >> 63);
+        let t9 = (t9 << 1) | (t8 >> 63);
+        let t8 = (t8 << 1) | (t7 >> 63);
+        let t7 = (t7 << 1) | (t6 >> 63);
+        let t6 = (t6 << 1) | (t5 >> 63);
+        let t5 = (t5 << 1) | (t4 >> 63);
+        let t4 = (t4 << 1) | (t3 >> 63);
+        let t3 = (t3 << 1) | (t2 >> 63);
+        let t2 = (t2 << 1) | (t1 >> 63);
+        let t1 = t1 << 1;
+
+        let (t0, carry) = mac(0, self.ls[0], self.ls[0], 0);
+        let (t1, carry) = adc(t1, 0, carry);
+        let (t2, carry) = mac(t2, self.ls[1], self.ls[1], carry);
+        let (t3, carry) = adc(t3, 0, carry);
+        let (t4, carry) = mac(t4, self.ls[2], self.ls[2], carry);
+        let (t5, carry) = adc(t5, 0, carry);
+        let (t6, carry) = mac(t6, self.ls[3], self.ls[3], carry);
+        let (t7, carry) = adc(t7, 0, carry);
+        let (t8, carry) = mac(t8, self.ls[4], self.ls[4], carry);
+        let (t9, carry) = adc(t9, 0, carry);
+        let (t10, carry) = mac(t10, self.ls[5], self.ls[5], carry);
+        let (t11, _) = adc(t11, 0, carry);
 
         let res: [u64;12] = [t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11];
         montgomery_reduce(res)

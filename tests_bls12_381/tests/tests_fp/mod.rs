@@ -75,34 +75,78 @@ async fn test_sub_fp() {
     assert!(res_equals(res, expected_res));
 }
 
+// WORKS, but smart to comment out when wanting to test other things
 #[tokio::test]
 async fn test_mul_fp() {
-    let r1_vec: Fp = Fp {
-        ls: [6071868568151433008, 
-        12105094901188801210,
-        2389211775905699303,
-        7838417195104481535,
-        5826366508043997497,
-        13436617433956842131].to_vec()
-    };
-    let r2_vec: Fp = Fp {
-        ls: [16964885827015180015, 
-        12035734743809705289,
-        10517060043363161601,
-        1119606639881808286,
-        2211903887497377980,
-        395875676649998273].to_vec()
-    };
-    // this is the expected result according to the zkcrypto impl. This is multiplication on montgomery forms
-    let expected_res: Fp = Fp {
-        ls: [16484308011771146774, 12795119582497094196, 7495239071060242083, 
-        6228288009955243706, 334445847756758381, 1343304342180463133].to_vec()
-    };
+    let a = Fp{ ls:[
+        0x0397_a383_2017_0cd4,
+        0x734c_1b2c_9e76_1d30,
+        0x5ed2_55ad_9a48_beb5,
+        0x095a_3c6b_22a7_fcfc,
+        0x2294_ce75_d4e2_6a27,
+        0x1333_8bd8_7001_1ebb,
+    ].to_vec()};
+    let b = Fp{ ls:[
+        0xb9c3_c7c5_b119_6af7,
+        0x2580_e208_6ce3_35c1,
+        0xf49a_ed3d_8a57_ef42,
+        0x41f2_81e4_9846_e878,
+        0xe076_2346_c384_52ce,
+        0x0652_e893_26e5_7dc0,
+    ].to_vec()};
+    let c = Fp{ ls:[
+        0xf96e_f3d7_11ab_5355,
+        0xe8d4_59ea_00f1_48dd,
+        0x53f7_354a_5f00_fa78,
+        0x9e34_a4f3_125c_5f83,
+        0x3fbe_0c47_ca74_c19e,
+        0x01b0_6a8b_bd4a_dfe4,
+    ].to_vec()};
     let (_instance, _id) = get_contract_instance().await;
 
-    let res = _instance.mul_fp(r1_vec, r2_vec)
+    let res = _instance.mul_fp(a, b)
         .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
         .call_params(CallParameters::new(None, None, Some(100_000_000)))
         .call().await.unwrap().value;
+    assert!(res_equals(res, c));
+}
+
+#[tokio::test]
+async fn test_square_fp() {
+    let a: Fp = Fp {
+        ls: [0xd215_d276_8e83_191b,//15138237129114720539
+        0x5085_d80f_8fb2_8261,//5802281256283701857
+        0xce9a_032d_df39_3a56,//14887215013780077142
+        0x3e9c_4fff_2ca0_c4bb,//4511568884102382779
+        0x6436_b6f7_f4d9_5dfb,//7221160228616232443
+        0x1060_6628_ad4a_4d90].to_vec()//1180055427263122832
+    };
+
+    let a_again: Fp = Fp {
+        ls: [0xd215_d276_8e83_191b,
+        0x5085_d80f_8fb2_8261,//5802281256283701857
+        0xce9a_032d_df39_3a56,//14887215013780077142
+        0x3e9c_4fff_2ca0_c4bb,//4511568884102382779
+        0x6436_b6f7_f4d9_5dfb,//7221160228616232443
+        0x1060_6628_ad4a_4d90].to_vec()//1180055427263122832
+    };
+
+    let expected_res: Fp = Fp {
+        ls: [0x33d9_c42a_3cb3_e235,
+        0xdad1_1a09_4c4c_d455,
+        0xa2f1_44bd_729a_aeba,
+        0xd415_0932_be9f_feac,
+        0xe27b_c7c4_7d44_ee50,
+        0x14b6_a78d_3ec7_a560].to_vec()
+    };
+
+    let (_instance, _id) = get_contract_instance().await;
+
+    let res = _instance.square_fp(a)
+        .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
+        .call_params(CallParameters::new(None, None, Some(100_000_000)))
+        .call().await.unwrap().value;
+
     assert!(res_equals(res, expected_res));
+
 }
