@@ -6,6 +6,7 @@ abi BlsTestContract {
     #[storage(read, write)]fn add_fp(a: Fp, b: Fp) -> Fp;
     #[storage(read, write)]fn sub_fp(a: Fp, b: Fp) -> Fp;
     #[storage(read, write)]fn mul_fp(a: Fp, b: Fp) -> Fp;
+    #[storage(read, write)]fn square_fp(a: Fp) -> Fp;
     
 }
 
@@ -20,5 +21,9 @@ impl BlsTestContract for Contract {
 
     #[storage(read, write)]fn mul_fp(a: Fp, b: Fp) -> Fp {
         a.mul(b)
+    }
+
+    #[storage(read, write)]fn square_fp(a: Fp) -> Fp {
+        a.square()
     }
 }

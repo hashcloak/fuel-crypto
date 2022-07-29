@@ -75,6 +75,7 @@ async fn test_sub_fp() {
     assert!(res_equals(res, expected_res));
 }
 
+//WORKS, but smart to comment out when wanting to test other things
 #[tokio::test]
 async fn test_mul_fp() {
     let r1_vec: Fp = Fp {
@@ -104,5 +105,47 @@ async fn test_mul_fp() {
         .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
         .call_params(CallParameters::new(None, None, Some(100_000_000)))
         .call().await.unwrap().value;
+    assert!(res_equals(res, expected_res));
+}
+
+//WORKS, but smart to comment out when wanting to test other things
+#[tokio::test]
+async fn test_square_fp() {
+    let r1_1: Fp = Fp {
+        ls: [6071868568151433008, 
+        12105094901188801210,
+        2389211775905699303,
+        7838417195104481535,
+        5826366508043997497,
+        13436617433956842131].to_vec()
+    };
+    let r1_2: Fp = Fp {
+        ls: [6071868568151433008, 
+        12105094901188801210,
+        2389211775905699303,
+        7838417195104481535,
+        5826366508043997497,
+        13436617433956842131].to_vec()
+    };
+    let r1_3: Fp = Fp {
+        ls: [6071868568151433008, 
+        12105094901188801210,
+        2389211775905699303,
+        7838417195104481535,
+        5826366508043997497,
+        13436617433956842131].to_vec()
+    };
+
+    let (_instance, _id) = get_contract_instance().await;
+
+    let expected_res = _instance.mul_fp(r1_1, r1_2)
+        .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
+        .call_params(CallParameters::new(None, None, Some(100_000_000)))
+        .call().await.unwrap().value;
+    let res = _instance.square_fp(r1_3)
+        .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
+        .call_params(CallParameters::new(None, None, Some(100_000_000)))
+        .call().await.unwrap().value;
+
     assert!(res_equals(res, expected_res));
 }
