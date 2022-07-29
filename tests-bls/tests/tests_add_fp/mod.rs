@@ -1,23 +1,16 @@
-use fuels::{prelude::*, tx::ContractId};
-use fuels_abigen_macro::abigen;
+use fuels::{
+    prelude::*,
+    tx::{ConsensusParameters, ContractId},
+};
 
 abigen!(BlsContract, "out/debug/tests-bls-abi.json");
 
 async fn get_contract_instance() -> (BlsContract, ContractId) {
-
-    // This is the address of a running node.
-    let server_address = "127.0.0.1:4000"
-        .parse()
-        .expect("Unable to parse socket address");
-
-    // Create the provider using the client.
-    let provider = Provider::connect(server_address).await.unwrap();
-
     // Create the wallet.
-    let wallet = LocalWallet::new_random(Some(provider));
+    let mut wallet = LocalWallet::new_random(None);
     let num_assets = 1;
-    let coins_per_asset = 100_000_000;
-    let amount_per_coin = 1;
+    let coins_per_asset = 100;
+    let amount_per_coin = 100000;
 
     let (coins, asset_ids) = setup_multiple_assets_coins(
         wallet.address(),
@@ -26,11 +19,22 @@ async fn get_contract_instance() -> (BlsContract, ContractId) {
         amount_per_coin,
     );
 
+    let _consensus_parameters_config = ConsensusParameters::DEFAULT.with_max_gas_per_tx(1000000000); // Can't use this for now :(
 
-    // let mut wallets = launch_provider_and_get_wallets(WalletsConfig::new_single(Some(1), Some(1_000_000))).await;
-    // let wallet = wallets.pop().unwrap();
-    let id = Contract::deploy("./out/debug/tests-bls.bin", &wallet, TxParameters::default()).await.unwrap();
-    let instance = BlsContract::new(id.to_string(), wallet);
+    let (client, addr) = setup_test_client(coins, None).await;
+
+    let provider = Provider::new(client);
+    wallet.set_provider(provider.clone());
+
+    let id = Contract::deploy(
+        "./out/debug/tests-bls.bin",
+        &wallet,
+        TxParameters::default(),
+        StorageConfiguration::default(),
+    )
+    .await
+    .unwrap();
+    let instance = BlsContractBuilder::new(id.to_string(), wallet).build();
     (instance, id)
 }
 
