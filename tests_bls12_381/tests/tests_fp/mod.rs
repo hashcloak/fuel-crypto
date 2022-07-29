@@ -33,7 +33,7 @@ pub fn res_equals(res: Fp, should_be: Fp) -> bool {
 }
 
 #[tokio::test]
-async fn test_add_fps() {
+async fn test_add_fp() {
     let small = Fp{ 
         ls: [1, 2, 3, 4, 5, 6].to_vec()
     };
@@ -55,7 +55,7 @@ async fn test_add_fps() {
 }
 
 #[tokio::test]
-async fn test_sub_fps() {
+async fn test_sub_fp() {
     let a = Fp {
         ls: [10587454305359941416, 4615625447881587853, 9368308553698906485, 9494054596162055604, 377309137954328098, 766262085408033194].to_vec()
     };
@@ -69,6 +69,38 @@ async fn test_sub_fps() {
     let (_instance, _id) = get_contract_instance().await;
 
     let res = _instance.sub_fp(a, b)
+        .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
+        .call_params(CallParameters::new(None, None, Some(100_000_000)))
+        .call().await.unwrap().value;
+    assert!(res_equals(res, expected_res));
+}
+
+#[tokio::test]
+async fn test_mul_fp() {
+    let r1_vec: Fp = Fp {
+        ls: [6071868568151433008, 
+        12105094901188801210,
+        2389211775905699303,
+        7838417195104481535,
+        5826366508043997497,
+        13436617433956842131].to_vec()
+    };
+    let r2_vec: Fp = Fp {
+        ls: [16964885827015180015, 
+        12035734743809705289,
+        10517060043363161601,
+        1119606639881808286,
+        2211903887497377980,
+        395875676649998273].to_vec()
+    };
+    // this is the expected result according to the zkcrypto impl. This is multiplication on montgomery forms
+    let expected_res: Fp = Fp {
+        ls: [16484308011771146774, 12795119582497094196, 7495239071060242083, 
+        6228288009955243706, 334445847756758381, 1343304342180463133].to_vec()
+    };
+    let (_instance, _id) = get_contract_instance().await;
+
+    let res = _instance.mul_fp(r1_vec, r2_vec)
         .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
         .call_params(CallParameters::new(None, None, Some(100_000_000)))
         .call().await.unwrap().value;
