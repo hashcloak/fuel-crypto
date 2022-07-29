@@ -65,6 +65,16 @@ pub fn subtract_wrap(x: U128, y: U128) -> U128 {
     }
 }
 
+// TODO rewrite without if branch
+// If x >= y: x-y, else max::U64 - (y-x)
+pub fn subtract_wrap_64(x: u64, y: u64) -> u64 {
+    if y > x {
+        ~u64::max() - (y - x - 1)
+    } else {
+        x - y
+    }
+}
+
 /// Compute a - (b + borrow), returning the result and the new borrow (0 or 1).
 pub fn sbb(a: u64, b: u64, borrow: u64) -> (u64, u64) {
     let a_128: U128 = ~U128::from(0, a);
@@ -113,9 +123,31 @@ pub fn adc(a: u64, b: u64, carry: u64) -> (u64, u64) {
 }
 
 impl Fp {
+    pub fn neg(self) -> Fp {
+        let(d0, borrow) = sbb(MODULUS[0], self.ls[0], 0);
+        let(d1, borrow) = sbb(MODULUS[1], self.ls[1], borrow);
+        let(d2, borrow) = sbb(MODULUS[2], self.ls[2], borrow);
+        let(d3, borrow) = sbb(MODULUS[3], self.ls[3], borrow);
+        let(d4, borrow) = sbb(MODULUS[4], self.ls[4], borrow);
+        let(d5, _) = sbb(MODULUS[5], self.ls[5], borrow);
 
-    #[inline]
-    pub fn add(self, rhs: Fp) -> Fp {
+        // We need a mask that's 0 when a==p and 2^65-1 otherwise
+        // TODO improve this
+        let mut a_is_p = 0;
+        if (self.ls[0] | self.ls[1] | self.ls[2] | self.ls[3] | self.ls[4] | self.ls[5]) == 0 {
+            a_is_p = 1; //don't know is there's a native conversion
+        } else {
+            a_is_p = 0;
+        }
+
+        let mask = subtract_wrap_64(a_is_p, 1);
+
+        Fp {
+            ls: [d0 & mask, d1 & mask, d2 & mask, d3 & mask, d4 & mask, d5 & mask]
+        }
+    }
+
+    fn add(self, rhs: Fp) -> Fp {
         let (d0, carry) = adc(self.ls[0], rhs.ls[0], 0);
         let (d1, carry) = adc(self.ls[1], rhs.ls[1], carry);
         let (d2, carry) = adc(self.ls[2], rhs.ls[2], carry);
@@ -127,5 +159,10 @@ impl Fp {
         // is smaller than the modulus.
         subtract_p(Fp{ls:[d0, d1, d2, d3, d4, d5]})
     }
+}
 
+impl Fp {
+    fn sub(self, rhs: Fp) -> Fp {
+        (rhs.neg()).add(self)
+    }
 }
