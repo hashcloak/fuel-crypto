@@ -265,6 +265,8 @@ impl Fp {
         montgomery_reduce(res)
     }
 
+// TODO fix.
+// This is not giving the correct output, but I can't see any difference with the zkcrypto impl
     pub fn square(self) -> Fp {
         let (t1, carry) = mac(0, self.ls[0], self.ls[1], 0);
         let (t2, carry) = mac(0, self.ls[0], self.ls[2], carry);
