@@ -3,6 +3,15 @@ Various Cryptographic Primitives in Sway for the Fuel VM
 
 # Testing 
 
+## Spin Up a Fuel node
+From [here](https://fuellabs.github.io/sway/v0.19.0/introduction/overview.html).
+In a separate tab in your terminal, spin up a local Fuel node:
+
+
+`fuel-core --db-type in-memory`
+
+This starts a Fuel node with a volatile database that will be cleared when shut down (good for testing purposes).
+
  Make sure `fuel-core` is up to date. This can be done with [fuelup](https://github.com/FuelLabs/fuelup). Also, make sure there's only 1 `fuel-core` installed (check this with `which -a fuel-core`).
 
 ## Edwards25519

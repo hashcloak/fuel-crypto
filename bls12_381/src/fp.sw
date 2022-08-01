@@ -85,17 +85,14 @@ pub fn sbb(a: u64, b: u64, borrow: u64) -> (u64, u64) {
     (res.lower, res.upper >> 63) //(result, borrow)
 }
 
-//TODO this function is also in edwards25519/src/field_element.sw (called add64). Where do we want to place these overlapping functions?
 //returns sum with carry of a and b
 pub fn adc(a: u64, b: u64, carry: u64) -> (u64, u64) {
     let a_128: U128 =  ~U128::from(0, a);
     let b_128: U128 = ~U128::from(0, b);
     let carry_128: U128 =  ~U128::from(0, carry);
 
-    let sum: u64 = (a_128 + b_128 + carry_128).lower;
-    let carry_res = ((a & b) | ((a | b) & not(sum))) >> 63;
-
-    (sum, carry_res)
+    let sum = a_128 + b_128 + carry_128;
+    (sum.lower, sum.upper)
 }
 
 
@@ -269,8 +266,6 @@ impl Fp {
         montgomery_reduce(res)
     }
 
-// TODO fix.
-// This is not giving the correct output, but I can't see any difference with the zkcrypto impl
     pub fn square(self) -> Fp {
         let (t1, carry) = mac(0, self.ls[0], self.ls[1], 0);
         let (t2, carry) = mac(0, self.ls[0], self.ls[2], carry);
@@ -389,53 +384,53 @@ impl Fp {
     // }
 
 // fold unpacked for the case that T = 2
-    pub fn sum_of_products_2(a: [Fp; 2], b: [Fp; 2]) -> Fp { 
-        let u0 = 0;
-        let u1 = 0;
-        let u2 = 0;
-        let u3 = 0;
-        let u4 = 0;
-        let u5 = 0;
-        let mut j = 0;
+    // pub fn sum_of_products_2(a: [Fp; 2], b: [Fp; 2]) -> Fp { 
+    //     let u0 = 0;
+    //     let u1 = 0;
+    //     let u2 = 0;
+    //     let u3 = 0;
+    //     let u4 = 0;
+    //     let u5 = 0;
+    //     let mut j = 0;
 
-        while j < 6 {
-            let (t0, t1, t2, t3, t4, t5, t6) = (u0, u1, u2, u3, u4, u5, 0);
+    //     while j < 6 {
+    //         let (t0, t1, t2, t3, t4, t5, t6) = (u0, u1, u2, u3, u4, u5, 0);
 
-            let mut i = 0;
+    //         let mut i = 0;
             
-            let (t0, carry) = mac(t0, a[i].ls[j], b[i].ls[0], 0);
-            let (t1, carry) = mac(t1, a[i].ls[j], b[i].ls[1], carry);
-            let (t2, carry) = mac(t2, a[i].ls[j], b[i].ls[2], carry);
-            let (t3, carry) = mac(t3, a[i].ls[j], b[i].ls[3], carry);
-            let (t4, carry) = mac(t4, a[i].ls[j], b[i].ls[4], carry);
-            let (t5, carry) = mac(t5, a[i].ls[j], b[i].ls[5], carry);
-            let (t6, _) = adc(t6, 0, carry);
+    //         let (t0, carry) = mac(t0, a[i].ls[j], b[i].ls[0], 0);
+    //         let (t1, carry) = mac(t1, a[i].ls[j], b[i].ls[1], carry);
+    //         let (t2, carry) = mac(t2, a[i].ls[j], b[i].ls[2], carry);
+    //         let (t3, carry) = mac(t3, a[i].ls[j], b[i].ls[3], carry);
+    //         let (t4, carry) = mac(t4, a[i].ls[j], b[i].ls[4], carry);
+    //         let (t5, carry) = mac(t5, a[i].ls[j], b[i].ls[5], carry);
+    //         let (t6, _) = adc(t6, 0, carry);
 
-            i = 1;
-            let (t0, carry) = mac(t0, a[i].ls[j], b[i].ls[0], 0);
-            let (t1, carry) = mac(t1, a[i].ls[j], b[i].ls[1], carry);
-            let (t2, carry) = mac(t2, a[i].ls[j], b[i].ls[2], carry);
-            let (t3, carry) = mac(t3, a[i].ls[j], b[i].ls[3], carry);
-            let (t4, carry) = mac(t4, a[i].ls[j], b[i].ls[4], carry);
-            let (t5, carry) = mac(t5, a[i].ls[j], b[i].ls[5], carry);
-            let (t6, _) = adc(t6, 0, carry);
+    //         i = 1;
+    //         let (t0, carry) = mac(t0, a[i].ls[j], b[i].ls[0], 0);
+    //         let (t1, carry) = mac(t1, a[i].ls[j], b[i].ls[1], carry);
+    //         let (t2, carry) = mac(t2, a[i].ls[j], b[i].ls[2], carry);
+    //         let (t3, carry) = mac(t3, a[i].ls[j], b[i].ls[3], carry);
+    //         let (t4, carry) = mac(t4, a[i].ls[j], b[i].ls[4], carry);
+    //         let (t5, carry) = mac(t5, a[i].ls[j], b[i].ls[5], carry);
+    //         let (t6, _) = adc(t6, 0, carry);
 
-            let k = multiply_wrap(t0, INV);
-            let (_, carry) = mac(t0, k, MODULUS[0], 0);
-            let (u1, carry) = mac(t1, k, MODULUS[1], carry);
-            let (u2, carry) = mac(t2, k, MODULUS[2], carry);
-            let (u3, carry) = mac(t3, k, MODULUS[3], carry);
-            let (u4, carry) = mac(t4, k, MODULUS[4], carry);
-            let (u5, carry) = mac(t5, k, MODULUS[5], carry);
-            let (u6, _) = adc(t6, 0, carry);
+    //         let k = multiply_wrap(t0, INV);
+    //         let (_, carry) = mac(t0, k, MODULUS[0], 0);
+    //         let (u1, carry) = mac(t1, k, MODULUS[1], carry);
+    //         let (u2, carry) = mac(t2, k, MODULUS[2], carry);
+    //         let (u3, carry) = mac(t3, k, MODULUS[3], carry);
+    //         let (u4, carry) = mac(t4, k, MODULUS[4], carry);
+    //         let (u5, carry) = mac(t5, k, MODULUS[5], carry);
+    //         let (u6, _) = adc(t6, 0, carry);
             
-            j += 1;
-        }
+    //         j += 1;
+    //     }
 
-        // Because we represent F_p elements in non-redundant form, we need a final
-        // conditional subtraction to ensure the output is in range.
-        (Fp{ ls: [u0, u1, u2, u3, u4, u5]}).subtract_p()
-    }
+    //     // Because we represent F_p elements in non-redundant form, we need a final
+    //     // conditional subtraction to ensure the output is in range.
+    //     (Fp{ ls: [u0, u1, u2, u3, u4, u5]}).subtract_p()
+    // }
 }
 
 pub fn montgomery_reduce(t: [u64;12]) -> Fp {
