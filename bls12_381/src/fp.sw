@@ -1,5 +1,8 @@
 library fp;
 
+dep choice; 
+
+use choice::*;
 use std::{option::*, u128::*, vec::Vec};
 use core::ops::{Eq, Add, Subtract, Multiply};
 
@@ -50,15 +53,43 @@ const R3: Fp = Fp{ls: [
     0x0aa6_3460_9175_5d4d,
 ]};
 
-// type Choice doesn't seem to exist in Sway, so we use a bool
-fn conditional_select(a: u64, b: u64, choice: bool) -> u64 {
-    // TODO make constant time impl
-    let mut mask = 0;
-    if (choice) {
-        mask = ~u64::max();
-    }
+impl ConditionallySelectable for u64 {
+    // TODO How can we do this in Sway in constant time?
+    fn conditional_select(a: u64, b: u64, choice: Choice) -> u64 {
+        // From original impl:
 
-    b ^ (mask & (a ^ b))
+        // if choice = 0, mask = (-0) = 0000...0000
+        // if choice = 1, mask = (-1) = 1111...1111
+
+        // let mask = -(choice.unwrap_u8() as to_signed_int!($t)) as $t;
+        // a ^ (mask & (a ^ b))
+
+// Apparently this doesn't work in Sway?
+        // match choice {
+        //     Choice(0) => a,
+        //     Choice(1) => b,
+        // }
+
+        // TODO improve. 
+        if (choice.unwrap_u8() == 0) {
+            a
+        } else {
+            b
+        }
+    }
+}
+
+impl ConditionallySelectable for Fp {
+    fn conditional_select(a: Fp, b: Fp, choice: Choice) -> Fp {
+        Fp{ ls: [
+            ~u64::conditional_select(a.ls[0], b.ls[0], choice),
+            ~u64::conditional_select(a.ls[1], b.ls[1], choice),
+            ~u64::conditional_select(a.ls[2], b.ls[2], choice),
+            ~u64::conditional_select(a.ls[3], b.ls[3], choice),
+            ~u64::conditional_select(a.ls[4], b.ls[4], choice),
+            ~u64::conditional_select(a.ls[5], b.ls[5], choice),
+        ]}
+    }
 }
 
 fn not(input: u64) -> u64 {
@@ -144,18 +175,6 @@ impl Fp {
             && (self.ls[3] == other.ls[3])
             && (self.ls[4] == other.ls[4])
             && (self.ls[5] == other.ls[5])
-    }
-    
-    // type Choice doesn't seem to exist in Sway, so we use a bool
-    fn conditional_select(a: Self, b: Self, choice: bool) -> Self {
-        Fp{ ls: [
-            conditional_select(a.ls[0], b.ls[0], choice),
-            conditional_select(a.ls[1], b.ls[1], choice),
-            conditional_select(a.ls[2], b.ls[2], choice),
-            conditional_select(a.ls[3], b.ls[3], choice),
-            conditional_select(a.ls[4], b.ls[4], choice),
-            conditional_select(a.ls[5], b.ls[5], choice),
-        ]}
     }
 
     pub fn neg(self) -> Fp {
@@ -346,6 +365,12 @@ impl Fp {
         (rhs.neg()).add(self)
     }
 
+
+//TODO implement this from zkcrypto
+    pub fn pow_vartime(self, by: [u64; 6]) -> Self {
+        ~Fp::zero()
+    }
+
 //TODO implement this one for T=6 when sum_of_products_2 is working correctly. 
 // (sum_of_products_2 can be tested through testing fp2 multiplication, but this is not running atm because of Immediate18TooLarge)
 
@@ -456,6 +481,69 @@ impl Fp {
         // Because we represent F_p elements in non-redundant form, we need a final
         // conditional subtraction to ensure the output is in range.
         (Fp{ ls: [u0, u1, u2, u3, u4, u5]}).subtract_p()
+    }
+
+    // //TODO: Testing not done
+    // pub fn sum_of_products_6(a: [Fp; 6], b: [Fp; 6]) -> Fp { 
+    //     let u0 = 0;
+    //     let u1 = 0;
+    //     let u2 = 0;
+    //     let u3 = 0;
+    //     let u4 = 0;
+    //     let u5 = 0;
+    //     let mut j = 0;
+
+    //     while j < 6 {
+    //         let (t0, t1, t2, t3, t4, t5, t6) = (u0, u1, u2, u3, u4, u5, 0);
+
+    //         let mut i = 0;
+    //         while i < 6 {
+    //         let (t0, carry) = mac(t0, a[i].ls[j], b[i].ls[0], 0);
+    //         let (t1, carry) = mac(t1, a[i].ls[j], b[i].ls[1], carry);
+    //         let (t2, carry) = mac(t2, a[i].ls[j], b[i].ls[2], carry);
+    //         let (t3, carry) = mac(t3, a[i].ls[j], b[i].ls[3], carry);
+    //         let (t4, carry) = mac(t4, a[i].ls[j], b[i].ls[4], carry);
+    //         let (t5, carry) = mac(t5, a[i].ls[j], b[i].ls[5], carry);
+    //         let (t6, _) = adc(t6, 0, carry);
+    //         i += 1;
+    //         }
+    //         let k = multiply_wrap(t0, INV);
+    //         let (_, carry) = mac(t0, k, MODULUS[0], 0);
+    //         let (u1, carry) = mac(t1, k, MODULUS[1], carry);
+    //         let (u2, carry) = mac(t2, k, MODULUS[2], carry);
+    //         let (u3, carry) = mac(t3, k, MODULUS[3], carry);
+    //         let (u4, carry) = mac(t4, k, MODULUS[4], carry);
+    //         let (u5, carry) = mac(t5, k, MODULUS[5], carry);
+    //         let (u6, _) = adc(t6, 0, carry);
+            
+    //         j += 1;
+    //     }
+
+    //     // Because we represent F_p elements in non-redundant form, we need a final
+    //     // conditional subtraction to ensure the output is in range.
+    //     (Fp{ ls: [u0, u1, u2, u3, u4, u5]}).subtract_p()
+    // }
+
+}
+
+impl Fp {
+
+//TODO pow_vartime has to be implemented + CtOption is not constant time 
+    /// Computes the multiplicative inverse of this field
+    /// element, returning None in the case that this element
+    /// is zero.
+    pub fn invert(self) -> CtOption<Fp> {
+        // Exponentiate by p - 2
+        let t = self.pow_vartime([
+            0xb9fe_ffff_ffff_aaa9,
+            0x1eab_fffe_b153_ffff,
+            0x6730_d2a0_f6b0_f624,
+            0x6477_4b84_f385_12bf,
+            0x4b1b_a7b6_434b_acd7,
+            0x1a01_11ea_397f_e69a,
+        ]);
+
+        ~CtOption::new(t, !self.is_zero())
     }
 }
 
