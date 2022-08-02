@@ -111,48 +111,42 @@ async fn test_sub_fp() {
 //     assert!(res_equals(res, c));
 // }
 
-#[tokio::test]
-async fn test_square_fp() {
-    let a: Fp = Fp {
-        ls: [0xd215_d276_8e83_191b,//15138237129114720539
-        0x5085_d80f_8fb2_8261,//5802281256283701857
-        0xce9a_032d_df39_3a56,//14887215013780077142
-        0x3e9c_4fff_2ca0_c4bb,//4511568884102382779
-        0x6436_b6f7_f4d9_5dfb,//7221160228616232443
-        0x1060_6628_ad4a_4d90].to_vec()//1180055427263122832
-    };
+// // WORKS, but smart to comment out when wanting to test other things
+// #[tokio::test]
+// async fn test_square_fp() {
+//     let a: Fp = Fp {
+//         ls: [0xd215_d276_8e83_191b,//15138237129114720539
+//         0x5085_d80f_8fb2_8261,//5802281256283701857
+//         0xce9a_032d_df39_3a56,//14887215013780077142
+//         0x3e9c_4fff_2ca0_c4bb,//4511568884102382779
+//         0x6436_b6f7_f4d9_5dfb,//7221160228616232443
+//         0x1060_6628_ad4a_4d90].to_vec()//1180055427263122832
+//     };
 
-    // let a_again: Fp = Fp {
-    //     ls: [0xd215_d276_8e83_191b,
-    //     0x5085_d80f_8fb2_8261,//5802281256283701857
-    //     0xce9a_032d_df39_3a56,//14887215013780077142
-    //     0x3e9c_4fff_2ca0_c4bb,//4511568884102382779
-    //     0x6436_b6f7_f4d9_5dfb,//7221160228616232443
-    //     0x1060_6628_ad4a_4d90].to_vec()//1180055427263122832
-    // };
+//     // let a_again: Fp = Fp {
+//     //     ls: [0xd215_d276_8e83_191b,
+//     //     0x5085_d80f_8fb2_8261,//5802281256283701857
+//     //     0xce9a_032d_df39_3a56,//14887215013780077142
+//     //     0x3e9c_4fff_2ca0_c4bb,//4511568884102382779
+//     //     0x6436_b6f7_f4d9_5dfb,//7221160228616232443
+//     //     0x1060_6628_ad4a_4d90].to_vec()//1180055427263122832
+//     // };
 
-    let expected_res: Fp = Fp {
-        ls: [0x33d9_c42a_3cb3_e235,
-        0xdad1_1a09_4c4c_d455,
-        0xa2f1_44bd_729a_aeba,
-        0xd415_0932_be9f_feac,
-        0xe27b_c7c4_7d44_ee50,
-        0x14b6_a78d_3ec7_a560].to_vec()
-    };
+//     let expected_res: Fp = Fp {
+//         ls: [0x33d9_c42a_3cb3_e235,
+//         0xdad1_1a09_4c4c_d455,
+//         0xa2f1_44bd_729a_aeba,
+//         0xd415_0932_be9f_feac,
+//         0xe27b_c7c4_7d44_ee50,
+//         0x14b6_a78d_3ec7_a560].to_vec()
+//     };
 
-    let (_instance, _id) = get_contract_instance().await;
+//     let (_instance, _id) = get_contract_instance().await;
 
-    let res = _instance.square_fp(a)
-        .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
-        .call_params(CallParameters::new(None, None, Some(100_000_000)))
-        .call().await.unwrap().value;
-    //fails :( 
-    assert!(res_equals(res, expected_res));
-
-    // print res of square
-    //[1902911976314425853, 13352981833795642672, 10289086307533160637, 13100812750071813769, 2610533423338883854, 1302806150312138448]
-    // print of mult
-    //[3736233051566629429, 15767412397637948501, 11741241283993841338,
-    // 15282131024102817452, 16319857321436311120, 1492564551605396832]
-
-}
+//     let res = _instance.square_fp(a)
+//         .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
+//         .call_params(CallParameters::new(None, None, Some(100_000_000)))
+//         .call().await.unwrap().value;
+//     //fails :( 
+//     assert!(res_equals(res, expected_res));
+// }

@@ -9,25 +9,26 @@ abi BlsTestContract {
     // #[storage(read, write)]fn square_fp(a: Fp) -> Fp;
     #[storage(read, write)]fn fp_from_raw_unchecked(v: [u64; 6]) -> Fp;
 
-    #[storage(read, write)]fn mul_fp2(a: Fp2, b: Fp2) -> Fp2;
-    // #[storage(read, write)]fn add_fp2(a: Fp2, b: Fp2) -> Fp2;
-    // #[storage(read, write)]fn sub_fp2(a: Fp2, b: Fp2) -> Fp2;
-    // #[storage(read, write)]fn neg_fp2(a: Fp2) -> Fp2;
+    // #[storage(read, write)]fn square_fp2(a: Fp2) -> Fp2;
+    // #[storage(read, write)]fn mul_fp2(a: Fp2, b: Fp2) -> Fp2;
+    #[storage(read, write)]fn add_fp2(a: Fp2, b: Fp2) -> Fp2;
+    #[storage(read, write)]fn sub_fp2(a: Fp2, b: Fp2) -> Fp2;
+    #[storage(read, write)]fn neg_fp2(a: Fp2) -> Fp2;
 
     
 }
 
 impl BlsTestContract for Contract {
     #[storage(read, write)]fn add_fp(a: Fp, b: Fp) -> Fp {
-        a.add(b)
+        a + b
     }
 
     #[storage(read, write)]fn sub_fp(a: Fp, b: Fp) -> Fp {
-        a.sub(b)
+        a - b
     }
 
     // #[storage(read, write)]fn mul_fp(a: Fp, b: Fp) -> Fp {
-    //     a.mul(b)
+    //     a * b
     // }
 
     // #[storage(read, write)]fn square_fp(a: Fp) -> Fp {
@@ -38,19 +39,23 @@ impl BlsTestContract for Contract {
         from_raw_unchecked(v)
     }
 
-    #[storage(read, write)]fn mul_fp2(a: Fp2, b: Fp2) -> Fp2 {
-        a.mul(b)
+    // #[storage(read, write)]fn square_fp2(a: Fp2) -> Fp2 {
+    //     a.square()
+    // }
+
+    // #[storage(read, write)]fn mul_fp2(a: Fp2, b: Fp2) -> Fp2 {
+    //     a * b
+    // }
+
+    #[storage(read, write)]fn add_fp2(a: Fp2, b: Fp2) -> Fp2 {
+        a + b
     }
 
-    // #[storage(read, write)]fn add_fp2(a: Fp2, b: Fp2) -> Fp2 {
-    //     a.add(b)
-    // }
+    #[storage(read, write)]fn sub_fp2(a: Fp2, b: Fp2) -> Fp2 {
+        a - b
+    }
 
-    // #[storage(read, write)]fn sub_fp2(a: Fp2, b: Fp2) -> Fp2 {
-    //     a.sub(b)
-    // }
-
-    // #[storage(read, write)]fn neg_fp2(a: Fp2) -> Fp2 {
-    //     a.neg()
-    // }
+    #[storage(read, write)]fn neg_fp2(a: Fp2) -> Fp2 {
+        a.neg()
+    }
 }

@@ -1,6 +1,7 @@
 library fp;
 
 use std::{option::*, u128::*, vec::Vec};
+use core::ops::{Eq, Add, Subtract, Multiply};
 
 // Little endian big integer with 6 limbs
 // in Montgomery form (!)
@@ -48,6 +49,17 @@ const R3: Fp = Fp{ls: [
     0x2512_d435_6572_4728,
     0x0aa6_3460_9175_5d4d,
 ]};
+
+// type Choice doesn't seem to exist in Sway, so we use a bool
+fn conditional_select(a: u64, b: u64, choice: bool) -> u64 {
+    // TODO make constant time impl
+    let mut mask = 0;
+    if (choice) {
+        mask = ~u64::max();
+    }
+
+    b ^ (mask & (a ^ b))
+}
 
 fn not(input: u64) -> u64 {
     ~u64::max() - input
@@ -125,13 +137,25 @@ impl Fp {
     }
 
     // TODO to make this constant time the u64 should be compared with ct_eq, but is not existing in Sway (yet)
-    fn eq(self, other: Self) -> bool {
+    pub fn eq(self, other: Self) -> bool {
         (self.ls[0] == other.ls[0])
             && (self.ls[1] == other.ls[1])
             && (self.ls[2] == other.ls[2])
             && (self.ls[3] == other.ls[3])
             && (self.ls[4] == other.ls[4])
             && (self.ls[5] == other.ls[5])
+    }
+    
+    // type Choice doesn't seem to exist in Sway, so we use a bool
+    fn conditional_select(a: Self, b: Self, choice: bool) -> Self {
+        Fp{ ls: [
+            conditional_select(a.ls[0], b.ls[0], choice),
+            conditional_select(a.ls[1], b.ls[1], choice),
+            conditional_select(a.ls[2], b.ls[2], choice),
+            conditional_select(a.ls[3], b.ls[3], choice),
+            conditional_select(a.ls[4], b.ls[4], choice),
+            conditional_select(a.ls[5], b.ls[5], choice),
+        ]}
     }
 
     pub fn neg(self) -> Fp {
@@ -205,116 +229,116 @@ impl Fp {
         (Fp{ls:[d0, d1, d2, d3, d4, d5]}).subtract_p()
     }
 
-    // pub fn mul(self, rhs: Fp) -> Fp {
-    //     let self0 = self.ls[0];
-    //     let self1 = self.ls[1];
-    //     let self2 = self.ls[2];
-    //     let self3 = self.ls[3];
-    //     let self4 = self.ls[4];
-    //     let self5 = self.ls[5];
+    pub fn mul(self, rhs: Fp) -> Fp {
+        let self0 = self.ls[0];
+        let self1 = self.ls[1];
+        let self2 = self.ls[2];
+        let self3 = self.ls[3];
+        let self4 = self.ls[4];
+        let self5 = self.ls[5];
 
-    //     let rhs0 = rhs.ls[0];
-    //     let rhs1 = rhs.ls[1];
-    //     let rhs2 = rhs.ls[2];
-    //     let rhs3 = rhs.ls[3];
-    //     let rhs4 = rhs.ls[4];
-    //     let rhs5 = rhs.ls[5];
+        let rhs0 = rhs.ls[0];
+        let rhs1 = rhs.ls[1];
+        let rhs2 = rhs.ls[2];
+        let rhs3 = rhs.ls[3];
+        let rhs4 = rhs.ls[4];
+        let rhs5 = rhs.ls[5];
 
-    //     let(t0, carry) = mac(0, self0, rhs0, 0);
-    //     let(t1, carry) = mac(0, self0, rhs1, carry);
-    //     let(t2, carry) = mac(0, self0, rhs2, carry);
-    //     let(t3, carry) = mac(0, self0, rhs3, carry);
-    //     let(t4, carry) = mac(0, self0, rhs4, carry);
-    //     let(t5, t6) = mac(0, self0, rhs5, carry);
+        let(t0, carry) = mac(0, self0, rhs0, 0);
+        let(t1, carry) = mac(0, self0, rhs1, carry);
+        let(t2, carry) = mac(0, self0, rhs2, carry);
+        let(t3, carry) = mac(0, self0, rhs3, carry);
+        let(t4, carry) = mac(0, self0, rhs4, carry);
+        let(t5, t6) = mac(0, self0, rhs5, carry);
 
-    //     let(t1, carry) = mac(t1, self1, rhs0, 0);
-    //     let(t2, carry) = mac(t2, self1, rhs1, carry);
-    //     let(t3, carry) = mac(t3, self1, rhs2, carry);
-    //     let(t4, carry) = mac(t4, self1, rhs3, carry);
-    //     let(t5, carry) = mac(t5, self1, rhs4, carry);
-    //     let(t6, t7) = mac(t6, self1, rhs5, carry);
+        let(t1, carry) = mac(t1, self1, rhs0, 0);
+        let(t2, carry) = mac(t2, self1, rhs1, carry);
+        let(t3, carry) = mac(t3, self1, rhs2, carry);
+        let(t4, carry) = mac(t4, self1, rhs3, carry);
+        let(t5, carry) = mac(t5, self1, rhs4, carry);
+        let(t6, t7) = mac(t6, self1, rhs5, carry);
 
-    //     let(t2, carry) = mac(t2, self2, rhs0, 0);
-    //     let(t3, carry) = mac(t3, self2, rhs1, carry);
-    //     let(t4, carry) = mac(t4, self2, rhs2, carry);
-    //     let(t5, carry) = mac(t5, self2, rhs3, carry);
-    //     let(t6, carry) = mac(t6, self2, rhs4, carry);
-    //     let(t7, t8) = mac(t7, self2, rhs5, carry);
+        let(t2, carry) = mac(t2, self2, rhs0, 0);
+        let(t3, carry) = mac(t3, self2, rhs1, carry);
+        let(t4, carry) = mac(t4, self2, rhs2, carry);
+        let(t5, carry) = mac(t5, self2, rhs3, carry);
+        let(t6, carry) = mac(t6, self2, rhs4, carry);
+        let(t7, t8) = mac(t7, self2, rhs5, carry);
 
-    //     let(t3, carry) = mac(t3, self3, rhs0, 0);
-    //     let(t4, carry) = mac(t4, self3, rhs1, carry);
-    //     let(t5, carry) = mac(t5, self3, rhs2, carry);
-    //     let(t6, carry) = mac(t6, self3, rhs3, carry);
-    //     let(t7, carry) = mac(t7, self3, rhs4, carry);
-    //     let(t8, t9) = mac(t8, self3, rhs5, carry);
+        let(t3, carry) = mac(t3, self3, rhs0, 0);
+        let(t4, carry) = mac(t4, self3, rhs1, carry);
+        let(t5, carry) = mac(t5, self3, rhs2, carry);
+        let(t6, carry) = mac(t6, self3, rhs3, carry);
+        let(t7, carry) = mac(t7, self3, rhs4, carry);
+        let(t8, t9) = mac(t8, self3, rhs5, carry);
 
-    //     let(t4, carry) = mac(t4, self4, rhs0, 0);
-    //     let(t5, carry) = mac(t5, self4, rhs1, carry);
-    //     let(t6, carry) = mac(t6, self4, rhs2, carry);
-    //     let(t7, carry) = mac(t7, self4, rhs3, carry);
-    //     let(t8, carry) = mac(t8, self4, rhs4, carry);
-    //     let(t9, t10) = mac(t9, self4, rhs5, carry);
+        let(t4, carry) = mac(t4, self4, rhs0, 0);
+        let(t5, carry) = mac(t5, self4, rhs1, carry);
+        let(t6, carry) = mac(t6, self4, rhs2, carry);
+        let(t7, carry) = mac(t7, self4, rhs3, carry);
+        let(t8, carry) = mac(t8, self4, rhs4, carry);
+        let(t9, t10) = mac(t9, self4, rhs5, carry);
 
-    //     let(t5, carry) = mac(t5, self5, rhs0, 0);
-    //     let(t6, carry) = mac(t6, self5, rhs1, carry);
-    //     let(t7, carry) = mac(t7, self5, rhs2, carry);
-    //     let(t8, carry) = mac(t8, self5, rhs3, carry);
-    //     let(t9, carry) = mac(t9, self5, rhs4, carry);
-    //     let(t10, t11) = mac(t10, self5, rhs5, carry);
+        let(t5, carry) = mac(t5, self5, rhs0, 0);
+        let(t6, carry) = mac(t6, self5, rhs1, carry);
+        let(t7, carry) = mac(t7, self5, rhs2, carry);
+        let(t8, carry) = mac(t8, self5, rhs3, carry);
+        let(t9, carry) = mac(t9, self5, rhs4, carry);
+        let(t10, t11) = mac(t10, self5, rhs5, carry);
 
-    //     let res: [u64;12] = [t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11];
-    //     montgomery_reduce(res)
-    // }
+        let res: [u64;12] = [t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11];
+        montgomery_reduce(res)
+    }
 
-    // pub fn square(self) -> Fp {
-    //     let (t1, carry) = mac(0, self.ls[0], self.ls[1], 0);
-    //     let (t2, carry) = mac(0, self.ls[0], self.ls[2], carry);
-    //     let (t3, carry) = mac(0, self.ls[0], self.ls[3], carry);
-    //     let (t4, carry) = mac(0, self.ls[0], self.ls[4], carry);
-    //     let (t5, t6) = mac(0, self.ls[0], self.ls[5], carry);
+    pub fn square(self) -> Fp {
+        let (t1, carry) = mac(0, self.ls[0], self.ls[1], 0);
+        let (t2, carry) = mac(0, self.ls[0], self.ls[2], carry);
+        let (t3, carry) = mac(0, self.ls[0], self.ls[3], carry);
+        let (t4, carry) = mac(0, self.ls[0], self.ls[4], carry);
+        let (t5, t6) = mac(0, self.ls[0], self.ls[5], carry);
 
-    //     let (t3, carry) = mac(t3, self.ls[1], self.ls[2], 0);
-    //     let (t4, carry) = mac(t4, self.ls[1], self.ls[3], carry);
-    //     let (t5, carry) = mac(t5, self.ls[1], self.ls[4], carry);
-    //     let (t6, t7) = mac(t6, self.ls[1], self.ls[5], carry);
+        let (t3, carry) = mac(t3, self.ls[1], self.ls[2], 0);
+        let (t4, carry) = mac(t4, self.ls[1], self.ls[3], carry);
+        let (t5, carry) = mac(t5, self.ls[1], self.ls[4], carry);
+        let (t6, t7) = mac(t6, self.ls[1], self.ls[5], carry);
 
-    //     let (t5, carry) = mac(t5, self.ls[2], self.ls[3], 0);
-    //     let (t6, carry) = mac(t6, self.ls[2], self.ls[4], carry);
-    //     let (t7, t8) = mac(t7, self.ls[2], self.ls[5], carry);
+        let (t5, carry) = mac(t5, self.ls[2], self.ls[3], 0);
+        let (t6, carry) = mac(t6, self.ls[2], self.ls[4], carry);
+        let (t7, t8) = mac(t7, self.ls[2], self.ls[5], carry);
 
-    //     let (t7, carry) = mac(t7, self.ls[3], self.ls[4], 0);
-    //     let (t8, t9) = mac(t8, self.ls[3], self.ls[5], carry);
+        let (t7, carry) = mac(t7, self.ls[3], self.ls[4], 0);
+        let (t8, t9) = mac(t8, self.ls[3], self.ls[5], carry);
 
-    //     let (t9, t10) = mac(t9, self.ls[4], self.ls[5], 0);
+        let (t9, t10) = mac(t9, self.ls[4], self.ls[5], 0);
 
-    //     let t11 = t10 >> 63;
-    //     let t10 = (t10 << 1) | (t9 >> 63);
-    //     let t9 = (t9 << 1) | (t8 >> 63);
-    //     let t8 = (t8 << 1) | (t7 >> 63);
-    //     let t7 = (t7 << 1) | (t6 >> 63);
-    //     let t6 = (t6 << 1) | (t5 >> 63);
-    //     let t5 = (t5 << 1) | (t4 >> 63);
-    //     let t4 = (t4 << 1) | (t3 >> 63);
-    //     let t3 = (t3 << 1) | (t2 >> 63);
-    //     let t2 = (t2 << 1) | (t1 >> 63);
-    //     let t1 = t1 << 1;
+        let t11 = t10 >> 63;
+        let t10 = (t10 << 1) | (t9 >> 63);
+        let t9 = (t9 << 1) | (t8 >> 63);
+        let t8 = (t8 << 1) | (t7 >> 63);
+        let t7 = (t7 << 1) | (t6 >> 63);
+        let t6 = (t6 << 1) | (t5 >> 63);
+        let t5 = (t5 << 1) | (t4 >> 63);
+        let t4 = (t4 << 1) | (t3 >> 63);
+        let t3 = (t3 << 1) | (t2 >> 63);
+        let t2 = (t2 << 1) | (t1 >> 63);
+        let t1 = t1 << 1;
 
-    //     let (t0, carry) = mac(0, self.ls[0], self.ls[0], 0);
-    //     let (t1, carry) = adc(t1, 0, carry);
-    //     let (t2, carry) = mac(t2, self.ls[1], self.ls[1], carry);
-    //     let (t3, carry) = adc(t3, 0, carry);
-    //     let (t4, carry) = mac(t4, self.ls[2], self.ls[2], carry);
-    //     let (t5, carry) = adc(t5, 0, carry);
-    //     let (t6, carry) = mac(t6, self.ls[3], self.ls[3], carry);
-    //     let (t7, carry) = adc(t7, 0, carry);
-    //     let (t8, carry) = mac(t8, self.ls[4], self.ls[4], carry);
-    //     let (t9, carry) = adc(t9, 0, carry);
-    //     let (t10, carry) = mac(t10, self.ls[5], self.ls[5], carry);
-    //     let (t11, _) = adc(t11, 0, carry);
+        let (t0, carry) = mac(0, self.ls[0], self.ls[0], 0);
+        let (t1, carry) = adc(t1, 0, carry);
+        let (t2, carry) = mac(t2, self.ls[1], self.ls[1], carry);
+        let (t3, carry) = adc(t3, 0, carry);
+        let (t4, carry) = mac(t4, self.ls[2], self.ls[2], carry);
+        let (t5, carry) = adc(t5, 0, carry);
+        let (t6, carry) = mac(t6, self.ls[3], self.ls[3], carry);
+        let (t7, carry) = adc(t7, 0, carry);
+        let (t8, carry) = mac(t8, self.ls[4], self.ls[4], carry);
+        let (t9, carry) = adc(t9, 0, carry);
+        let (t10, carry) = mac(t10, self.ls[5], self.ls[5], carry);
+        let (t11, _) = adc(t11, 0, carry);
 
-    //     let res: [u64;12] = [t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11];
-    //     montgomery_reduce(res)
-    // }
+        let res: [u64;12] = [t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11];
+        montgomery_reduce(res)
+    }
 }
 
 impl Fp {
@@ -322,7 +346,9 @@ impl Fp {
         (rhs.neg()).add(self)
     }
 
-//TODO implement this one for T=6. Also, T=2 has to be tested still
+//TODO implement this one for T=6 when sum_of_products_2 is working correctly. 
+// (sum_of_products_2 can be tested through testing fp2 multiplication, but this is not running atm because of Immediate18TooLarge)
+
         /// Returns `c = a.zip(b).fold(0, |acc, (a_i, b_i)| acc + a_i * b_i)`.
     ///
     /// Implements Algorithm 2 from Patrick Longa's
@@ -383,6 +409,7 @@ impl Fp {
     //     (Fp([u0, u1, u2, u3, u4, u5])).subtract_p()
     // }
 
+// This will be tested when fp2 multiplication is tested. This is not working atm because of Immediate18TooLarge error
 //fold unpacked for the case that T = 2
     pub fn sum_of_products_2(a: [Fp; 2], b: [Fp; 2]) -> Fp { 
         let u0 = 0;
@@ -431,6 +458,30 @@ impl Fp {
         // conditional subtraction to ensure the output is in range.
         (Fp{ ls: [u0, u1, u2, u3, u4, u5]}).subtract_p()
     }
+}
+
+impl Eq for Fp {
+    fn eq(self, other: Self) -> bool {
+        self.eq(other)
+    }
+}
+
+impl Add for Fp {
+    fn add(self, other: Self) -> Self {
+        self.add(other)
+    }
+}
+
+impl Subtract for Fp {
+    fn subtract(self, other: Self) -> Self {
+        self.sub(other)
+    }
+}
+
+impl Multiply for Fp {
+        fn multiply(self, other: Self) -> Self {
+            self.mul(other)
+        }
 }
 
 pub fn montgomery_reduce(t: [u64;12]) -> Fp {

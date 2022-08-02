@@ -2,10 +2,11 @@ library fp2;
 
 dep fp;
 use fp::*;
+use core::ops::{Eq, Add, Subtract, Multiply};
 
 pub struct Fp2 {
-    c0: Fp, //"real" part
-    c1: Fp, //"imaginary" part
+    c0: Fp,
+    c1: Fp,
 }
 
 impl Fp2 {
@@ -30,34 +31,33 @@ impl Fp2 {
         }
     }
 
-
     fn eq(self, other: Self) -> bool {
-        self.c0.eq(other.c0) && self.c1.eq(other.c1) 
+        self.c0 == other.c0 && self.c1 == other.c1
     }
 
 // //TODO test
-//     pub fn square(self) -> Fp2 {
-//         // Complex squaring:
-//         //
-//         // v0  = c0 * c1
-//         // c0' = (c0 + c1) * (c0 + \beta*c1) - v0 - \beta * v0
-//         // c1' = 2 * v0
-//         //
-//         // In BLS12-381's F_{p^2}, our \beta is -1 so we
-//         // can modify this formula:
-//         //
-//         // c0' = (c0 + c1) * (c0 - c1)
-//         // c1' = 2 * c0 * c1
+    pub fn square(self) -> Fp2 {
+        // Complex squaring:
+        //
+        // v0  = c0 * c1
+        // c0' = (c0 + c1) * (c0 + \beta*c1) - v0 - \beta * v0
+        // c1' = 2 * v0
+        //
+        // In BLS12-381's F_{p^2}, our \beta is -1 so we
+        // can modify this formula:
+        //
+        // c0' = (c0 + c1) * (c0 - c1)
+        // c1' = 2 * c0 * c1
 
-//         let a = (self.c0).add(self.c1);
-//         let b = (self.c0).sub(self.c1);
-//         let c = (self.c0).add(self.c0);
+        let a = self.c0 + self.c1;
+        let b = self.c0 - self.c1;
+        let c = self.c0 + self.c0;
 
-//         Fp2 {
-//             c0: (a).mul(b),
-//             c1: (c).mul(self.c1),
-//         }
-//     }
+        Fp2 {
+            c0: a * b,
+            c1: c * self.c1,
+        }
+    }
 
     pub fn mul(self, rhs: Fp2) -> Fp2 {
         // F_{p^2} x F_{p^2} multiplication implemented with operand scanning (schoolbook)
@@ -113,15 +113,15 @@ impl Fp2 {
 
     pub fn add(self, rhs: Fp2) -> Fp2 {
         Fp2 {
-            c0: (self.c0).add(rhs.c0),
-            c1: (self.c1).add(rhs.c1),
+            c0: self.c0 + rhs.c0,
+            c1: self.c1 + rhs.c1,
         }
     }
 
     pub fn sub(self, rhs: Fp2) -> Fp2 {
         Fp2 {
-            c0: (self.c0).sub(rhs.c0),
-            c1: (self.c1).sub(rhs.c1),
+            c0: self.c0 - rhs.c0,
+            c1: self.c1 - rhs.c1,
         }
     }
 
@@ -132,4 +132,41 @@ impl Fp2 {
         }
     }
 
+    // Is not tested directly, but will be indirectly
+    pub fn mul_by_nonresidue(self) -> Fp2 {
+        // Multiply a + bu by u + 1, getting
+        // au + a + bu^2 + bu
+        // and because u^2 = -1, we get
+        // (a - b) + (a + b)u
+
+        Fp2 {
+            c0: self.c0 - self.c1,
+            c1: self.c0 + self.c1,
+        }
+    }
+
+}
+
+impl Eq for Fp2 {
+    fn eq(self, other: Self) -> bool {
+        self.eq(other)
+    }
+}
+
+impl Add for Fp2 {
+    fn add(self, other: Self) -> Self {
+        self.add(other)
+    }
+}
+
+impl Subtract for Fp2 {
+    fn subtract(self, other: Self) -> Self {
+        self.sub(other)
+    }
+}
+
+impl Multiply for Fp2 {
+        fn multiply(self, other: Self) -> Self {
+            self.mul(other)
+        }
 }
