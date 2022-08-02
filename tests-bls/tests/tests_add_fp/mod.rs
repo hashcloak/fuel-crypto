@@ -5,7 +5,7 @@ use fuels::{
 
 abigen!(BlsContract, "out/debug/tests-bls-abi.json");
 
-async fn get_contract_instance() -> (BlsContract, ContractId) {
+async fn get_contract_instance() -> (BlsContract, Bech32ContractId) {
     // Create the wallet.
     let mut wallet = LocalWallet::new_random(None);
     let num_assets = 1;
@@ -19,10 +19,14 @@ async fn get_contract_instance() -> (BlsContract, ContractId) {
         amount_per_coin,
     );
 
-    let _consensus_parameters_config = ConsensusParameters::DEFAULT.with_max_gas_per_tx(1000000000); // Can't use this for now :(
+    // configure the gas limit
+    let consensus_parameters_config = ConsensusParameters::DEFAULT.with_max_gas_per_tx(1000000000);
 
-    let (client, addr) = setup_test_client(coins, None).await;
-
+    // Here's the important part. This will be running a `fuel-core` that will live through this test.
+    // The configured coins are the same as before, I'm just passing them to it.
+    let (client, addr) = setup_test_client(coins, None, Some(consensus_parameters_config)).await;
+  
+    // Important. Make sure the random wallet you created above uses this provider you created just now.
     let provider = Provider::new(client);
     wallet.set_provider(provider.clone());
 
@@ -30,11 +34,11 @@ async fn get_contract_instance() -> (BlsContract, ContractId) {
         "./out/debug/tests-bls.bin",
         &wallet,
         TxParameters::default(),
-        StorageConfiguration::default(),
+        StorageConfiguration::default(), // <--- new stuff from 0.18
     )
     .await
     .unwrap();
-    let instance = BlsContractBuilder::new(id.to_string(), wallet).build();
+    let instance = BlsContractBuilder::new(id.to_string(), wallet).build(); // <-- notice the `.build()` coming from `0.18` here
     (instance, id)
 }
 
