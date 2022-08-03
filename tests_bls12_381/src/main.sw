@@ -1,7 +1,6 @@
 contract;
 
-use bls12_381::{fp::*, fp2::*};
-
+use bls12_381::{fp::*, fp2::*, fp6::*};
 abi BlsTestContract {
     #[storage(read, write)]fn add_fp(a: Fp, b: Fp) -> Fp;
     #[storage(read, write)]fn sub_fp(a: Fp, b: Fp) -> Fp;

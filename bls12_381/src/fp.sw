@@ -55,7 +55,7 @@ const R3: Fp = Fp{ls: [
 
 impl ConditionallySelectable for u64 {
     // TODO How can we do this in Sway in constant time?
-    pub fn conditional_select(a: u64, b: u64, choice: Choice) -> u64 {
+    fn conditional_select(a: u64, b: u64, choice: Choice) -> u64 {
         // From original impl:
 
         // if choice = 0, mask = (-0) = 0000...0000
@@ -483,6 +483,48 @@ impl Fp {
         // conditional subtraction to ensure the output is in range.
         (Fp{ ls: [u0, u1, u2, u3, u4, u5]}).subtract_p()
     }
+
+    // //TODO: Testing not done
+    // pub fn sum_of_products_6(a: [Fp; 6], b: [Fp; 6]) -> Fp { 
+    //     let u0 = 0;
+    //     let u1 = 0;
+    //     let u2 = 0;
+    //     let u3 = 0;
+    //     let u4 = 0;
+    //     let u5 = 0;
+    //     let mut j = 0;
+
+    //     while j < 6 {
+    //         let (t0, t1, t2, t3, t4, t5, t6) = (u0, u1, u2, u3, u4, u5, 0);
+
+    //         let mut i = 0;
+    //         while i < 6 {
+    //         let (t0, carry) = mac(t0, a[i].ls[j], b[i].ls[0], 0);
+    //         let (t1, carry) = mac(t1, a[i].ls[j], b[i].ls[1], carry);
+    //         let (t2, carry) = mac(t2, a[i].ls[j], b[i].ls[2], carry);
+    //         let (t3, carry) = mac(t3, a[i].ls[j], b[i].ls[3], carry);
+    //         let (t4, carry) = mac(t4, a[i].ls[j], b[i].ls[4], carry);
+    //         let (t5, carry) = mac(t5, a[i].ls[j], b[i].ls[5], carry);
+    //         let (t6, _) = adc(t6, 0, carry);
+    //         i += 1;
+    //         }
+    //         let k = multiply_wrap(t0, INV);
+    //         let (_, carry) = mac(t0, k, MODULUS[0], 0);
+    //         let (u1, carry) = mac(t1, k, MODULUS[1], carry);
+    //         let (u2, carry) = mac(t2, k, MODULUS[2], carry);
+    //         let (u3, carry) = mac(t3, k, MODULUS[3], carry);
+    //         let (u4, carry) = mac(t4, k, MODULUS[4], carry);
+    //         let (u5, carry) = mac(t5, k, MODULUS[5], carry);
+    //         let (u6, _) = adc(t6, 0, carry);
+            
+    //         j += 1;
+    //     }
+
+    //     // Because we represent F_p elements in non-redundant form, we need a final
+    //     // conditional subtraction to ensure the output is in range.
+    //     (Fp{ ls: [u0, u1, u2, u3, u4, u5]}).subtract_p()
+    // }
+
 }
 
 impl Fp {
