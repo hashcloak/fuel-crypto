@@ -1,7 +1,12 @@
 library fp6;
 
 dep fp2;
+dep fp;
+dep choice; 
+
+use fp::*;
 use fp2::*;
+use choice::*;
 
 pub struct Fp6 {
     c0: Fp2,
@@ -73,7 +78,7 @@ impl Fp6 {
         Fp6 {
             c0: t1,
             c1: t2,
-            c3: t3,
+            c2: t3,
         }
     }
     //TODO: Testing
@@ -101,12 +106,12 @@ impl Fp6 {
         }
     }
 
-    // Is not tested
-    fn conditional_select(a: Fp6, b: Fp6, choice: Choice) -> Fp6 {
-        Fp6 {
-            c0: ~Fp2::conditional_select(a.c0, b.c0, choice),
-            c1: ~Fp2::conditional_select(a.c1, b.c1, choice),
-            c2: ~Fp2::conditional_select(a.c2, b.c2, choice),
-        }
-    }
+    // // Is not tested
+    // fn conditional_select(a: Fp6, b: Fp6, choice: Choice) -> Fp6 {
+    //     Fp6 {
+    //         c0: ~Fp2::conditional_select(a.c0, b.c0, choice),
+    //         c1: ~Fp2::conditional_select(a.c1, b.c1, choice),
+    //         c2: ~Fp2::conditional_select(a.c2, b.c2, choice),
+    //     }
+    // }
 }
