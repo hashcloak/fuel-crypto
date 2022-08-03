@@ -10,10 +10,10 @@ use std::logging::log;
 
 pub fn tests_temp_fe_mont_mul() -> bool {
     // assert(test_temp_mul_random_by_random());
-    assert(test_temp_mul_mont_n());
+    // assert(test_temp_mul_mont_n());
     true
 }
-
+/*
 fn test_temp_mul_mont_n() -> bool {
     //28700440645560700010247999350858186656965165501286811298915027297835050275063552879691348405696442872566701753802544
     let mut r1_vec = ~Vec::new::<u64>();
@@ -171,4 +171,5 @@ Note: from the reference impl, you can see it's being tested as follows:
             assert_eq!(big_to_6u64(&expected), actual_norm);
 
 So there is a conversion to and from the mont form
+*/
 */
