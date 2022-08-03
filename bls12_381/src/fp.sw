@@ -1,8 +1,10 @@
 library fp;
 
 dep choice; 
+dep util;
 
 use choice::*;
+use util::*;
 use std::{option::*, u128::*, vec::Vec};
 use core::ops::{Eq, Add, Subtract, Multiply};
 
@@ -52,32 +54,6 @@ const R3: Fp = Fp{ls: [
     0x2512_d435_6572_4728,
     0x0aa6_3460_9175_5d4d,
 ]};
-
-impl ConditionallySelectable for u64 {
-    // TODO How can we do this in Sway in constant time?
-    fn conditional_select(a: u64, b: u64, choice: Choice) -> u64 {
-        // From original impl:
-
-        // if choice = 0, mask = (-0) = 0000...0000
-        // if choice = 1, mask = (-1) = 1111...1111
-
-        // let mask = -(choice.unwrap_u8() as to_signed_int!($t)) as $t;
-        // a ^ (mask & (a ^ b))
-
-// Apparently this doesn't work in Sway?
-        // match choice {
-        //     Choice(0) => a,
-        //     Choice(1) => b,
-        // }
-
-        // TODO improve. 
-        if (choice.unwrap_u8() == 0) {
-            a
-        } else {
-            b
-        }
-    }
-}
 
 impl ConditionallySelectable for Fp {
     fn conditional_select(a: Fp, b: Fp, choice: Choice) -> Fp {
