@@ -16,7 +16,7 @@ pub fn tests_temp_fe_mont_mul() -> bool {
 /*
 fn test_temp_mul_mont_n() -> bool {
     //28700440645560700010247999350858186656965165501286811298915027297835050275063552879691348405696442872566701753802544
-    let mut r1_vec = ~Vec::new::<u64>();
+    let mut r1_vec = ~Vec::new();
     r1_vec.push(6071868568151433008);
     r1_vec.push(12105094901188801210);
     r1_vec.push(2389211775905699303);
@@ -24,7 +24,7 @@ fn test_temp_mul_mont_n() -> bool {
     r1_vec.push(5826366508043997497);
     r1_vec.push(13436617433956842131);
     //845585313160814446158446407435059620350609671735802091463220815564059525214346533476776130630310896229502998576879
-    let mut r2_vec = ~Vec::new::<u64>();
+    let mut r2_vec = ~Vec::new();
     r2_vec.push(16964885827015180015);
     r2_vec.push(12035734743809705289);
     r2_vec.push(10517060043363161601);
@@ -68,7 +68,7 @@ fn test_temp_mul_mont_n() -> bool {
 }
 
 fn test_temp_mul_random_by_random() -> bool {
-    let mut p_vec = ~Vec::new::<u64>();
+    let mut p_vec = ~Vec::new();
     p_vec.push(0xb9feffffffffaaab);
     p_vec.push(0x1eabfffeb153ffff);
     p_vec.push(0x6730d2a0f6b0f624);
@@ -77,7 +77,7 @@ fn test_temp_mul_random_by_random() -> bool {
     p_vec.push(0x1a0111ea397fe69a);
 
     //28700440645560700010247999350858186656965165501286811298915027297835050275063552879691348405696442872566701753802544
-    let mut r1_vec = ~Vec::new::<u64>();
+    let mut r1_vec = ~Vec::new();
     r1_vec.push(6071868568151433008);
     r1_vec.push(12105094901188801210);
     r1_vec.push(2389211775905699303);
@@ -85,7 +85,7 @@ fn test_temp_mul_random_by_random() -> bool {
     r1_vec.push(5826366508043997497);
     r1_vec.push(13436617433956842131);
     //845585313160814446158446407435059620350609671735802091463220815564059525214346533476776130630310896229502998576879
-    let mut r2_vec = ~Vec::new::<u64>();
+    let mut r2_vec = ~Vec::new();
     r2_vec.push(16964885827015180015);
     r2_vec.push(12035734743809705289);
     r2_vec.push(10517060043363161601);
@@ -131,7 +131,7 @@ fn test_temp_mul_random_by_random() -> bool {
     out of gas, so just run with this known value. All intermediate steps are correct with 
     the ncc ref implementation
     */
-    let mut intermediate_res_vec = ~Vec::new::<u64>();
+    let mut intermediate_res_vec = ~Vec::new();
     intermediate_res_vec.push(8042921339150017446);
     intermediate_res_vec.push(4899742317194411181);
     intermediate_res_vec.push(11922910400151252689);

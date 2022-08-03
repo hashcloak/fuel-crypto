@@ -38,7 +38,7 @@ pub fn vect_subfunctions_tests() -> bool {
 }
 
 fn get_test_vectors() -> (Vec<u64>, Vec<u64>) {
-    let mut zero_vec = ~Vec::new::<u64>();
+    let mut zero_vec = ~Vec::new();
     zero_vec.push(0);
     zero_vec.push(0);
     zero_vec.push(0);
@@ -46,7 +46,7 @@ fn get_test_vectors() -> (Vec<u64>, Vec<u64>) {
     zero_vec.push(0);
     zero_vec.push(0);
 
-    let mut p_vec = ~Vec::new::<u64>();
+    let mut p_vec = ~Vec::new();
     p_vec.push(0xb9feffffffffaaab);
     p_vec.push(0x1eabfffeb153ffff);
     p_vec.push(0x6730d2a0f6b0f624);
@@ -66,7 +66,7 @@ fn test_mul_mont_n_by_zero() -> bool {
 }
 
 fn get_one_vec() -> Vec<u64> {
-    let mut one_vec = ~Vec::new::<u64>();
+    let mut one_vec = ~Vec::new();
     one_vec.push(1);
     one_vec.push(0);
     one_vec.push(0);
@@ -99,7 +99,7 @@ fn test_mul_mont_n_one_by_one() -> bool {
 fn test_mul_mont_n_random_by_one() -> bool {
     let(_, p_vec) = get_test_vectors();
     //28700440645560700010247999350858186656965165501286811298915027297835050275063552879691348405696442872566701753802544
-    let mut r_vec = ~Vec::new::<u64>();
+    let mut r_vec = ~Vec::new();
     r_vec.push(0x54439c4ae7869f30); //6071868568151433008
     r_vec.push(0xa7fdefad55c032ba); //12105094901188801210
     r_vec.push(0x21282f739c0a15e7); //2389211775905699303
@@ -126,7 +126,7 @@ fn test_mul_mont_n_random_by_one() -> bool {
 fn test_mul_mont_n_random_by_random() -> bool {
     let(_, p_vec) = get_test_vectors();
     //28700440645560700010247999350858186656965165501286811298915027297835050275063552879691348405696442872566701753802544
-    let mut r1_vec = ~Vec::new::<u64>();
+    let mut r1_vec = ~Vec::new();
     r1_vec.push(6071868568151433008);
     r1_vec.push(12105094901188801210);
     r1_vec.push(2389211775905699303);
@@ -134,7 +134,7 @@ fn test_mul_mont_n_random_by_random() -> bool {
     r1_vec.push(5826366508043997497);
     r1_vec.push(13436617433956842131);
     //845585313160814446158446407435059620350609671735802091463220815564059525214346533476776130630310896229502998576879
-    let mut r2_vec = ~Vec::new::<u64>();
+    let mut r2_vec = ~Vec::new();
     r2_vec.push(16964885827015180015);
     r2_vec.push(12035734743809705289);
     r2_vec.push(10517060043363161601);
@@ -151,7 +151,7 @@ fn test_mul_mont_n_random_by_random() -> bool {
     // mod p
     //1233002344306172478209354248697859329250780126726480993298462574958424022710616415994206080732967265541051783400711
     //[1734233419737550087, 7827676449723675145, 5835727259298429301, 3992373620040751347, 13994230039556723943, 577251792061825638]
-    let mut res_vec = ~Vec::new::<u64>();
+    let mut res_vec = ~Vec::new();
     res_vec.push(0x42863c4b7ea22ad7); //4793585148327242455
     res_vec.push(0x27627bfa644b580d); //2837967030551533581
     res_vec.push(0x16930ecb9e3a308f); //1626660158106644623
@@ -184,7 +184,7 @@ blst impl
 fn test_mont_mul_partial() -> bool {
     let(_, p_vec) = get_test_vectors();
 
-    let mut intermediate_res_vec = ~Vec::new::<u64>();
+    let mut intermediate_res_vec = ~Vec::new();
     intermediate_res_vec.push(8042921339150017446);
     intermediate_res_vec.push(4899742317194411181);
     intermediate_res_vec.push(11922910400151252689);
@@ -192,7 +192,7 @@ fn test_mont_mul_partial() -> bool {
     intermediate_res_vec.push(10892349319971706476);
     intermediate_res_vec.push(542573957820843489);
 
-    let mut ONE: Vec<u64> = ~Vec::new::<u64>();
+    let mut ONE: Vec<u64> = ~Vec::new();
     ONE.push(0x1);
     ONE.push(0);
     ONE.push(0);
@@ -233,7 +233,7 @@ fn test_add_zero_to_zero_addn() -> bool {
 }
 
 fn test_add_zero_to_random_addn() -> bool {
-    let mut random_vec = ~Vec::new::<u64>();
+    let mut random_vec = ~Vec::new();
     random_vec.push(0x3e2528903ca1ef86);
     random_vec.push(0x270fd67a03bf9e0a);
     random_vec.push(0xdc70c19599cb699e);
@@ -248,21 +248,21 @@ fn test_add_zero_to_random_addn() -> bool {
 }
 
 fn test_add_random_to_small_addn() -> bool {
-    let mut small_vec = ~Vec::new::<u64>();
+    let mut small_vec = ~Vec::new();
     small_vec.push(0x1);
     small_vec.push(0x2);
     small_vec.push(0x3);
     small_vec.push(0x4);
     small_vec.push(0x5);
     small_vec.push(0x6);
-    let mut random_vec = ~Vec::new::<u64>();
+    let mut random_vec = ~Vec::new();
     random_vec.push(0x3e2528903ca1ef86);
     random_vec.push(0x270fd67a03bf9e0a);
     random_vec.push(0xdc70c19599cb699e);
     random_vec.push(0xebefda8057d5747a);
     random_vec.push(0xcf20e11f0b1c323);
     random_vec.push(0xe979cbf960fe51d);
-    let mut res_vec = ~Vec::new::<u64>();
+    let mut res_vec = ~Vec::new();
     res_vec.push(4478030004447473543);
     res_vec.push(2814704111667093004);
     res_vec.push(15884408734010272161);
@@ -288,7 +288,7 @@ fn test_sub_zero_from_zero_subn() -> bool {
 fn test_sub_zero_from_random_subn() -> bool {
     let(zero_vec, p_vec) = get_test_vectors();
 
-    let mut random_vec = ~Vec::new::<u64>();
+    let mut random_vec = ~Vec::new();
     random_vec.push(0x3e2528903ca1ef86);
     random_vec.push(0x270fd67a03bf9e0a);
     random_vec.push(0xdc70c19599cb699e);
@@ -304,7 +304,7 @@ fn test_sub_zero_from_random_subn() -> bool {
 fn test_sub_random_from_zero_subn() -> bool {
     let(zero_vec, p_vec) = get_test_vectors();
 
-    let mut random_vec = ~Vec::new::<u64>();
+    let mut random_vec = ~Vec::new();
     random_vec.push(13059245463466299169);
     random_vec.push(17774603101077980186);
     random_vec.push(889990675562875390);
@@ -314,7 +314,7 @@ fn test_sub_random_from_zero_subn() -> bool {
 
     let res = sub_mod_n(zero_vec, random_vec, p_vec, 6);
     // p-r (is the same as 0-r mod p)
-    let mut res_vec = ~Vec::new::<u64>();
+    let mut res_vec = ~Vec::new();
     res_vec.push(343185552611564426);
     res_vec.push(2882282484148780005);
     res_vec.push(6545683898001206309);
@@ -329,7 +329,7 @@ fn test_sub_random_from_small_subn() -> bool {
     let(zero_vec, p_vec) = get_test_vectors();
     // 1 + 2 *2^64 + 3*2^128 + 4 * 2^192 + 5 * 2^256 + 6 * 2^320
     //12815922215525460494949090683203893664759190466124902882004963575055114655935967659265637031608321
-    let mut small_vec = ~Vec::new::<u64>();
+    let mut small_vec = ~Vec::new();
     small_vec.push(1);
     small_vec.push(2);
     small_vec.push(3);
@@ -338,7 +338,7 @@ fn test_sub_random_from_small_subn() -> bool {
     small_vec.push(6);
 
     //1281534117852017820269267861584320258656990227317793864009951923807317297699607442944495077621627898376663719366433
-    let mut r_vec = ~Vec::new::<u64>();
+    let mut r_vec = ~Vec::new();
     r_vec.push(13059245463466299169);
     r_vec.push(17774603101077980186);
     r_vec.push(889990675562875390);
@@ -346,7 +346,7 @@ fn test_sub_random_from_small_subn() -> bool {
     r_vec.push(5370893444473505192);
     r_vec.push(599972797727911687);
 
-    let mut res_vec = ~Vec::new::<u64>();
+    let mut res_vec = ~Vec::new();
     res_vec.push(343185552611564427);
     res_vec.push(2882282484148780007);
     res_vec.push(6545683898001206312);
@@ -364,7 +364,7 @@ fn test_sub_random_from_small_subn() -> bool {
 fn get_r1_r2_vecs() -> (Vec<u64>, Vec<u64>) {
     //a = 1636725880549280067486622211868244649555599468607198938781220718077581339058902572863029175226410795172800087248680
     //[10587454305359941416, 4615625447881587853, 9368308553698906485, 9494054596162055604, 377309137954328098, 766262085408033194]
-    let mut r1_vec = ~Vec::new::<u64>();
+    let mut r1_vec = ~Vec::new();
     r1_vec.push(10587454305359941416);
     r1_vec.push(4615625447881587853);
     r1_vec.push(9368308553698906485);
@@ -374,7 +374,7 @@ fn get_r1_r2_vecs() -> (Vec<u64>, Vec<u64>) {
 
     //b = 633982047616931537296775994873240773075794315607478597677958352919546237170580686209956468014669319291596219488262
     //[13403040667047958534, 405585388298286396, 7295341050629342949, 1749456428444609784, 1856600841951774635, 296809876162753174]
-    let mut r2_vec = ~Vec::new::<u64>();
+    let mut r2_vec = ~Vec::new();
     r2_vec.push(13403040667047958534);
     r2_vec.push(405585388298286396);
     r2_vec.push(7295341050629342949);
@@ -392,7 +392,7 @@ fn test_sub_2_randoms_subn() -> bool {
     //res =
     //1002743832932348530189846216995003876479805152999720341103262365158035101888321886653072707211741475881203867760418
     //[15631157712021534498, 4210040059583301456, 2072967503069563536, 7744598167717445820, 16967452369712105079, 469452209245280019]
-    let mut res_vec = ~Vec::new::<u64>();
+    let mut res_vec = ~Vec::new();
     res_vec.push(15631157712021534498);
     res_vec.push(4210040059583301456);
     res_vec.push(2072967503069563536);
@@ -415,7 +415,7 @@ fn test_sub_2_randoms_reverse_subn() -> bool {
     // => mod p
     //2999665722289318863227943608740900280077077666939287544228795770965996548602515977789614921917274188156690404799369
     //[16218017377765880713, 16446845525643458734, 5362707070494518163, 17941483866406818307, 6891395482468148831, 1404346408402259846]
-    let mut res_vec = ~Vec::new::<u64>();
+    let mut res_vec = ~Vec::new();
     res_vec.push(16218017377765880713);
     res_vec.push(16446845525643458734);
     res_vec.push(5362707070494518163);
@@ -438,7 +438,7 @@ fn tests_redc_mont() -> bool {
     true
 }
 fn test_redc_mont_n_small() -> bool {
-    let mut a_vec: Vec<u64> = ~Vec::new::<u64>();
+    let mut a_vec: Vec<u64> = ~Vec::new();
     a_vec.push(0);
     a_vec.push(0);
     a_vec.push(0);
@@ -451,7 +451,7 @@ fn test_redc_mont_n_small() -> bool {
     a_vec.push(0);
     a_vec.push(0);
     a_vec.push(10);
-    let mut res_vec: Vec<u64> = ~Vec::new::<u64>();
+    let mut res_vec: Vec<u64> = ~Vec::new();
     res_vec.push(0);
     res_vec.push(0);
     res_vec.push(0);
@@ -465,7 +465,7 @@ fn test_redc_mont_n_small() -> bool {
 }
 
 fn test_redc_mont_n_p() -> bool {
-    let mut p_vec = ~Vec::new::<u64>();
+    let mut p_vec = ~Vec::new();
     p_vec.push(0xb9feffffffffaaab);
     p_vec.push(0x1eabfffeb153ffff);
     p_vec.push(0x6730d2a0f6b0f624);
@@ -493,7 +493,7 @@ fn test_redc_mont_n_random() -> bool {
     a_vec mod P = 3696765165377537992548071770426871989328256175267415194498929704185983294358703155983657203868185085593368583538232
                 = [1730705806359781376, 10719928016004921607, 6631139461101160670, 14991082624209354397, 7557322358563246340, 13282407956253574712]
     */
-    let mut a_vec = ~Vec::new::<u64>();
+    let mut a_vec = ~Vec::new();
 
     a_vec.push(13282407956253574712);
     a_vec.push(7557322358563246340);
@@ -507,7 +507,7 @@ fn test_redc_mont_n_random() -> bool {
     a_vec.push(0);
     a_vec.push(0);
     a_vec.push(0);
-    let mut result = ~Vec::new::<u64>();
+    let mut result = ~Vec::new();
     result.push(13282407956253574712);
     result.push(7557322358563246340);
     result.push(14991082624209354397);
@@ -533,7 +533,7 @@ fn test_redc_mont_n_random_large() -> bool {
                 
 
     */
-    let mut a_vec = ~Vec::new::<u64>();
+    let mut a_vec = ~Vec::new();
     a_vec.push(13142370077570254774);
     a_vec.push(17984324540840297179);
     a_vec.push(15982738825684268908);
@@ -547,7 +547,7 @@ fn test_redc_mont_n_random_large() -> bool {
     a_vec.push(0);
     a_vec.push(0);
 
-    let mut result = ~Vec::new::<u64>();
+    let mut result = ~Vec::new();
     result.push(1470447218309591647);
     result.push(6933616983254254301);
     result.push(15697854105282963640);
