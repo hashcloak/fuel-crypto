@@ -54,7 +54,7 @@ pub fn unpack_or_0(x: Option<u64>) -> u64 {
 pub fn add_mod_n(a: Vec<u64>, b: Vec<u64>, p: Vec<u64>, n: u64) -> Vec<u64> {
     let mut limbx: u64 = 0;
     let mut carry: u64 = 0;
-    let mut tmp = ~Vec::new::<u64>();
+    let mut tmp = ~Vec::new();
 
     let mut i = 0;
     while i < n {
@@ -65,7 +65,7 @@ pub fn add_mod_n(a: Vec<u64>, b: Vec<u64>, p: Vec<u64>, n: u64) -> Vec<u64> {
         i += 1;
     }
 
-    let mut ret = ~Vec::new::<u64>();
+    let mut ret = ~Vec::new();
     let mut borrow: u64 = 0;
     i = 0;
     while i < n {
@@ -77,7 +77,7 @@ pub fn add_mod_n(a: Vec<u64>, b: Vec<u64>, p: Vec<u64>, n: u64) -> Vec<u64> {
     }
 
     let mask: u64 = borrow * ~u64::max();
-    let mut res = ~Vec::new::<u64>();
+    let mut res = ~Vec::new();
     i = 0;
     while i < n {
         let value = (unpack_or_0(ret.get(i)) & not(mask)) | (unpack_or_0(tmp.get(i)) & mask);
@@ -102,9 +102,9 @@ But this intermediate value doesn't correspond to what the blst impl outputs.
 pub fn mul_mont_n(a: Vec<u64>, b: Vec<u64>, p: Vec<u64>, n0: u64, n: u64) -> Vec<u64> {
     let mut mx: U128 = ~U128::from(0, unpack_or_0(b.get(0)));
     let mut hi: U128 = ~U128::from(0, 0);
-    let mut tmp: Vec<u64> = ~Vec::new::<u64>();
-    let mut tmp2: Vec<u64> = ~Vec::new::<u64>();
-    let mut tmp3: Vec<u64> = ~Vec::new::<u64>();
+    let mut tmp: Vec<u64> = ~Vec::new();
+    let mut tmp2: Vec<u64> = ~Vec::new();
+    let mut tmp3: Vec<u64> = ~Vec::new();
     let mut i = 0;
 
     while i < n {
@@ -180,7 +180,7 @@ pub fn mul_mont_n(a: Vec<u64>, b: Vec<u64>, p: Vec<u64>, n0: u64, n: u64) -> Vec
 
     let mut borrow: u64 = 0;
     i = 0;
-    let mut ret: Vec<u64> = ~Vec::new::<u64>();
+    let mut ret: Vec<u64> = ~Vec::new();
     while i < n {
         let pi: U128 = ~U128::from(0, unpack_or_0(p.get(i)));
         let tmpi: U128 = ~U128::from(0, unpack_or_0(tmp3.get(i)));
@@ -229,7 +229,7 @@ pub fn mul_mont_n(a: Vec<u64>, b: Vec<u64>, p: Vec<u64>, n0: u64, n: u64) -> Vec
     };
 
     i = 0;
-    let mut res: Vec<u64> = ~Vec::new::<u64>();
+    let mut res: Vec<u64> = ~Vec::new();
     while i < n {
         let value = (unpack_or_0(ret.get(i)) & not(mask)) | (unpack_or_0(tmp3.get(i)) & mask);
         res.insert(i, value);
@@ -242,7 +242,7 @@ pub fn mul_mont_n(a: Vec<u64>, b: Vec<u64>, p: Vec<u64>, n0: u64, n: u64) -> Vec
 // Repo: https://github.com/nccgroup/pairing
 // Blogpost: https://research.nccgroup.com/2021/06/09/optimizing-pairing-based-cryptography-montgomery-arithmetic-in-rust/ 
 fn zero_vec() -> Vec<u64> {
-    let mut temp: Vec<u64> = ~Vec::new::<u64>();
+    let mut temp: Vec<u64> = ~Vec::new();
     temp.push(0);
     temp.push(0);
     temp.push(0);
@@ -263,7 +263,7 @@ The mul_mont_n is not working yet, so this would be a temporary solution but usi
 */
 //pub fn temp_mul_mont_n(a: Vec<u64>, b: Vec<u64>) -> Vec<u64> {
 pub fn temp_mul_mont_n(a_vec: vec384, b_vec: vec384) -> vec384 {
-    let mut a: Vec<u64> = ~Vec::new::<u64>();
+    let mut a: Vec<u64> = ~Vec::new();
     a.push(a_vec.ls[0]);
     a.push(a_vec.ls[1]);
     a.push(a_vec.ls[2]);
@@ -271,7 +271,7 @@ pub fn temp_mul_mont_n(a_vec: vec384, b_vec: vec384) -> vec384 {
     a.push(a_vec.ls[4]);
     a.push(a_vec.ls[5]);
 
-    let mut b: Vec<u64> = ~Vec::new::<u64>();
+    let mut b: Vec<u64> = ~Vec::new();
     b.push(b_vec.ls[0]);
     b.push(b_vec.ls[1]);
     b.push(b_vec.ls[2]);
@@ -297,7 +297,7 @@ pub fn temp_mul_mont_n(a_vec: vec384, b_vec: vec384) -> vec384 {
 // Same functionality as mul_temp
 // Effectively a_mont = (a_norm * R) mod N
 pub fn fe_to_mont(a: Vec<u64>) -> Vec<u64> {
-    let mut BLS12_381_RR: Vec<u64> = ~Vec::new::<u64>();
+    let mut BLS12_381_RR: Vec<u64> = ~Vec::new();
     BLS12_381_RR.push(0xf4df1f341c341746);
     BLS12_381_RR.push(0x0a76e6a609d104f1);
     BLS12_381_RR.push(0x8de5476c4c95b6d5);
@@ -309,7 +309,7 @@ pub fn fe_to_mont(a: Vec<u64>) -> Vec<u64> {
 
 // Effectively a_norm = (a_mont * R^{-1}) mod N
 pub fn fe_to_norm(a: Vec<u64>) -> Vec<u64> {
-    let mut ONE: Vec<u64> = ~Vec::new::<u64>();
+    let mut ONE: Vec<u64> = ~Vec::new();
     ONE.push(0x1);
     ONE.push(0);
     ONE.push(0);
@@ -475,7 +475,7 @@ pub fn montgomery_reduction(t: [u64;
 }
 
 pub fn mul_temp_wrapper(a: vec384, b:vec384, p: vec384, n: u64) -> vec384 {
-    let mut a_temp: Vec<u64> = ~Vec::new::<u64>();
+    let mut a_temp: Vec<u64> = ~Vec::new();
     a_temp.push(a.ls[0]);
     a_temp.push(a.ls[1]);
     a_temp.push(a.ls[2]);
@@ -483,7 +483,7 @@ pub fn mul_temp_wrapper(a: vec384, b:vec384, p: vec384, n: u64) -> vec384 {
     a_temp.push(a.ls[4]);
     a_temp.push(a.ls[5]);
 
-    let mut b_temp: Vec<u64> = ~Vec::new::<u64>();
+    let mut b_temp: Vec<u64> = ~Vec::new();
     b_temp.push(b.ls[0]);
     b_temp.push(b.ls[1]);
     b_temp.push(b.ls[2]);
@@ -491,7 +491,7 @@ pub fn mul_temp_wrapper(a: vec384, b:vec384, p: vec384, n: u64) -> vec384 {
     b_temp.push(b.ls[4]);
     b_temp.push(b.ls[5]);
 
-    let mut p_temp: Vec<u64> = ~Vec::new::<u64>();
+    let mut p_temp: Vec<u64> = ~Vec::new();
     p_temp.push(p.ls[0]);
     p_temp.push(p.ls[1]);
     p_temp.push(p.ls[2]);
@@ -583,7 +583,7 @@ pub fn sub_mod_n(a: Vec<u64>, b: Vec<u64>, p: Vec<u64>, n: u64) -> Vec<u64> {
     let mut limbx: u64 = 0;
     let mut borrow: u64 = 0;
     let mut i = 0;
-    let mut ret = ~Vec::new::<u64>();
+    let mut ret = ~Vec::new();
 
     while i < n {
         let(limb, temp_borrow): (u64, u64) = sbb(unpack_or_0(a.get(i)), unpack_or_0(b.get(i)), borrow);
@@ -593,7 +593,7 @@ pub fn sub_mod_n(a: Vec<u64>, b: Vec<u64>, p: Vec<u64>, n: u64) -> Vec<u64> {
     }
 
     let mask: u64 = borrow * ~u64::max();
-    let mut res = ~Vec::new::<u64>();
+    let mut res = ~Vec::new();
     let mut carry: u64 = 0;
     while i < n {
         let(limb, temp_carry): (u64, u64) = adc(unpack_or_0(ret.get(i)), unpack_or_0(p.get(i)) & mask, carry);
@@ -619,7 +619,7 @@ pub fn redc_mont_n(a: Vec<u64>, p: Vec<u64>, n0: u64, n: u64) -> Vec<u64> {
     let mut i = 1;
     let mut b: Vec<u64> = a;
     //let mut limbx: U128 = ~U128::from(0,0);
-    let mut tmp: Vec<u64> = ~Vec::new::<u64>();
+    let mut tmp: Vec<u64> = ~Vec::new();
     while j < n {
         let mx_temp: u64 = (~U128::from(0, n0) * ~U128::from(0, unpack_or_0(b.get(0)))).lower;
         let mx: U128 = ~U128::from(0, mx_temp);
@@ -639,7 +639,7 @@ pub fn redc_mont_n(a: Vec<u64>, p: Vec<u64>, n0: u64, n: u64) -> Vec<u64> {
         j += 1;
     }
 
-    let mut tmp2: Vec<u64> = ~Vec::new::<u64>();
+    let mut tmp2: Vec<u64> = ~Vec::new();
     let mut carry = 0;
     i = 0;
     while i < n {
@@ -653,7 +653,7 @@ pub fn redc_mont_n(a: Vec<u64>, p: Vec<u64>, n0: u64, n: u64) -> Vec<u64> {
     }
 
     let mut borrow = 0;
-    let mut res: Vec<u64> = ~Vec::new::<u64>();
+    let mut res: Vec<u64> = ~Vec::new();
     i = 0;
     while i < n {
         let tmp2i: U128 = ~U128::from(0, unpack_or_0(tmp2.get(i)));
@@ -680,7 +680,7 @@ pub fn redc_mont_n(a: Vec<u64>, p: Vec<u64>, n0: u64, n: u64) -> Vec<u64> {
     } else {
         ~u64::max() - (borrow - carry - 1)
     };
-    let mut result: Vec<u64> = ~Vec::new::<u64>();
+    let mut result: Vec<u64> = ~Vec::new();
     i = 0;
     while i < n {
         let result_i = (unpack_or_0(res.get(i)) & not(mask)) | (unpack_or_0(tmp2.get(i)) & mask);
@@ -888,7 +888,7 @@ pub fn rshift_mod_384(a: vec384, n: u64, p: vec384) -> vec384 {
     let mut i = 0;
     let mut m = n;
     //let mut res_vec: (u64, u64, u64, u64, u64, u64) = (0,0,0,0,0,0);
-    let mut res_vec: Vec<u64> = ~Vec::new::<u64>();
+    let mut res_vec: Vec<u64> = ~Vec::new();
     while m > 0 {
 
         if a.ls[0] & 1 > 0 {
@@ -947,7 +947,7 @@ pub fn mul_by_3_mod_384x(a: vec384x, p: vec384) -> vec384x {
 }
 
 fn to_vec(v: vec384) -> Vec<u64> {
-    let mut res = ~Vec::new::<u64>();
+    let mut res = ~Vec::new();
     let mut i = 0;
     while i < 6 {
         res.push(v.ls[i]);
