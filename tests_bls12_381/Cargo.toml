@@ -5,6 +5,7 @@ authors = ["Elena Fuentes Bongenaar"]
 edition = "2021"
 license = "Apache-2.0"
 
+# change to 0.19
 [dependencies]
 fuels = { version = "0.17", features = ["fuel-core-lib"] }
 tokio = { version = "1.12", features = ["rt", "macros"] }

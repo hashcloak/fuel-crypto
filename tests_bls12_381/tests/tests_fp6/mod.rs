@@ -166,3 +166,21 @@ fn get_b() -> Fp6 {
 
     b
 }
+
+
+// #[tokio::test]
+// async fn test_square_fp6() {
+//     let (contract_instance, _id) = get_contract_instance().await;
+    
+//     let res_square = contract_instance.square_fp6(get_a())
+//     .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
+//     .call_params(CallParameters::new(None, None, Some(100_000_000)))
+//     .call().await.unwrap().value;
+    
+//     let res_expected = contract_instance.mul_fp6(get_a(), get_a())
+//     .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
+//     .call_params(CallParameters::new(None, None, Some(100_000_000)))
+//     .call().await.unwrap().value;
+    
+//     // assert!();TODO
+// }
