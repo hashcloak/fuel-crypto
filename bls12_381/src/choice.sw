@@ -26,8 +26,20 @@ impl Choice {
         self.c
     }
 
+    pub fn unwrap_as_bool(self) -> bool {
+        self.c == 1u8
+    }
+
     pub fn from(input: u8) -> Choice {
         Choice{ c: input}
+    }
+
+    pub fn from_bool(b: bool) -> Choice {
+        if b {
+            Choice{ c: 1u8}
+        } else {
+            Choice{ c: 0u8}
+        }
     }
 }
 
@@ -54,12 +66,19 @@ impl<T> CtOption<T> {
         }
     }
 
-        pub fn new(value: T, is_some: bool) -> CtOption<T> {
-            match is_some {
-                true => CtOption {value: value, is_some: Choice{ c: 1 },},
-                false => CtOption {value: value, is_some: Choice{ c: 0 },},
-            }
-        
+    pub fn new_from_bool(value: T, is_some: bool) -> CtOption<T> {
+        match is_some {
+            true => CtOption {value: value, is_some: Choice{ c: 1 },},
+            false => CtOption {value: value, is_some: Choice{ c: 0 },},
+        }
+    }
+
+    pub fn is_none(self) -> bool {
+        !self.is_some.unwrap_as_bool()
+    }
+
+    pub fn unwrap(self) -> T {
+        self.value
     }
 }
 

@@ -82,15 +82,6 @@ pub fn subtract_wrap_64(x: u64, y: u64) -> u64 {
     }
 }
 
-
-//returns a*b mod(2^64)
-pub fn multiply_wrap(a: u64, b: u64) -> u64 {
-    let a_128: U128 = ~U128::from(0, a);
-    let b_128: U128 = ~U128::from(0, b);
-
-    (a_128 * b_128).lower
-}
-
 impl Fp {
     pub fn zero() -> Fp {
         Fp{ls: [0, 0, 0, 0, 0, 0]}
@@ -351,7 +342,7 @@ impl Fp {
 
     //             // Algorithm 2, lines 4-5
     //             // This is a single step of the usual Montgomery reduction process.
-    //             let k = multiply_wrap(t0, INV);
+    //             let k = wrapping_mul(t0, INV);
     //             let (_, carry) = mac(t0, k, MODULUS[0], 0);
     //             let (r1, carry) = mac(t1, k, MODULUS[1], carry);
     //             let (r2, carry) = mac(t2, k, MODULUS[2], carry);
@@ -401,7 +392,7 @@ impl Fp {
             let (t5, carry) = mac(t5, a[i].ls[j], b[i].ls[5], carry);
             let (t6, _) = adc(t6, 0, carry);
 
-            let k = multiply_wrap(t0, INV);
+            let k = wrapping_mul(t0, INV);
             let (_, carry) = mac(t0, k, MODULUS[0], 0);
             let (u1, carry) = mac(t1, k, MODULUS[1], carry);
             let (u2, carry) = mac(t2, k, MODULUS[2], carry);
@@ -442,7 +433,7 @@ impl Fp {
     //         let (t6, _) = adc(t6, 0, carry);
     //         i += 1;
     //         }
-    //         let k = multiply_wrap(t0, INV);
+    //         let k = wrapping_mul(t0, INV);
     //         let (_, carry) = mac(t0, k, MODULUS[0], 0);
     //         let (u1, carry) = mac(t1, k, MODULUS[1], carry);
     //         let (u2, carry) = mac(t2, k, MODULUS[2], carry);
@@ -478,7 +469,7 @@ impl Fp {
             0x1a01_11ea_397f_e69a,
         ]);
 
-        ~CtOption::new(t, !self.is_zero())
+        ~CtOption::new_from_bool(t, !self.is_zero())
     }
 }
 
@@ -507,7 +498,7 @@ impl Multiply for Fp {
 }
 
 pub fn montgomery_reduce(t: [u64;12]) -> Fp {
-    let k = multiply_wrap(t[0], INV);
+    let k = wrapping_mul(t[0], INV);
 
     let r0: (u64, u64) = mac(t[0], k, MODULUS[0], 0);
     let r1: (u64, u64) = mac(t[1], k, MODULUS[1], r0.1);
@@ -517,7 +508,7 @@ pub fn montgomery_reduce(t: [u64;12]) -> Fp {
     let r5: (u64, u64) = mac(t[5], k, MODULUS[5], r4.1);
     let r6_7: (u64, u64) = adc(t[6], 0, r5.1);
 
-    let k = multiply_wrap(r1.0, INV);
+    let k = wrapping_mul(r1.0, INV);
     let r0: (u64, u64) = mac(r1.0, k, MODULUS[0], 0);
     let r2: (u64, u64) = mac(r2.0, k, MODULUS[1], r0.1);
     let r3: (u64, u64) = mac(r3.0, k, MODULUS[2], r2.1);
@@ -526,7 +517,7 @@ pub fn montgomery_reduce(t: [u64;12]) -> Fp {
     let r6: (u64, u64) = mac(r6_7.0, k, MODULUS[5], r5.1);
     let r7_8: (u64, u64) = adc(t[7], r6_7.1, r6.1);
 
-    let k = multiply_wrap(r2.0, INV);
+    let k = wrapping_mul(r2.0, INV);
     let r0: (u64, u64) = mac(r2.0, k, MODULUS[0], 0);
     let r3: (u64, u64) = mac(r3.0, k, MODULUS[1], r0.1);
     let r4: (u64, u64) = mac(r4.0, k, MODULUS[2], r3.1);
@@ -535,7 +526,7 @@ pub fn montgomery_reduce(t: [u64;12]) -> Fp {
     let r7: (u64, u64) = mac(r7_8.0, k, MODULUS[5], r6.1);
     let r8_9: (u64, u64) = adc(t[8], r7_8.1, r7.1);
 
-    let k = multiply_wrap(r3.0, INV);
+    let k = wrapping_mul(r3.0, INV);
     let r0: (u64, u64) = mac(r3.0, k, MODULUS[0], 0);
     let r4: (u64, u64) = mac(r4.0, k, MODULUS[1], r0.1);
     let r5: (u64, u64) = mac(r5.0, k, MODULUS[2], r4.1);
@@ -544,7 +535,7 @@ pub fn montgomery_reduce(t: [u64;12]) -> Fp {
     let r8: (u64, u64) = mac(r8_9.0, k, MODULUS[5], r7.1);
     let r9_10: (u64, u64) = adc(t[9], r8_9.1, r8.1);
 
-    let k = multiply_wrap(r4.0, INV);
+    let k = wrapping_mul(r4.0, INV);
     let r0: (u64, u64) = mac(r4.0, k, MODULUS[0], 0);
     let r5: (u64, u64) = mac(r5.0, k, MODULUS[1], r0.1);
     let r6: (u64, u64) = mac(r6.0, k, MODULUS[2], r5.1);
@@ -553,7 +544,7 @@ pub fn montgomery_reduce(t: [u64;12]) -> Fp {
     let r9: (u64, u64) = mac(r9_10.0, k, MODULUS[5], r8.1);
     let r10_11: (u64, u64) = adc(t[10], r9_10.1, r9.1);
 
-    let k = multiply_wrap(r5.0, INV);
+    let k = wrapping_mul(r5.0, INV);
     let r0: (u64, u64) = mac(r5.0, k, MODULUS[0], 0);
     let r6: (u64, u64) = mac(r6.0, k, MODULUS[1], r0.1);
     let r7: (u64, u64) = mac(r7.0, k, MODULUS[2], r6.1);

@@ -30,6 +30,16 @@ impl ConditionallySelectable for u64 {
     }
 }
 
+impl ConditionallySelectable for u32 {
+    fn conditional_select(a: u32, b: u32, choice: Choice) -> u32 {
+        if (choice.unwrap_u8() == 0) {
+            a
+        } else {
+            b
+        }
+    }
+}
+
 // TODO rewrite without if branch
 // If x >= y: x-y, else max::U128 - (y-x)
 pub fn subtract_wrap(x: U128, y: U128) -> U128 {
@@ -72,4 +82,12 @@ pub fn mac(a: u64, b: u64, c: u64, carry: u64) -> (u64, u64) {
 
     let res: U128 = a_128 + (b_128 * c_128) + carry_128;
     (res.lower, res.upper)
+}
+
+//returns a*b mod(2^64)
+pub fn wrapping_mul(a: u64, b: u64) -> u64 {
+    let a_128: U128 = ~U128::from(0, a);
+    let b_128: U128 = ~U128::from(0, b);
+
+    (a_128 * b_128).lower
 }
