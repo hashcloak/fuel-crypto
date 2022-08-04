@@ -8,7 +8,7 @@ use fp::*;
 use fp2::*;
 use choice::*;
 
-use core::ops::{Multiply};
+use core::ops::{Add, Multiply};
 
 pub struct Fp6 {
     c0: Fp2,
@@ -209,6 +209,12 @@ impl Fp6 {
             c2: s1 + s2 + s3 - s0 - s4,
         }
     }*/
+}
+
+impl Add for Fp6 {
+    fn add(self, other: Self) -> Self {
+        self.add(other)
+    }
 }
 
 // impl Multiply for Fp6 {

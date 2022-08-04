@@ -1,9 +1,12 @@
-use fuels::{prelude::*, tx::ContractId};
+use fuels::{
+    prelude::*,
+    tx::{ConsensusParameters, ContractId},
+};
 
 // Load abi from json
 abigen!(BlsTestContract, "out/debug/tests_bls12_381-abi.json");
 
-async fn get_contract_instance() -> (BlsTestContract, ContractId) {
+async fn get_contract_instance() -> (BlsTestContract, Bech32ContractId) {
     // Launch a local network and deploy the contract
     let wallet = launch_provider_and_get_wallet().await;
 
@@ -16,7 +19,7 @@ async fn get_contract_instance() -> (BlsTestContract, ContractId) {
     .await
     .unwrap();
 
-    let instance = BlsTestContract::new(id.to_string(), wallet);
+    let instance = BlsTestContractBuilder::new(id.to_string(), wallet).build();
 
     (instance, id)
 }
