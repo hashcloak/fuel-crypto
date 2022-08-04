@@ -1,7 +1,12 @@
 contract;
 
-use bls12_381::{fp::*, fp2::*, fp6::*, scalar::*};
-use bls12_381::choice::*;
+use bls12_381::{
+    fp::Fp, 
+    fp::from_raw_unchecked, 
+    fp2::Fp2, 
+    fp6::Fp6, 
+    scalar::Scalar};
+use bls12_381::choice::CtOption;
 
 abi BlsTestContract {
     #[storage(read, write)]fn add_fp(a: Fp, b: Fp) -> Fp;

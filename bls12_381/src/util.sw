@@ -1,8 +1,8 @@
 library util;
 
 dep choice; 
-use choice::*;
-use std::{u128::*};
+use choice::{Choice, CtOption, ConditionallySelectable};
+use std::{u128::U128};
 
 impl ConditionallySelectable for u64 {
     // TODO How can we do this in Sway in constant time?

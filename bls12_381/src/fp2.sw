@@ -1,7 +1,7 @@
 library fp2;
 
 dep fp;
-use fp::*;
+use fp::Fp;
 use core::ops::{Eq, Add, Subtract, Multiply};
 
 pub struct Fp2 {

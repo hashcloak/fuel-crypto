@@ -3,9 +3,9 @@ library fp;
 dep choice; 
 dep util;
 
-use choice::*;
+use choice::{Choice, CtOption, ConditionallySelectable};
 use util::*;
-use std::{option::*, u128::*, vec::Vec};
+use std::{option::Option, u128::*, vec::Vec};
 use core::ops::{Eq, Add, Subtract, Multiply};
 
 // Little endian big integer with 6 limbs

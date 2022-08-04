@@ -2,7 +2,7 @@ script;
 
 dep fp;
 
-use ::fp::*;
+use ::fp::Fp;
 use std::{assert::assert};
 use std::logging::log;
 

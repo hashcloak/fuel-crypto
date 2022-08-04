@@ -3,7 +3,7 @@ library scalar;
 dep choice; 
 dep util;
 
-use choice::*;
+use choice::{Choice, CtOption, ConditionallySelectable};
 use util::*;
 
 use core::ops::{Eq, Add, Subtract, Multiply};
@@ -283,23 +283,23 @@ impl Scalar {
     /// **This operation is variable time with respect
     /// to the exponent.** If the exponent is fixed,
     /// this operation is effectively constant time.
-    pub fn pow_vartime(self, by: [u64; 4]) -> Self {
+    pub fn pow_vartime(self, by: [u64; 4]) -> Scalar {
         let mut res = ~Self::one();
-        let mut i = 4;
-        while i > 0 {
-            let e = by[i -1];
-            let mut j = 65;
-            while j > 0 {
-                res = res.square();
+        // let mut i = 4;
+        // while i > 0 {
+        //     let e = by[i -1];
+        //     let mut j = 65;
+        //     while j > 0 {
+        //         res = res.square();
 
-                if ((e >> (j-1)) & 1) == 1 {
-                    res *= self;
-                    // res.mul_assign(self);
-                }
-                j -= 1;
-            }
-            i -= 1;
-        }
+        //         if ((e >> (j-1)) & 1) == 1 {
+        //             res *= self;
+        //             // res.mul_assign(self);
+        //         }
+        //         j -= 1;
+        //     }
+        //     i -= 1;
+        // }
         res
     }
 } 
@@ -313,53 +313,54 @@ impl Scalar {
 
         // w = self^((t - 1) // 2)
         //   = self^6104339283789297388802252303364915521546564123189034618274734669823
-        let w = self.pow_vartime([
+        let w = ~Scalar::one();/*pow_vartime(self, [
             0x7fff_2dff_7fff_ffff,
             0x04d0_ec02_a9de_d201,
             0x94ce_bea4_199c_ec04,
             0x0000_0000_39f6_d3a9,
-        ]);
+        ]);*/
 
-        let mut v = S;
-        let mut x = self * w;
-        let mut b = x * w;
+        // let mut v = S;
+        // let mut x = self * w;
+        // let mut b = x * w;
 
-        // Initialize z as the 2^S root of unity.
-        let mut z = ROOT_OF_UNITY;
+        // // Initialize z as the 2^S root of unity.
+        // let mut z = ROOT_OF_UNITY;
 
-        let mut max_v = S;
+        // let mut max_v = S;
 
-        while max_v > 0 {
-            let mut k = 1;
-            let mut tmp = b.square();
-            let mut j_less_than_v: Choice = ~Choice::from(1u8);
+        // while max_v > 0 {
+        //     let mut k = 1;
+        //     let mut tmp = b.square();
+        //     let mut j_less_than_v: Choice = ~Choice::from(1u8);
 
-            let mut j = 2; // j in 2..max_v
-            while j <= max_v {
-                let tmp_is_one = ~Choice::from_bool(tmp.eq(~Scalar::one()));
-                let squared = ~Scalar::conditional_select(tmp, z, tmp_is_one).square();
-                tmp = ~Scalar::conditional_select(squared, tmp, tmp_is_one);
-                let new_z = ~Scalar::conditional_select(z, squared, tmp_is_one);
-                let j_less_than_v_bool = ~Choice::unwrap_as_bool(j_less_than_v) && j != v;
-                j_less_than_v = ~Choice::from_bool(j_less_than_v_bool);
-                k = ~u32::conditional_select(j, k, tmp_is_one);
-                z = ~Scalar::conditional_select(z, new_z, j_less_than_v);
+        //     let mut j = 2; // j in 2..max_v
+        //     while j <= max_v {
+        //         let tmp_is_one = ~Choice::from_bool(tmp.eq(~Scalar::one()));
+        //         let squared = ~Scalar::conditional_select(tmp, z, tmp_is_one).square();
+        //         tmp = ~Scalar::conditional_select(squared, tmp, tmp_is_one);
+        //         let new_z = ~Scalar::conditional_select(z, squared, tmp_is_one);
+        //         let j_less_than_v_bool = ~Choice::unwrap_as_bool(j_less_than_v) && j != v;
+        //         j_less_than_v = ~Choice::from_bool(j_less_than_v_bool);
+        //         k = ~u32::conditional_select(j, k, tmp_is_one);
+        //         z = ~Scalar::conditional_select(z, new_z, j_less_than_v);
 
-                j += 1;
-            }
+        //         j += 1;
+        //     }
 
-            let result = x * z;
-            x = ~Scalar::conditional_select(result, x, ~Choice::from_bool(b.eq(~Scalar::one())));
-            z = z.square();
-            b *= z;
-            v = k;
+        //     let result = x * z;
+        //     x = ~Scalar::conditional_select(result, x, ~Choice::from_bool(b.eq(~Scalar::one())));
+        //     z = z.square();
+        //     b *= z;
+        //     v = k;
 
-            max_v -= 1;
-        }
+        //     max_v -= 1;
+        // }
 
-        ~CtOption::new(
-            x,
-            (x * x).ct(self), // Only return Some if it's the square root.
-        )
+        // ~CtOption::new(
+        //     x,
+        //     (x * x).ct(self), // Only return Some if it's the square root.
+        // )
+        ~CtOption::new(self, ~Choice::from(1))
     }
 }

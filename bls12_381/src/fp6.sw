@@ -4,9 +4,9 @@ dep fp2;
 dep fp;
 dep choice; 
 
-use fp::*;
-use fp2::*;
-use choice::*;
+use fp::Fp;
+use fp2::Fp2;
+use choice::{Choice, CtOption};
 
 use core::ops::{Add, Multiply};
 

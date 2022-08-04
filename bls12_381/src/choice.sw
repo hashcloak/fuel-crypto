@@ -1,6 +1,6 @@
 library choice;
 
-use std::{option::*};
+use std::{option::Option};
 
 /////////////// IMPORTANT<start> ///////////////
 
