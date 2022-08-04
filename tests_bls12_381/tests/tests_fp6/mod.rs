@@ -24,29 +24,29 @@ async fn get_contract_instance() -> (BlsTestContract, Bech32ContractId) {
     (instance, id)
 }
 
-
-pub fn res_equals(res: Fp2, should_be: Fp2) -> bool {
-
-    let c0_res = res.c_0;
-    let c1_res = res.c_1;
-    let c0_should_be = should_be.c_0;
-    let c1_should_be = should_be.c_1;
-
-    assert!(c0_res.ls[0] == c0_should_be.ls[0]);
-    assert!(c0_res.ls[1] == c0_should_be.ls[1]);
-    assert!(c0_res.ls[2] == c0_should_be.ls[2]);
-    assert!(c0_res.ls[3] == c0_should_be.ls[3]);
-    assert!(c0_res.ls[4] == c0_should_be.ls[4]);
-    assert!(c0_res.ls[5] == c0_should_be.ls[5]);
-
-    assert!(c1_res.ls[0] == c1_should_be.ls[0]);
-    assert!(c1_res.ls[1] == c1_should_be.ls[1]);
-    assert!(c1_res.ls[2] == c1_should_be.ls[2]);
-    assert!(c1_res.ls[3] == c1_should_be.ls[3]);
-    assert!(c1_res.ls[4] == c1_should_be.ls[4]);
-    assert!(c1_res.ls[5] == c1_should_be.ls[5]);
+fn res_equals_fp(res: Fp, should_be: Fp) -> bool {
+    assert!(res.ls[0] == should_be.ls[0]);
+    assert!(res.ls[1] == should_be.ls[1]);
+    assert!(res.ls[2] == should_be.ls[2]);
+    assert!(res.ls[3] == should_be.ls[3]);
+    assert!(res.ls[4] == should_be.ls[4]);
+    assert!(res.ls[5] == should_be.ls[5]);
     true
 }
+
+fn res_equals_fp2(res: Fp2, c: Fp2) -> bool {
+    assert!(res_equals_fp(res.c_0, c.c_0));
+    assert!(res_equals_fp(res.c_1, c.c_1));
+    true
+}
+
+fn res_equals(res: Fp6, c: Fp6) -> bool {
+    assert!(res_equals_fp2(res.c_0, c.c_0));
+    assert!(res_equals(res.c_1, c.c_1));
+    assert!(res_equals(res.c_2, c.c_2));
+    true
+}
+
 /*
 fn get_a() -> Fp6  {
     let a = Fp6 {

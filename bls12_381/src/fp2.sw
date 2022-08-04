@@ -34,7 +34,7 @@ impl Fp2 {
     fn eq(self, other: Self) -> bool {
         self.c0 == other.c0 && self.c1 == other.c1
     }
-
+/*
 // //TODO test
     pub fn square(self) -> Fp2 {
         // Complex squaring:
@@ -58,6 +58,7 @@ impl Fp2 {
             c1: c * self.c1,
         }
     }
+    */
 /*
     pub fn mul(self, rhs: Fp2) -> Fp2 {
         // F_{p^2} x F_{p^2} multiplication implemented with operand scanning (schoolbook)

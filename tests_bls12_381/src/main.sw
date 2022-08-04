@@ -1,6 +1,6 @@
 contract;
 
-use bls12_381::{fp::*, fp2::*, fp6::*};
+use bls12_381::{fp::*, fp2::*, fp6::*, scalar::*};
 
 abi BlsTestContract {
     #[storage(read, write)]fn add_fp(a: Fp, b: Fp) -> Fp;
@@ -15,7 +15,8 @@ abi BlsTestContract {
     #[storage(read, write)]fn sub_fp2(a: Fp2, b: Fp2) -> Fp2;
     #[storage(read, write)]fn neg_fp2(a: Fp2) -> Fp2;
 
-    #[storage(read, write)]fn add_fp6(a: Fp6, b: Fp6) -> Fp6;
+    #[storage(read, write)]fn add_scalar(a: Scalar, b: Scalar) -> Scalar;
+
 // These can't be compiled yet.. 
     // #[storage(read, write)]fn mul_fp6(a: Fp6, b: Fp6) -> Fp6;
     // #[storage(read, write)]fn square_fp6(a: Fp6) -> Fp6;
@@ -63,7 +64,7 @@ impl BlsTestContract for Contract {
         a.neg()
     }
 
-    #[storage(read, write)]fn add_fp6(a: Fp6, b: Fp6) -> Fp6 {
+    #[storage(read, write)]fn add_scalar(a: Scalar, b: Scalar) -> Scalar {
         a + b
     }
 

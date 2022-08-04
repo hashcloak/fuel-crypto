@@ -73,18 +73,6 @@ fn not(input: u64) -> u64 {
 }
 
 // TODO rewrite without if branch
-// If x >= y: x-y, else max::U128 - (y-x)
-pub fn subtract_wrap(x: U128, y: U128) -> U128 {
-    if y > x {
-        ~U128::max() - (y - x - U128 {
-            lower: 1, upper: 0
-        })
-    } else {
-        x - y
-    }
-}
-
-// TODO rewrite without if branch
 // If x >= y: x-y, else max::U64 - (y-x)
 pub fn subtract_wrap_64(x: u64, y: u64) -> u64 {
     if y > x {
@@ -94,37 +82,6 @@ pub fn subtract_wrap_64(x: u64, y: u64) -> u64 {
     }
 }
 
-/// Compute a - (b + borrow), returning the result and the new borrow (0 or 1).
-pub fn sbb(a: u64, b: u64, borrow: u64) -> (u64, u64) {
-    let a_128: U128 = ~U128::from(0, a);
-    let b_128: U128 = ~U128::from(0, b);
-    let borrow_128: U128 = ~U128::from(0, borrow);
-
-    let res: U128 = subtract_wrap(a_128, b_128 + borrow_128);
-    (res.lower, res.upper >> 63) //(result, borrow)
-}
-
-//returns sum with carry of a and b
-pub fn adc(a: u64, b: u64, carry: u64) -> (u64, u64) {
-    let a_128: U128 =  ~U128::from(0, a);
-    let b_128: U128 = ~U128::from(0, b);
-    let carry_128: U128 =  ~U128::from(0, carry);
-
-    let sum = a_128 + b_128 + carry_128;
-    (sum.lower, sum.upper)
-}
-
-
-//returns the result and new carry of a + b*c + carry
-pub fn mac(a: u64, b: u64, c: u64, carry: u64) -> (u64, u64) {
-    let a_128: U128 = ~U128::from(0, a);
-    let b_128: U128 = ~U128::from(0, b);
-    let c_128: U128 = ~U128::from(0, c);
-    let carry_128: U128 = ~U128::from(0, carry);
-
-    let res: U128 = a_128 + (b_128 * c_128) + carry_128;
-    (res.lower, res.upper)
-}
 
 //returns a*b mod(2^64)
 pub fn multiply_wrap(a: u64, b: u64) -> u64 {
@@ -223,7 +180,7 @@ impl Fp {
         // is smaller than the modulus.
         (Fp{ls:[d0, d1, d2, d3, d4, d5]}).subtract_p()
     }
-
+/*
     pub fn mul(self, rhs: Fp) -> Fp {
         let self0 = self.ls[0];
         let self1 = self.ls[1];
@@ -334,6 +291,7 @@ impl Fp {
         let res: [u64;12] = [t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11];
         montgomery_reduce(res)
     }
+    */
 }
 
 impl Fp {
@@ -541,7 +499,7 @@ impl Subtract for Fp {
         self.sub(other)
     }
 }
-
+/*
 impl Multiply for Fp {
         fn multiply(self, other: Self) -> Self {
             self.mul(other)
@@ -605,4 +563,4 @@ pub fn montgomery_reduce(t: [u64;12]) -> Fp {
     let r11_12 = adc(t[11], r10_11.1, r10.1);
 
     (Fp { ls: [r6.0, r7.0, r8.0, r9.0, r10.0, r11_12.0]}).subtract_p()
-}
+}*/
