@@ -23,7 +23,7 @@ abi BlsTestContract {
 error: Internal compiler error: Verification failed: Function anon_11103 return type must match its RET instructions.
 Please file an issue on the repository and include the code that triggered this error.
 */
-    // #[storage(read, write)]fn scalar_sqrt(a: Scalar) -> CtOption<Scalar>;
+    #[storage(read, write)]fn scalar_sqrt(a: Scalar) -> CtOption<Scalar>;
 
 // These can't be compiled yet.. 
     // #[storage(read, write)]fn mul_fp6(a: Fp6, b: Fp6) -> Fp6;
@@ -76,9 +76,9 @@ impl BlsTestContract for Contract {
         a + b
     }
 
-    // #[storage(read, write)]fn scalar_sqrt(a: Scalar) -> CtOption<Scalar> {
-    //     a.sqrt()
-    // }
+    #[storage(read, write)]fn scalar_sqrt(a: Scalar) -> CtOption<Scalar> {
+        a.sqrt()
+    }
 
     // #[storage(read, write)]fn mul_fp6(a: Fp6, b: Fp6) -> Fp6 {
     //     a * b
