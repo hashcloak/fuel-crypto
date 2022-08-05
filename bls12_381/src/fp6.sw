@@ -4,7 +4,7 @@ dep fp2;
 dep fp;
 dep choice; 
 
-use fp::Fp;
+use fp::{Fp, from_raw_unchecked};
 use fp2::Fp2;
 use choice::{Choice, CtOption};
 
@@ -219,7 +219,7 @@ impl Fp6 {
 
         let c1 = c1 * Fp2 {
             c0: ~Fp::zero(),
-            c1: ~Fp::from_raw_unchecked([
+            c1: from_raw_unchecked([
                 0xcd03_c9e4_8671_f071,
                 0x5dab_2246_1fcd_a5d2,
                 0x5870_42af_d385_1b95,
@@ -229,7 +229,7 @@ impl Fp6 {
             ]),
         };
         let c2 = c2 * Fp2 {
-            c0: ~Fp::from_raw_unchecked([
+            c0: from_raw_unchecked([
                0x890d_c9e4_8675_45c3,
                 0x2af3_2253_3285_a5d5,
                 0x5088_0866_309b_7e2c,
