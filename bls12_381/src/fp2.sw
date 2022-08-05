@@ -155,7 +155,14 @@ impl Fp2 {
 
     /// Raises this element to p.
     pub fn frobenius_map(self) -> Fp2 {
-        self.conjugate()
+        //needs to be verified
+        // This is always just a conjugation. If you're curious why, here's
+        // an article about it: https://alicebob.cryptoland.net/the-frobenius-endomorphism-with-finite-fields/
+        // self.conjugate() //showing error
+        Fp2{
+            c0: self.c0,
+            c1: (self.c1).neg(),
+        }
     }
 
 }
@@ -178,8 +185,8 @@ impl Subtract for Fp2 {
     }
 }
 
-// impl Multiply for Fp2 {
-//         fn multiply(self, other: Self) -> Self {
-//             self.mul(other)
-//         }
-// }
+impl Multiply for Fp2 {
+        fn multiply(self, other: Self) -> Self {
+            self.mul(other)
+        }
+}

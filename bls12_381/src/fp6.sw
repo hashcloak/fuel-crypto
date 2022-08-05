@@ -228,7 +228,7 @@ impl Fp6 {
                 0x18f0_2065_5463_8741,
             ]),
         };
-        let c2 = c2 * Fp {
+        let c2 = c2 * Fp2 {
             c0: ~Fp::from_raw_unchecked([
                0x890d_c9e4_8675_45c3,
                 0x2af3_2253_3285_a5d5,
@@ -240,7 +240,7 @@ impl Fp6 {
             c1: ~Fp::zero(),
         };
 
-        fp6 {
+        Fp6 {
             c0, c1, c2
         }
     }
