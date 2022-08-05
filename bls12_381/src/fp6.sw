@@ -117,7 +117,9 @@ impl Fp6 {
     //         c2: ~Fp2::conditional_select(a.c2, b.c2, choice),
     //     }
     // }
-/* Can't compile if this is uncommented atm...
+
+/*
+    // not tested, gives Immediate18TooLarge error
     fn mul_interleaved(self, b: Self) -> Self {
         // The intuition for this algorithm is that we can look at F_p^6 as a direct
         // extension of F_p^2, and express the overall operations down to the base field
@@ -193,7 +195,8 @@ impl Fp6 {
             },
         }
     }
-
+    */
+/*
     pub fn square(self) -> Fp6 {
         let s0 = self.c0.square();
         let ab = self.c0 * self.c1;
@@ -210,6 +213,7 @@ impl Fp6 {
         }
     }*/
 
+/*
     pub fn frobenius_map(self) -> Fp6 {
         let c0 =  (self.c0).frobenius_map();
         let c1 =  (self.c1).frobenius_map();
@@ -244,6 +248,7 @@ impl Fp6 {
             c0, c1, c2
         }
     }
+    */
 }
 
 impl Add for Fp6 {
