@@ -4,9 +4,9 @@ dep fp2;
 dep fp;
 dep choice; 
 
-use fp::*;
-use fp2::*;
-use choice::*;
+use fp::{Fp, from_raw_unchecked};
+use fp2::Fp2;
+use choice::{Choice, CtOption};
 
 use core::ops::{Add, Multiply};
 
@@ -209,6 +209,41 @@ impl Fp6 {
             c2: s1 + s2 + s3 - s0 - s4,
         }
     }*/
+
+    pub fn frobenius_map(self) -> Fp6 {
+        let c0 =  (self.c0).frobenius_map();
+        let c1 =  (self.c1).frobenius_map();
+        let c2 =  (self.c2).frobenius_map();
+
+        // c1 = c1 * (u + 1)^((p - 1) / 3)
+
+        let c1 = c1 * Fp2 {
+            c0: ~Fp::zero(),
+            c1: from_raw_unchecked([
+                0xcd03_c9e4_8671_f071,
+                0x5dab_2246_1fcd_a5d2,
+                0x5870_42af_d385_1b95,
+                0x8eb6_0ebe_01ba_cb9e,
+                0x03f9_7d6e_83d0_50d2,
+                0x18f0_2065_5463_8741,
+            ]),
+        };
+        let c2 = c2 * Fp2 {
+            c0: from_raw_unchecked([
+               0x890d_c9e4_8675_45c3,
+                0x2af3_2253_3285_a5d5,
+                0x5088_0866_309b_7e2c,
+                0xa20d_1b8c_7e88_1024,
+                0x14e4_f04f_e2db_9068,
+                0x14e5_6d3f_1564_853a, 
+            ]),
+            c1: ~Fp::zero(),
+        };
+
+        Fp6 {
+            c0, c1, c2
+        }
+    }
 }
 
 impl Add for Fp6 {

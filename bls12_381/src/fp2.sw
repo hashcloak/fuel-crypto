@@ -59,7 +59,7 @@ impl Fp2 {
         }
     }
     */
-/*
+
     pub fn mul(self, rhs: Fp2) -> Fp2 {
         // F_{p^2} x F_{p^2} multiplication implemented with operand scanning (schoolbook)
         // computes the result as:
@@ -111,7 +111,7 @@ impl Fp2 {
         //     c1: c1
         // }
     }
-*/
+
     pub fn add(self, rhs: Fp2) -> Fp2 {
         Fp2 {
             c0: self.c0 + rhs.c0,
@@ -146,6 +146,25 @@ impl Fp2 {
         }
     }
 
+    pub fn conjugate(self) -> Fp2 {
+        Fp2{
+            c0: self.c0,
+            c1: (self.c1).neg(),
+        }
+    }
+
+    /// Raises this element to p.
+    pub fn frobenius_map(self) -> Fp2 {
+        //needs to be verified
+        // This is always just a conjugation. If you're curious why, here's
+        // an article about it: https://alicebob.cryptoland.net/the-frobenius-endomorphism-with-finite-fields/
+        // self.conjugate() //showing error
+        Fp2{
+            c0: self.c0,
+            c1: (self.c1).neg(),
+        }
+    }
+
 }
 
 impl Eq for Fp2 {
@@ -166,8 +185,8 @@ impl Subtract for Fp2 {
     }
 }
 
-// impl Multiply for Fp2 {
-//         fn multiply(self, other: Self) -> Self {
-//             self.mul(other)
-//         }
-// }
+impl Multiply for Fp2 {
+        fn multiply(self, other: Self) -> Self {
+            self.mul(other)
+        }
+}
