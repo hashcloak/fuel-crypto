@@ -305,6 +305,18 @@ impl Scalar {
 } 
 
 impl Scalar {
+/*
+functions
+- pow_vartime
+- sqrt
+
+will give Immediate18TooLarge
+
+(It originally gave the error
+error: Internal compiler error: Verification failed: Function anon_11103 return type must match its RET instructions.
+Please file an issue on the repository and include the code that triggered this error.
+)
+*/
 
     /// Computes the square root of this element, if it exists.
     pub fn sqrt(self) -> CtOption<Scalar> {
