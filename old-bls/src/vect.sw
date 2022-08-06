@@ -282,16 +282,23 @@ pub fn temp_mul_mont_n(a_vec: vec384, b_vec: vec384) -> vec384 {
 
     // To mont form
     let a_mont = fe_to_mont(a);
-    let b_mont = fe_to_mont(b);
-    // Mult
-    let res = temp_fe_mont_mul(a_mont, b_mont);
-    // Transform back
-    let res = fe_to_norm(res);
-    let res_vec = vec384{
-        ls: [unpack_or_0(res.get(0)),unpack_or_0(res.get(1)),unpack_or_0(res.get(2)),unpack_or_0(res.get(3)),unpack_or_0(res.get(4)),unpack_or_0(res.get(5))]
+        let res_vec = vec384{
+        ls: [unpack_or_0(a_mont.get(0)),unpack_or_0(a_mont.get(1)),
+        unpack_or_0(a_mont.get(2)),unpack_or_0(a_mont.get(3)),
+        unpack_or_0(a_mont.get(4)),unpack_or_0(a_mont.get(5))]
     };
-
+    // a_mont;
     res_vec
+    // let b_mont = fe_to_mont(b);
+    // // Mult
+    // let res = temp_fe_mont_mul(a_mont, b_mont);
+    // // Transform back
+    // let res = fe_to_norm(res);
+    // let res_vec = vec384{
+    //     ls: [unpack_or_0(res.get(0)),unpack_or_0(res.get(1)),unpack_or_0(res.get(2)),unpack_or_0(res.get(3)),unpack_or_0(res.get(4)),unpack_or_0(res.get(5))]
+    // };
+
+    // res_vec
 }
 
 // Same functionality as mul_temp

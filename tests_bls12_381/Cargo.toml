@@ -1,7 +1,7 @@
 [project]
 name = "tests_bls12_381"
 version = "0.1.0"
-authors = ["Elena Fuentes Bongenaar"]
+authors = ["Hashcloak"]
 edition = "2021"
 license = "Apache-2.0"
 
