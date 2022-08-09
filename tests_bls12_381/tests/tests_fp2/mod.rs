@@ -239,8 +239,6 @@ async fn test_neg_fp2() {
     assert!(res_equals(res.c_1, b.c_1));
 }
 
-
-// Fails! TODO: fix mult
 #[tokio::test] 
 async fn test_multiplication() {
     let a = Fp2 {
@@ -305,7 +303,6 @@ async fn test_multiplication() {
         .call_params(CallParameters::new(None, None, Some(100_000_000)))
         .call().await.unwrap().value;
 
-    //Fails! Result is 0
     assert_eq!(res, c);
 }
 

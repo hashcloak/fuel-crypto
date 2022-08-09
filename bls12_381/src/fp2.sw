@@ -186,8 +186,8 @@ impl Subtract for Fp2 {
     }
 }
 
-// impl Multiply for Fp2 {
-//         fn multiply(self, other: Self) -> Self {
-//             self.mul(other)
-//         }
-// }
+impl Multiply for Fp2 {
+        fn multiply(self, other: Self) -> Self {
+            self.mul(other)
+        }
+}

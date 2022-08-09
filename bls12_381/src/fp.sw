@@ -359,22 +359,21 @@ impl Fp {
     //     (Fp([u0, u1, u2, u3, u4, u5])).subtract_p()
     // }
 
-// This will be tested when fp2 multiplication is tested. This is not working atm because of Immediate18TooLarge error
-//fold unpacked for the case that T = 2
+    // Tested and works
     pub fn sum_of_products_2(a: [Fp; 2], b: [Fp; 2]) -> Fp { 
-        let u0 = 0;
-        let u1 = 0;
-        let u2 = 0;
-        let u3 = 0;
-        let u4 = 0;
-        let u5 = 0;
+        let mut u1 = 0;
+        let mut u2 = 0;
+        let mut u3 = 0;
+        let mut u4 = 0;
+        let mut u5 = 0;
+        let mut u6 = 0;
         let mut j = 0;
 
         while j < 6 {
-            let (t0, t1, t2, t3, t4, t5, t6) = (u0, u1, u2, u3, u4, u5, 0);
+            let (t0, t1, t2, t3, t4, t5, t6) = (u1, u2, u3, u4, u5, u6, 0);
 
             let mut i = 0;
-            
+
             let (t0, carry) = mac(t0, a[i].ls[j], b[i].ls[0], 0);
             let (t1, carry) = mac(t1, a[i].ls[j], b[i].ls[1], carry);
             let (t2, carry) = mac(t2, a[i].ls[j], b[i].ls[2], carry);
@@ -394,19 +393,23 @@ impl Fp {
 
             let k = wrapping_mul(t0, INV);
             let (_, carry) = mac(t0, k, MODULUS[0], 0);
-            let (u1, carry) = mac(t1, k, MODULUS[1], carry);
-            let (u2, carry) = mac(t2, k, MODULUS[2], carry);
-            let (u3, carry) = mac(t3, k, MODULUS[3], carry);
-            let (u4, carry) = mac(t4, k, MODULUS[4], carry);
-            let (u5, carry) = mac(t5, k, MODULUS[5], carry);
-            let (u6, _) = adc(t6, 0, carry);
-            
+            let (u1_temp, carry) = mac(t1, k, MODULUS[1], carry);
+            let (u2_temp, carry) = mac(t2, k, MODULUS[2], carry);
+            let (u3_temp, carry) = mac(t3, k, MODULUS[3], carry);
+            let (u4_temp, carry) = mac(t4, k, MODULUS[4], carry);
+            let (u5_temp, carry) = mac(t5, k, MODULUS[5], carry);
+            let (u6_temp, _) = adc(t6, 0, carry);
+            // assigning directly to u1..u6 didn't work.
+            u1 = u1_temp;
+            u2 = u2_temp;
+            u3 = u3_temp;
+            u4 = u4_temp;
+            u5 = u5_temp;
+            u6 = u6_temp;
             j += 1;
         }
 
-        // Because we represent F_p elements in non-redundant form, we need a final
-        // conditional subtraction to ensure the output is in range.
-        (Fp{ ls: [u0, u1, u2, u3, u4, u5]}).subtract_p()
+        (Fp{ ls: [u1, u2, u3, u4, u5, u6]}).subtract_p()
     }
 
     // //TODO: Testing not done
