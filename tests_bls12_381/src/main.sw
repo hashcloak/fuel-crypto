@@ -9,17 +9,26 @@ use bls12_381::{
 use bls12_381::choice::CtOption;
 
 abi BlsTestContract {
+    // Works
     #[storage(read, write)]fn add_fp(a: Fp, b: Fp) -> Fp;
     #[storage(read, write)]fn sub_fp(a: Fp, b: Fp) -> Fp;
-    // #[storage(read, write)]fn mul_fp(a: Fp, b: Fp) -> Fp;
-    // #[storage(read, write)]fn square_fp(a: Fp) -> Fp;
-    #[storage(read, write)]fn fp_from_raw_unchecked(v: [u64; 6]) -> Fp;
 
-    // #[storage(read, write)]fn square_fp2(a: Fp2) -> Fp2;
-    // #[storage(read, write)]fn mul_fp2(a: Fp2, b: Fp2) -> Fp2;
+    // works but takes a long time
+    // #[storage(read, write)]fn mul_fp(a: Fp, b: Fp) -> Fp;
+
+    // not tested, gives Immediate18TooLarge error
+    // #[storage(read, write)]fn square_fp(a: Fp) -> Fp;
+
+    // Works
     #[storage(read, write)]fn add_fp2(a: Fp2, b: Fp2) -> Fp2;
     #[storage(read, write)]fn sub_fp2(a: Fp2, b: Fp2) -> Fp2;
     #[storage(read, write)]fn neg_fp2(a: Fp2) -> Fp2;
+    
+    // not tested, gives Immediate18TooLarge error
+    // #[storage(read, write)]fn square_fp2(a: Fp2) -> Fp2;
+
+    // Gives wrong output atm
+    #[storage(read, write)]fn mul_fp2(a: Fp2, b: Fp2) -> Fp2;
 
     #[storage(read, write)]fn add_scalar(a: Scalar, b: Scalar) -> Scalar;
   
@@ -49,18 +58,6 @@ impl BlsTestContract for Contract {
     //     a.square()
     // }
 
-    #[storage(read, write)]fn fp_from_raw_unchecked(v: [u64; 6]) -> Fp {
-        from_raw_unchecked(v)
-    }
-
-    // #[storage(read, write)]fn square_fp2(a: Fp2) -> Fp2 {
-    //     a.square()
-    // }
-
-    // #[storage(read, write)]fn mul_fp2(a: Fp2, b: Fp2) -> Fp2 {
-    //     a * b
-    // }
-
     #[storage(read, write)]fn add_fp2(a: Fp2, b: Fp2) -> Fp2 {
         a + b
     }
@@ -76,6 +73,15 @@ impl BlsTestContract for Contract {
     #[storage(read, write)]fn add_scalar(a: Scalar, b: Scalar) -> Scalar {
         a + b
     }
+
+    // #[storage(read, write)]fn square_fp2(a: Fp2) -> Fp2 {
+    //     a.square()
+    // }
+
+    #[storage(read, write)]fn mul_fp2(a: Fp2, b: Fp2) -> Fp2 {
+        a * b
+    }
+
 
     // #[storage(read, write)]fn scalar_sqrt(a: Scalar) -> CtOption<Scalar> {
     //     a.sqrt()

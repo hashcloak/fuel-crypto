@@ -210,6 +210,7 @@ impl Fp6 {
         }
     }*/
 
+/*
     pub fn frobenius_map(self) -> Fp6 {
         let c0 =  (self.c0).frobenius_map();
         let c1 =  (self.c1).frobenius_map();
@@ -244,6 +245,7 @@ impl Fp6 {
             c0, c1, c2
         }
     }
+    */
 }
 
 impl Add for Fp6 {

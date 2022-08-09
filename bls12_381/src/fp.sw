@@ -171,7 +171,7 @@ impl Fp {
         // is smaller than the modulus.
         (Fp{ls:[d0, d1, d2, d3, d4, d5]}).subtract_p()
     }
-/*
+
     pub fn mul(self, rhs: Fp) -> Fp {
         let self0 = self.ls[0];
         let self1 = self.ls[1];
@@ -232,7 +232,7 @@ impl Fp {
         let res: [u64;12] = [t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11];
         montgomery_reduce(res)
     }
-
+/*TODO test
     pub fn square(self) -> Fp {
         let (t1, carry) = mac(0, self.ls[0], self.ls[1], 0);
         let (t2, carry) = mac(0, self.ls[0], self.ls[2], carry);
@@ -282,7 +282,7 @@ impl Fp {
         let res: [u64;12] = [t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11];
         montgomery_reduce(res)
     }
-    */
+   */ 
 }
 
 impl Fp {
@@ -490,7 +490,7 @@ impl Subtract for Fp {
         self.sub(other)
     }
 }
-/*
+
 impl Multiply for Fp {
         fn multiply(self, other: Self) -> Self {
             self.mul(other)
@@ -554,4 +554,4 @@ pub fn montgomery_reduce(t: [u64;12]) -> Fp {
     let r11_12 = adc(t[11], r10_11.1, r10.1);
 
     (Fp { ls: [r6.0, r7.0, r8.0, r9.0, r10.0, r11_12.0]}).subtract_p()
-}*/
+}
