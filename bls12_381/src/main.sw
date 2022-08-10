@@ -4,6 +4,7 @@ dep fp;
 dep fp2;
 dep g1;
 dep choice;
+dep util;
 
 use ::fp::Fp;
 use ::fp2::Fp2;
@@ -12,6 +13,7 @@ use ::choice::*;
 use std::{assert::assert};
 use std::logging::log;
 use ::g1::G1Affine;
+use ::util::*;
 
 
 //this is a temporary file for test purposes. 
@@ -24,11 +26,18 @@ fn main () {
     // assert(test_wrap_neg());
     // assert(test_ct_eq());
     // assert(test_is_zero());
-    assert(test_is_eq());
+    // assert(test_is_eq());
+    assert(test_conditional_select());
+}
+
+pub fn test_conditional_select() -> bool {
+    let first_check = ~u64::conditional_select(10, 100, ~Choice::from(1)) == 10;
+    let second_check = ~u64::conditional_select(10, 100, ~Choice::from(0)) == 100;
+    first_check && second_check
 }
 
 pub fn test_is_zero() -> bool {
-    ~Fp::is_zero(~Fp::zero())
+    ~Fp::is_zero(~Fp::zero()).unwrap_as_bool()
 }
 
 pub fn test_is_eq() -> bool {

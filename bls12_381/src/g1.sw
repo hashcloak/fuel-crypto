@@ -102,7 +102,7 @@ impl G1Projective {
     }
 
     pub fn is_identity(self) -> Choice {
-        ~Choice::from_bool(self.z.is_zero())
+        self.z.is_zero()
     }
 
     pub fn generator() -> G1Projective {

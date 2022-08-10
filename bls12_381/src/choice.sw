@@ -110,6 +110,7 @@ impl<T> CtOption<T> {
 
 // This should have constant time implementations, but not sure atm how to do this in Sway
 pub trait ConditionallySelectable {
+    // Select a if choice == 1 or select b if choice == 0, in constant time.
     fn conditional_select(a: Self, b: Self, choice: Choice) -> Self;
 }
 
@@ -118,7 +119,7 @@ pub trait ConstantTimeEq {
     fn ct_eq(self, other: Self) -> Choice;
 }
 
-pub fn add_wrap_64(a: u64, b :u64) -> u64 {
+fn add_wrap_64(a: u64, b :u64) -> u64 {
     let a_128: U128 = ~U128::from(0, a);
     let b_128: U128 = ~U128::from(0, b);
     (a_128 + b_128).lower

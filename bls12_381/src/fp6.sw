@@ -6,7 +6,7 @@ dep choice;
 
 use fp::{Fp, from_raw_unchecked};
 use fp2::Fp2;
-use choice::{Choice, CtOption};
+use choice::{Choice, CtOption, ConstantTimeEq};
 
 use core::ops::{Add, Multiply};
 
@@ -16,6 +16,11 @@ pub struct Fp6 {
     c2: Fp2,
 }
 
+impl ConstantTimeEq for Fp6 {
+    fn ct_eq(self, other: Self) -> Choice {
+        self.c0.ct_eq(other.c0) & self.c1.ct_eq(other.c1) & self.c2.ct_eq(other.c2)
+    }
+}
 
 impl Fp6 {
     fn from(f: Fp) -> Fp6 {
@@ -48,7 +53,12 @@ impl Fp6 {
             c1: ~Fp2::zero(),
             c2: ~Fp2::zero(),
         }
-    }/*
+    }
+    
+    pub fn is_zero(self) -> Choice {
+        self.c0.is_zero().binary_and(self.c1.is_zero()).binary_and(self.c2.is_zero())
+    }
+    /*
 
 //TODO test (but zkcrypto doesnt have a dedicated test, so will be tested implicitly)
     pub fn mul_by_1(self, c1: Fp2) -> Fp6 {
@@ -109,14 +119,13 @@ impl Fp6 {
         }
     }
 
-    // // Is not tested
-    // fn conditional_select(a: Fp6, b: Fp6, choice: Choice) -> Fp6 {
-    //     Fp6 {
-    //         c0: ~Fp2::conditional_select(a.c0, b.c0, choice),
-    //         c1: ~Fp2::conditional_select(a.c1, b.c1, choice),
-    //         c2: ~Fp2::conditional_select(a.c2, b.c2, choice),
-    //     }
-    // }
+    fn conditional_select(a: Fp6, b: Fp6, choice: Choice) -> Fp6 {
+        Fp6 {
+            c0: ~Fp2::conditional_select(a.c0, b.c0, choice),
+            c1: ~Fp2::conditional_select(a.c1, b.c1, choice),
+            c2: ~Fp2::conditional_select(a.c2, b.c2, choice),
+        }
+    }
 
 /*
     // not tested, gives Immediate18TooLarge error

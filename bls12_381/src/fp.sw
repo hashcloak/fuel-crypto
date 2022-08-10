@@ -167,8 +167,8 @@ pub fn from_raw_unchecked(v: [u64; 6]) -> Fp {
 }
 
 impl Fp {
-    pub fn is_zero(self) -> bool {
-        self.ct_eq(~Fp::zero()).unwrap_as_bool()
+    pub fn is_zero(self) -> Choice {
+        self.ct_eq(~Fp::zero())
     }
 
     fn add(self, rhs: Fp) -> Fp {
@@ -509,7 +509,7 @@ impl Fp {
             0x1a01_11ea_397f_e69a,
         ]);
 
-        ~CtOption::new_from_bool(t, !self.is_zero())
+        ~CtOption::new_from_bool(t, !self.is_zero().unwrap_as_bool())
     }
 }
 
