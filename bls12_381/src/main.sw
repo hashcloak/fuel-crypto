@@ -2,19 +2,34 @@ script;
 
 dep fp;
 dep fp2;
+dep g1;
 
 use ::fp::Fp;
 use ::fp2::Fp2;
+use ::g1::G1Projective;
 use std::{assert::assert};
 use std::logging::log;
+use ::g1::G1Affine;
+
 
 //this is a temporary file for test purposes. 
 // Logging in a library is easier when testing with a script. When testing through a contract that's not possible
 
 fn main () {
     // assert(test_square_fp());
-    assert(test_mul_fp2());
+    // log(1010101);
+    // assert(test_mul_fp2());
+    test_double_identity();
+
 }
+
+// This doesn't terminate (or does it maybe give the Immediate18TooLarge after forever?)
+fn test_double_identity() -> bool {
+    let p_id = ~G1Projective::identity();
+    let doubled = p_id.double();
+    true
+}
+
 
 pub fn res_equals(a: Fp, b: Fp) -> bool {
     assert(a.ls[0] == b.ls[0]);

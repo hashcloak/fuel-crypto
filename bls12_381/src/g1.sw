@@ -1,5 +1,12 @@
 library g1;
 
+dep fp;
+dep choice; 
+
+use ::fp::{Fp, from_raw_unchecked};
+use choice::{Choice, CtOption, ConditionallySelectable};
+
+
 // Comment from zkcrypto
 /// This is an element of $\mathbb{G}_1$ represented in the affine coordinate space.
 /// It is ideal to keep elements in this representation to reduce memory usage and
@@ -8,15 +15,15 @@ library g1;
 /// Values of `G1Affine` are guaranteed to be in the $q$-order subgroup unless an
 /// "unchecked" API was misused.
 pub struct G1Affine {
-    pub x: Fp,
-    pub y: Fp,
+    x: Fp,
+    y: Fp,
     infinity: Choice,
 }
 
 pub struct G1Projective {
-    pub x: Fp,
-    pub y: Fp,
-    pub z: Fp,
+    x: Fp,
+    y: Fp,
+    z: Fp,
 }
 
 fn mul_by_3b(a: Fp) -> Fp {
@@ -44,15 +51,15 @@ impl G1Affine {
     /// Returns the identity of the group: the point at infinity.
     pub fn identity() -> G1Affine {
         G1Affine {
-            x: Fp::zero(),
-            y: Fp::one(),
-            infinity: Choice::from(1u8),
+            x: ~Fp::zero(),
+            y: ~Fp::one(),
+            infinity: ~Choice::from(1u8),
         }
     }
 
     pub fn generator() -> G1Affine {
         G1Affine {
-            x: ~Fp::from_raw_unchecked([
+            x: from_raw_unchecked([
                 0x5cb3_8790_fd53_0c16,
                 0x7817_fc67_9976_fff5,
                 0x154f_95c7_143b_a1c1,
@@ -60,7 +67,7 @@ impl G1Affine {
                 0xedce_6ecc_21db_f440,
                 0x1201_7741_9e0b_fb75,
             ]),
-            y: ~Fp::from_raw_unchecked([
+            y: from_raw_unchecked([
                 0xbaac_93d5_0ce7_2271,
                 0x8c22_631a_7918_fd8e,
                 0xdd59_5f13_5707_25ce,
@@ -94,11 +101,15 @@ impl G1Projective {
         }
     }
 
+    pub fn is_identity(self) -> Choice {
+        ~Choice::from_bool(self.z.is_zero())
+    }
+
     /// Returns a fixed generator of the group. See [`notes::design`](notes/design/index.html#fixed-generators)
     /// for how this generator is chosen.
     pub fn generator() -> G1Projective {
         G1Projective {
-            x: ~Fp::from_raw_unchecked([
+            x: from_raw_unchecked([
                 0x5cb3_8790_fd53_0c16,
                 0x7817_fc67_9976_fff5,
                 0x154f_95c7_143b_a1c1,
@@ -106,7 +117,7 @@ impl G1Projective {
                 0xedce_6ecc_21db_f440,
                 0x1201_7741_9e0b_fb75,
             ]),
-            y: ~Fp::from_raw_unchecked([
+            y: from_raw_unchecked([
                 0xbaac_93d5_0ce7_2271,
                 0x8c22_631a_7918_fd8e,
                 0xdd59_5f13_5707_25ce,
@@ -117,7 +128,12 @@ impl G1Projective {
             z: ~Fp::one(),
         }
     }
+} 
+
+impl G1Projective {
+
 /*
+    // Not able to test this yet, doesn't terminate
     /// Computes the doubling of this point.
     pub fn double(self) -> G1Projective {
         // Algorithm 9, https://eprint.iacr.org/2015/1060.pdf
@@ -147,9 +163,10 @@ impl G1Projective {
             z: z3,
         };
 
-        ~G1Projective::conditional_select(tmp, G1Projective::identity(), self.is_identity())
+        ~G1Projective::conditional_select(tmp, ~G1Projective::identity(), self.is_identity())
     }
-
+    */
+/*
     /// Adds this point to another point.
     pub fn add(self, rhs: G1Projective) -> G1Projective {
         // Algorithm 7, https://eprint.iacr.org/2015/1060.pdf
