@@ -1,6 +1,7 @@
 library choice;
 
-use std::{option::Option};
+use std::{option::Option, u128::*};
+use core::ops::BitwiseAnd;
 
 /////////////// IMPORTANT<start> ///////////////
 
@@ -40,6 +41,21 @@ impl Choice {
         } else {
             Choice{ c: 0u8}
         }
+    }
+}
+
+impl BitwiseAnd for u8 {
+    fn binary_and(self, other: Self) -> Self {
+        asm(r1: self, r2: other, r3) {
+            and r3 r1 r2;
+            r3: u8
+        }
+    }
+}
+
+impl BitwiseAnd for Choice {
+    fn binary_and(self, other: Self) -> Self {
+        ~Choice::from(self.c & other.c)
     }
 }
 
@@ -95,4 +111,35 @@ impl<T> CtOption<T> {
 // This should have constant time implementations, but not sure atm how to do this in Sway
 pub trait ConditionallySelectable {
     fn conditional_select(a: Self, b: Self, choice: Choice) -> Self;
+}
+
+// From https://github.com/dalek-cryptography/subtle/blob/main/src/lib.rs
+pub trait ConstantTimeEq {
+    fn ct_eq(self, other: Self) -> Choice;
+}
+
+pub fn add_wrap_64(a: u64, b :u64) -> u64 {
+    let a_128: U128 = ~U128::from(0, a);
+    let b_128: U128 = ~U128::from(0, b);
+    (a_128 + b_128).lower
+}
+
+pub fn wrapping_neg(a: u64) -> u64 {
+   add_wrap_64(~u64::max() - a, 1)
+}
+
+impl ConstantTimeEq for u64 {
+    fn ct_eq(self, other: u64) -> Choice {
+        // comments from reference impl
+        // x == 0 if and only if self == other
+        let x: u64 = self ^ other;
+
+        // If x == 0, then x and -x are both equal to zero;
+        // otherwise, one or both will have its high bit set.
+        let y: u64 = (x | wrapping_neg(x)) >> 63;
+
+        // Result is the opposite of the high bit (now shifted to low).
+        let res: u8 = y ^ (1u64);
+        ~Choice::from(res)
+    }
 }

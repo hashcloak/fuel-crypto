@@ -3,7 +3,6 @@ use fuels::{
     tx::{ConsensusParameters, ContractId},
 };
 
-use helpers::get_contract_instance;
 
 abigen!(BlsTestContract, "out/debug/tests_bls12_381-abi.json");
 

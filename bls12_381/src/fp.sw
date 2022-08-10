@@ -3,7 +3,8 @@ library fp;
 dep choice; 
 dep util;
 
-use choice::{Choice, CtOption, ConditionallySelectable};
+//This import is needed because of importing ConstantTimeEq for u64 (since it's a trait for a primitive type)
+use choice::*; 
 use util::*;
 use std::{option::Option, u128::*, vec::Vec};
 use core::ops::{Eq, Add, Subtract, Multiply};
@@ -82,6 +83,17 @@ pub fn subtract_wrap_64(x: u64, y: u64) -> u64 {
     }
 }
 
+impl ConstantTimeEq for Fp {
+    fn ct_eq(self, other: Fp) -> Choice {
+        ~u64::ct_eq(self.ls[0], other.ls[0])
+        .binary_and(~u64::ct_eq(self.ls[1], other.ls[1]))
+        .binary_and(~u64::ct_eq(self.ls[2], other.ls[2]))
+        .binary_and(~u64::ct_eq(self.ls[3], other.ls[3]))
+        .binary_and(~u64::ct_eq(self.ls[4], other.ls[4]))
+        .binary_and(~u64::ct_eq(self.ls[5], other.ls[5]))
+    }
+}
+
 impl Fp {
     pub fn zero() -> Fp {
         Fp{ls: [0, 0, 0, 0, 0, 0]}
@@ -156,7 +168,7 @@ pub fn from_raw_unchecked(v: [u64; 6]) -> Fp {
 
 impl Fp {
     pub fn is_zero(self) -> bool {
-        self.eq(~Fp::zero())
+        self.ct_eq(~Fp::zero()).unwrap_as_bool()
     }
 
     fn add(self, rhs: Fp) -> Fp {
@@ -504,7 +516,7 @@ impl Fp {
 // Eq in Sway requires bool return type
 impl Eq for Fp {
     fn eq(self, other: Self) -> bool {
-        self.eq(other)
+        self.ct_eq(other).unwrap_as_bool()
     }
 }
 
@@ -521,9 +533,9 @@ impl Subtract for Fp {
 }
 
 impl Multiply for Fp {
-        fn multiply(self, other: Self) -> Self {
-            self.mul(other)
-        }
+    fn multiply(self, other: Self) -> Self {
+        self.mul(other)
+    }
 }
 
 pub fn montgomery_reduce(t: [u64;12]) -> Fp {

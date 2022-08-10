@@ -105,8 +105,6 @@ impl G1Projective {
         ~Choice::from_bool(self.z.is_zero())
     }
 
-    /// Returns a fixed generator of the group. See [`notes::design`](notes/design/index.html#fixed-generators)
-    /// for how this generator is chosen.
     pub fn generator() -> G1Projective {
         G1Projective {
             x: from_raw_unchecked([

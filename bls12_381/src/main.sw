@@ -3,10 +3,12 @@ script;
 dep fp;
 dep fp2;
 dep g1;
+dep choice;
 
 use ::fp::Fp;
 use ::fp2::Fp2;
 use ::g1::G1Projective;
+use ::choice::*;
 use std::{assert::assert};
 use std::logging::log;
 use ::g1::G1Affine;
@@ -17,18 +19,46 @@ use ::g1::G1Affine;
 
 fn main () {
     // assert(test_square_fp());
-    // log(1010101);
     // assert(test_mul_fp2());
-    test_double_identity();
+    // test_double_identity();
+    // assert(test_wrap_neg());
+    // assert(test_ct_eq());
+    // assert(test_is_zero());
+    assert(test_is_eq());
+}
 
+pub fn test_is_zero() -> bool {
+    ~Fp::is_zero(~Fp::zero())
+}
+
+pub fn test_is_eq() -> bool {
+    let a = Fp{ ls: [
+            0xf597_483e_27b4_e0f7,
+            0x610f_badf_811d_ae5f,
+            0x8432_af91_7714_327a,
+            0x6a9a_9603_cf88_f09e,
+            0xf05a_7bf8_bad0_eb01,
+            0x0954_9131_c003_ffae,
+        ]};
+    (a == a) && (~Fp::zero() == ~Fp::zero())
+}
+
+pub fn test_wrap_neg() -> bool {
+    let x: u64 = 100;
+    let res = wrapping_neg(x);
+    res == 18446744073709551516
+}
+
+pub fn test_ct_eq() -> bool {
+    ~u64::ct_eq(100, (100)).unwrap_as_bool()
 }
 
 // This doesn't terminate (or does it maybe give the Immediate18TooLarge after forever?)
-fn test_double_identity() -> bool {
-    let p_id = ~G1Projective::identity();
-    let doubled = p_id.double();
-    true
-}
+// fn test_double_identity() -> bool {
+//     let p_id = ~G1Projective::identity();
+//     let doubled = p_id.double();
+//     true
+// }
 
 
 pub fn res_equals(a: Fp, b: Fp) -> bool {
