@@ -28,6 +28,12 @@ fn main () {
     // assert(test_is_zero());
     // assert(test_is_eq());
     assert(test_conditional_select());
+    assert(test_g1());
+}
+
+pub fn test_g1() -> bool {
+    let a = ~G1Affine::identity();
+    true
 }
 
 pub fn test_conditional_select() -> bool {

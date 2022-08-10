@@ -1,7 +1,8 @@
 library choice;
 
-use std::{option::Option, u128::*};
-use core::ops::BitwiseAnd;
+use core::num::*;
+use std::{option::Option, u128::U128};
+use core::ops::{BitwiseAnd, BitwiseOr};
 
 /////////////// IMPORTANT<start> ///////////////
 
@@ -21,6 +22,21 @@ use core::ops::BitwiseAnd;
 /// or `0` (false).
 
 pub struct Choice { c: u8 }
+
+pub trait From {
+    fn from(input: u8) -> Self;
+    fn into(self) -> u8;
+}
+
+impl From for Choice {
+    fn from(input: u8) -> Self {
+        Choice { c: input  }
+    }
+
+    fn into(self) -> u8 {
+        self.c
+    }
+}
 
 impl Choice {
     pub fn unwrap_u8(self) -> u8 {
