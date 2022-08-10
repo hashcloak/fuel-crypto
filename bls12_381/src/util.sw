@@ -1,42 +1,36 @@
 library util;
 
 dep choice; 
-use choice::*;
-use std::{u128::*};
+
+use choice::{Choice, CtOption, ConditionallySelectable, wrapping_neg};
+use std::{u128::U128};
+use core::ops::{BitwiseXor};
+
 
 impl ConditionallySelectable for u64 {
-    // TODO How can we do this in Sway in constant time?
     fn conditional_select(a: u64, b: u64, choice: Choice) -> u64 {
-        // From original impl:
-
         // if choice = 0, mask = (-0) = 0000...0000
         // if choice = 1, mask = (-1) = 1111...1111
+        let choice_64: u64 = choice.unwrap_u8();
+        let mask = wrapping_neg(choice_64);
+        b ^ (mask & (a ^ b))
+    }
+}
 
-        // let mask = -(choice.unwrap_u8() as to_signed_int!($t)) as $t;
-        // a ^ (mask & (a ^ b))
-
-// Apparently this doesn't work in Sway?
-        // match choice {
-        //     Choice(0) => a,
-        //     Choice(1) => b,
-        // }
-
-        // TODO improve. 
-        if (choice.unwrap_u8() == 0) {
-            a
-        } else {
-            b
+impl BitwiseXor for u32 {
+    fn binary_xor(self, other: Self) -> Self {
+        asm(r1: self, r2: other, r3) {
+            xor r3 r1 r2;
+            r3: u32
         }
     }
 }
 
 impl ConditionallySelectable for u32 {
     fn conditional_select(a: u32, b: u32, choice: Choice) -> u32 {
-        if (choice.unwrap_u8() == 0) {
-            a
-        } else {
-            b
-        }
+        let choice_32: u32 = choice.unwrap_u8();
+        let mask = wrapping_neg(choice_32);
+        b ^ (mask & (a ^ b))
     }
 }
 

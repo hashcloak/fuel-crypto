@@ -6,9 +6,8 @@ dep choice;
 
 use fp::{Fp, from_raw_unchecked};
 use fp2::Fp2;
-use choice::{Choice, CtOption};
-
-use core::ops::{Add, Multiply};
+use choice::{Choice, CtOption, ConstantTimeEq, ConditionallySelectable};
+use core::ops::{Eq, Add, Subtract, Multiply};
 
 pub struct Fp6 {
     c0: Fp2,
@@ -16,9 +15,28 @@ pub struct Fp6 {
     c2: Fp2,
 }
 
+impl ConstantTimeEq for Fp6 {
+    fn ct_eq(self, other: Self) -> Choice {
+        self.c0.ct_eq(other.c0) & self.c1.ct_eq(other.c1) & self.c2.ct_eq(other.c2)
+    }
+}
+
+impl ConditionallySelectable for Fp6 {
+    fn conditional_select(a: Self, b: Self, choice: Choice) -> Self {
+        Fp6 {
+            c0: ~Fp2::conditional_select(a.c0, b.c0, choice),
+            c1: ~Fp2::conditional_select(a.c1, b.c1, choice),
+            c2: ~Fp2::conditional_select(a.c2, b.c2, choice),
+        }
+    }
+}
 
 impl Fp6 {
-    fn from(f: Fp) -> Fp6 {
+    fn eq(self, other: Self) -> bool {
+        self.ct_eq(other).unwrap_as_bool()
+    }
+
+    fn from(f: Fp) -> Fp6 {//is it possibly to have multiple functions with same name and different arguments?
         Fp6 {
             c0: ~Fp2::from(f),
             c1: ~Fp2::zero(),
@@ -48,7 +66,12 @@ impl Fp6 {
             c1: ~Fp2::zero(),
             c2: ~Fp2::zero(),
         }
-    }/*
+    }
+    
+    pub fn is_zero(self) -> Choice {
+        self.c0.is_zero().binary_and(self.c1.is_zero()).binary_and(self.c2.is_zero())
+    }
+    /*
 
 //TODO test (but zkcrypto doesnt have a dedicated test, so will be tested implicitly)
     pub fn mul_by_1(self, c1: Fp2) -> Fp6 {
@@ -109,14 +132,13 @@ impl Fp6 {
         }
     }
 
-    // // Is not tested
-    // fn conditional_select(a: Fp6, b: Fp6, choice: Choice) -> Fp6 {
-    //     Fp6 {
-    //         c0: ~Fp2::conditional_select(a.c0, b.c0, choice),
-    //         c1: ~Fp2::conditional_select(a.c1, b.c1, choice),
-    //         c2: ~Fp2::conditional_select(a.c2, b.c2, choice),
-    //     }
-    // }
+    fn conditional_select(a: Fp6, b: Fp6, choice: Choice) -> Fp6 {
+        Fp6 {
+            c0: ~Fp2::conditional_select(a.c0, b.c0, choice),
+            c1: ~Fp2::conditional_select(a.c1, b.c1, choice),
+            c2: ~Fp2::conditional_select(a.c2, b.c2, choice),
+        }
+    }
 
 /*
     // not tested, gives Immediate18TooLarge error
@@ -251,9 +273,21 @@ impl Fp6 {
     */
 }
 
+impl Eq for Fp6 {
+    fn eq(self, other: Self) -> bool {
+        self.eq(other)
+    }
+}
+
 impl Add for Fp6 {
     fn add(self, other: Self) -> Self {
         self.add(other)
+    }
+}
+
+impl Subtract for Fp6 {
+    fn subtract(self, other: Self) -> Self {
+        self.sub(other)
     }
 }
 

@@ -1,12 +1,30 @@
 library fp2;
 
 dep fp;
-use fp::*;
+dep choice; 
+
+use fp::Fp;
 use core::ops::{Eq, Add, Subtract, Multiply};
+use choice::*; 
 
 pub struct Fp2 {
     c0: Fp,
     c1: Fp,
+}
+
+impl ConstantTimeEq for Fp2 {
+    fn ct_eq(self, other: Self) -> Choice {
+        self.c0.ct_eq(other.c0) & self.c1.ct_eq(other.c1)
+    }
+}
+
+impl ConditionallySelectable for Fp2 {
+    fn conditional_select(a: Self, b: Self, choice: Choice) -> Self {
+        Fp2 {
+            c0: ~Fp::conditional_select(a.c0, b.c0, choice),
+            c1: ~Fp::conditional_select(a.c1, b.c1, choice),
+        }
+    }
 }
 
 impl Fp2 {
@@ -31,8 +49,12 @@ impl Fp2 {
         }
     }
 
+    pub fn is_zero(self) -> Choice {
+        self.c0.is_zero().binary_and(self.c1.is_zero())
+    }
+
     fn eq(self, other: Self) -> bool {
-        self.c0 == other.c0 && self.c1 == other.c1
+        self.ct_eq(other).unwrap_as_bool()
     }
 
 /*
