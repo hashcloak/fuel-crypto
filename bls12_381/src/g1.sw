@@ -4,7 +4,8 @@ dep fp;
 dep choice; 
 
 use ::fp::{Fp, from_raw_unchecked};
-use choice::{Choice, CtOption, ConditionallySelectable};
+use choice::{Choice, CtOption, ConditionallySelectable, ConstantTimeEq};
+use core::ops::Eq;
 
 
 // Comment from zkcrypto
@@ -32,20 +33,38 @@ fn mul_by_3b(a: Fp) -> Fp {
     a + a + a // 12
 }
 
-// TODO: trying to get this to work, seems like a good starting point
-// fn from(p: G1Projective) -> G1Affine {
-//     let zinv = p.z.invert().unwrap_or(~Fp::zero());
-//     let x = p.x * zinv;
-//     let y = p.y * zinv;
+impl ConstantTimeEq for G1Affine {
+    fn ct_eq(self, other: Self) -> Choice {
+        // The only cases in which two points are equal are
+        // 1. infinity is set on both
+        // 2. infinity is not set on both, and their coordinates are equal
 
-//     let tmp = G1Affine {
-//         x,
-//         y,
-//         infinity: Choice::from(0u8),
-//     };
+        (self.infinity & other.infinity)
+        .binary_or(
+                (self.infinity.not())
+                .binary_and(other.infinity.not())
+                .binary_and(self.x.ct_eq(other.x))
+                .binary_and(self.y.ct_eq(other.y))
+                )
+    }
+}
 
-//     G1Affine::conditional_select(&tmp, &G1Affine::identity(), zinv.is_zero())
-// }
+
+impl ConditionallySelectable for G1Affine {
+    fn conditional_select(a: Self, b: Self, choice: Choice) -> Self {
+        G1Affine {
+            x: ~Fp::conditional_select(a.x, b.x, choice),
+            y: ~Fp::conditional_select(a.y, b.y, choice),
+            infinity: ~Choice::conditional_select(a.infinity, b.infinity, choice),
+        }
+    }
+}
+
+impl Eq for G1Affine {
+    fn eq(self, other: Self) -> bool {
+        self.ct_eq(other).unwrap_as_bool()
+    }
+}
 
 impl G1Affine {
     /// Returns the identity of the group: the point at infinity.

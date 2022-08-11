@@ -27,13 +27,18 @@ fn main () {
     // assert(test_ct_eq());
     // assert(test_is_zero());
     // assert(test_is_eq());
-    assert(test_conditional_select());
+    // assert(test_conditional_select());
     assert(test_g1());
+    // assert(test_opposite_choice_value());
+}
+
+pub fn test_opposite_choice_value() -> bool {
+    !opposite_choice_value(1u8)  && opposite_choice_value(0u8)
 }
 
 pub fn test_g1() -> bool {
     let a = ~G1Affine::identity();
-    true
+    a.eq(a)
 }
 
 pub fn test_conditional_select() -> bool {

@@ -1,18 +1,14 @@
 library choice;
 
+
 use core::num::*;
 use std::{option::Option, u128::U128};
-use core::ops::{BitwiseAnd, BitwiseOr};
+use core::ops::{Eq, BitwiseAnd, BitwiseOr, BitwiseXor};
 
 /////////////// IMPORTANT<start> ///////////////
 
 // All of this is coming from the dalek cryptograhpy project
 // see https://github.com/dalek-cryptography/subtle/blob/main/src/lib.rs
-
-// The intention is that these implementations will provide constant time functionality.
-// However, it's not clear how to achieve this in Sway. 
-// So we use the traits and names, but have to fill out the correct implementations when we know have
-// and Sway supports this. 
 
 /////////////// IMPORTANT<end> ///////////////
 
@@ -20,21 +16,30 @@ use core::ops::{BitwiseAnd, BitwiseOr};
 ///
 /// It is a wrapper around a `u8`, which should have the value either `1` (true)
 /// or `0` (false).
-
 pub struct Choice { c: u8 }
 
-pub trait From {
+// Can't use name "From" because of collision with trait in U128 (even though not importing u128::*). 
+// This seems to be a bug in Sway, see discussion in Discord https://discord.com/channels/732892373507375164/734213700835082330/1007067117029433405
+pub trait from {
     fn from(input: u8) -> Self;
     fn into(self) -> u8;
 }
 
-impl From for Choice {
+impl from for Choice {
     fn from(input: u8) -> Self {
         Choice { c: input  }
     }
 
     fn into(self) -> u8 {
         self.c
+    }
+}
+
+// If equals 1u8 => false, if 0u8 => true
+pub fn opposite_choice_value(a: u8) -> bool {
+    asm(r1: a, r2) {
+        eq r2 r1 zero;
+        r2: bool
     }
 }
 
@@ -46,17 +51,40 @@ impl Choice {
     pub fn unwrap_as_bool(self) -> bool {
         self.c == 1u8
     }
-
-    pub fn from(input: u8) -> Choice {
-        Choice{ c: input}
-    }
-
     pub fn from_bool(b: bool) -> Choice {
         if b {
             Choice{ c: 1u8}
         } else {
             Choice{ c: 0u8}
         }
+    }
+}
+
+impl Choice {
+    pub fn not(self) -> Choice {
+        ~Choice::from_bool(opposite_choice_value(self.c))
+    }
+}
+
+impl BitwiseXor for u8 {
+    fn binary_xor(self, other: Self) -> Self {
+        asm(r1: self, r2: other, r3) {
+            xor r3 r1 r2;
+            r3: u8
+        }
+    }
+}
+
+impl ConditionallySelectable for u8 {
+    fn conditional_select(a: u8, b: u8, choice: Choice) -> u32 {
+        let mask = wrapping_neg(choice.unwrap_u8());
+        b.binary_xor(mask & (a.binary_xor(b)))
+    }
+}
+
+impl ConditionallySelectable for Choice {
+    fn conditional_select(a: Self, b: Self, choice: Choice) -> Self {
+        ~Choice::from(~u8::conditional_select(a.c, b.c, choice))
     }
 }
 
@@ -72,6 +100,21 @@ impl BitwiseAnd for u8 {
 impl BitwiseAnd for Choice {
     fn binary_and(self, other: Self) -> Self {
         ~Choice::from(self.c & other.c)
+    }
+}
+
+impl BitwiseOr for u8 {
+    fn binary_or(self, other: Self) -> Self {
+        asm(r1: self, r2: other, r3) {
+            or r3 r1 r2;
+            r3: u8
+        }
+    }
+}
+
+impl BitwiseOr for Choice {
+    fn binary_or(self, other: Self) -> Self {
+        ~Choice::from(self.c | other.c)
     }
 }
 
@@ -112,19 +155,16 @@ impl<T> CtOption<T> {
     pub fn unwrap(self) -> T {
         self.value
     }
+
+//It seems there is no type retriction possible on generics
+    // pub fn unwrap_or(self, def: T) -> T
+    // where
+    //     T: ConditionallySelectable,
+    // {
+    //     T::conditional_select(&def, &self.value, self.is_some)
+    // }
 }
 
-// impl<T> From<CtOption<T>> for Option<T> {
-//     fn from(source: CtOption<T>) -> Option<T> {
-//         if source.is_some().unwrap_u8() == 1u8 {
-//             Option::Some(source.value)
-//         } else {
-//             None
-//         }
-//     }
-// }
-
-// This should have constant time implementations, but not sure atm how to do this in Sway
 pub trait ConditionallySelectable {
     // Select a if choice == 1 or select b if choice == 0, in constant time.
     fn conditional_select(a: Self, b: Self, choice: Choice) -> Self;
