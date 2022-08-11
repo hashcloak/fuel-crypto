@@ -27,7 +27,6 @@ abi BlsTestContract {
     // not tested, gives Immediate18TooLarge error
     // #[storage(read, write)]fn square_fp2(a: Fp2) -> Fp2;
 
-    // Gives wrong output atm
     #[storage(read, write)]fn mul_fp2(a: Fp2, b: Fp2) -> Fp2;
 
     #[storage(read, write)]fn add_scalar(a: Scalar, b: Scalar) -> Scalar;

@@ -20,12 +20,12 @@ pub struct Choice { c: u8 }
 
 // Can't use name "From" because of collision with trait in U128 (even though not importing u128::*). 
 // This seems to be a bug in Sway, see discussion in Discord https://discord.com/channels/732892373507375164/734213700835082330/1007067117029433405
-pub trait from {
+pub trait From {
     fn from(input: u8) -> Self;
     fn into(self) -> u8;
 }
 
-impl from for Choice {
+impl From for Choice {
     fn from(input: u8) -> Self {
         Choice { c: input  }
     }
@@ -148,21 +148,22 @@ impl<T> CtOption<T> {
         }
     }
 
+    //To reference `is_some` this would have to go in a separate Impl
     pub fn is_none(self) -> bool {
         !self.is_some.unwrap_as_bool()
+    }
+
+    pub fn is_some(self) -> bool {
+        self.is_some.unwrap_as_bool()
     }
 
     pub fn unwrap(self) -> T {
         self.value
     }
 
-//It seems there is no type retriction possible on generics
-    // pub fn unwrap_or(self, def: T) -> T
-    // where
-    //     T: ConditionallySelectable,
-    // {
-    //     T::conditional_select(&def, &self.value, self.is_some)
-    // }
+    // unwrap_or can't be implemented here..
+    // There is no type restriction possible on generics in Sway
+    // See https://discord.com/channels/732892373507375164/734213700835082330/1007097764242522273
 }
 
 pub trait ConditionallySelectable {

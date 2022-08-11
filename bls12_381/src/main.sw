@@ -2,17 +2,17 @@ script;
 
 dep fp;
 dep fp2;
-dep g1;
+// dep g1; //compiles but takes a really long time
 dep choice;
 dep util;
 
-use ::fp::Fp;
+use ::fp::{Fp, from_raw_unchecked};
 use ::fp2::Fp2;
-use ::g1::G1Projective;
+// use ::g1::G1Projective;
 use ::choice::*;
 use std::{assert::assert};
 use std::logging::log;
-use ::g1::G1Affine;
+// use ::g1::G1Affine;
 use ::util::*;
 
 
@@ -28,18 +28,69 @@ fn main () {
     // assert(test_is_zero());
     // assert(test_is_eq());
     // assert(test_conditional_select());
-    assert(test_g1());
-    // assert(test_opposite_choice_value());
+    // assert(test_g1_equality());
+    assert(test_opposite_choice_value());
+    // assert(test_add_g1());
 }
 
 pub fn test_opposite_choice_value() -> bool {
     !opposite_choice_value(1u8)  && opposite_choice_value(0u8)
 }
 
-pub fn test_g1() -> bool {
-    let a = ~G1Affine::identity();
-    a.eq(a)
+/*G1 compilation takes forever atm
+fn test_add_g1() -> bool {
+    let a = G1Projective {
+            x: from_raw_unchecked([
+                0x29e1_e987_ef68_f2d0,
+                0xc5f3_ec53_1db0_3233,
+                0xacd6_c4b6_ca19_730f,
+                0x18ad_9e82_7bc2_bab7,
+                0x46e3_b2c5_785c_c7a9,
+                0x07e5_71d4_2d22_ddd6,
+            ]),
+            y: from_raw_unchecked([
+                0x94d1_17a7_e5a5_39e7,
+                0x8e17_ef67_3d4b_5d22,
+                0x9d74_6aaf_508a_33ea,
+                0x8c6d_883d_2516_c9a2,
+                0x0bc3_b8d5_fb04_47f7,
+                0x07bf_a4c7_210f_4f44,
+        ]),
+            z: ~Fp::one()
+        };
+
+    let first = a.add(a);
+    // let second = ~G1Projective::identity();
+    // res_equals(first.x, second.x);
+    // res_equals(first.y, second.y);
+    // res_equals(first.z, second.z);
+    true
 }
+
+pub fn test_g1_equality() -> bool {
+    let p = G1Affine {
+        x: from_raw_unchecked([
+            0x5cb3_8790_fd53_0c16,
+            0x7817_fc67_9976_fff5,
+            0x154f_95c7_143b_a1c1,
+            0xf0ae_6acd_f3d0_e747,
+            0xedce_6ecc_21db_f440,
+            0x1201_7741_9e0b_fb75,
+        ]),
+        y: from_raw_unchecked([
+            0xbaac_93d5_0ce7_2271,
+            0x8c22_631a_7918_fd8e,
+            0xdd59_5f13_5707_25ce,
+            0x51ac_5829_5040_5194,
+            0x0e1c_8c3f_ad00_59c0,
+            0x0bbc_3efc_5008_a26a,
+        ]),
+        infinity: ~Choice::from(0u8),
+    };
+    let a = ~G1Affine::identity();
+    a.eq(a) && p.eq(p) && !a.eq(p)
+}
+*/
 
 pub fn test_conditional_select() -> bool {
     let first_check = ~u64::conditional_select(10, 100, ~Choice::from(1)) == 10;

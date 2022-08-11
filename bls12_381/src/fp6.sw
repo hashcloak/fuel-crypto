@@ -6,9 +6,8 @@ dep choice;
 
 use fp::{Fp, from_raw_unchecked};
 use fp2::Fp2;
-use choice::{Choice, CtOption, ConstantTimeEq};
-
-use core::ops::{Add, Multiply};
+use choice::{Choice, CtOption, ConstantTimeEq, ConditionallySelectable};
+use core::ops::{Eq, Add, Subtract, Multiply};
 
 pub struct Fp6 {
     c0: Fp2,
@@ -22,8 +21,22 @@ impl ConstantTimeEq for Fp6 {
     }
 }
 
+impl ConditionallySelectable for Fp6 {
+    fn conditional_select(a: Self, b: Self, choice: Choice) -> Self {
+        Fp6 {
+            c0: ~Fp2::conditional_select(a.c0, b.c0, choice),
+            c1: ~Fp2::conditional_select(a.c1, b.c1, choice),
+            c2: ~Fp2::conditional_select(a.c2, b.c2, choice),
+        }
+    }
+}
+
 impl Fp6 {
-    fn from(f: Fp) -> Fp6 {
+    fn eq(self, other: Self) -> bool {
+        self.ct_eq(other).unwrap_as_bool()
+    }
+
+    fn from(f: Fp) -> Fp6 {//is it possibly to have multiple functions with same name and different arguments?
         Fp6 {
             c0: ~Fp2::from(f),
             c1: ~Fp2::zero(),
@@ -260,9 +273,21 @@ impl Fp6 {
     */
 }
 
+impl Eq for Fp6 {
+    fn eq(self, other: Self) -> bool {
+        self.eq(other)
+    }
+}
+
 impl Add for Fp6 {
     fn add(self, other: Self) -> Self {
         self.add(other)
+    }
+}
+
+impl Subtract for Fp6 {
+    fn subtract(self, other: Self) -> Self {
+        self.sub(other)
     }
 }
 
