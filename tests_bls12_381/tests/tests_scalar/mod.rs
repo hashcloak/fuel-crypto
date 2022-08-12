@@ -83,6 +83,8 @@ async fn test_addition() {
 /*BLOCKED
 error: Internal compiler error: Verification failed: Function anon_11103 return type must match its RET instructions.
 Please file an issue on the repository and include the code that triggered this error.
+
+Eventually, this gave Braqzen the error Immediate18TooLarge
 */
 // #[tokio::test]
 // async fn test_sqrt() {
@@ -99,6 +101,8 @@ Please file an issue on the repository and include the code that triggered this 
 /*BLOCKED
 error: Internal compiler error: Verification failed: Function anon_11103 return type must match its RET instructions.
 Please file an issue on the repository and include the code that triggered this error.
+
+Eventually, this gave Braqzen the error Immediate18TooLarge
 */
 // #[tokio::test]
 // async fn test_sqrt() {

@@ -73,16 +73,6 @@ fn not(input: u64) -> u64 {
     ~u64::max() - input
 }
 
-// TODO rewrite without if branch
-// If x >= y: x-y, else max::U64 - (y-x)
-pub fn subtract_wrap_64(x: u64, y: u64) -> u64 {
-    if y > x {
-        ~u64::max() - (y - x - 1)
-    } else {
-        x - y
-    }
-}
-
 impl ConstantTimeEq for Fp {
     fn ct_eq(self, other: Fp) -> Choice {
         ~u64::ct_eq(self.ls[0], other.ls[0])
@@ -146,9 +136,9 @@ impl Fp {
         let(r4, borrow) = sbb(self.ls[4], MODULUS[4], borrow);
         let(r5, borrow) = sbb(self.ls[5], MODULUS[5], borrow);
 
-        // If underflow occurred on the final limb, borrow = 1, otherwise
-        // borrow = 0. We convert it into a mask.
-        let mut mask = borrow * ~u64::max();
+        // If underflow occurred on the final limb, borrow = 0xfff...fff, otherwise
+        // borrow = 0x000...000. Thus, we use it as a mask!
+        let mut mask = borrow;
         let r0 = (self.ls[0] & mask) | (r0 & not(mask));
         let r1 = (self.ls[1] & mask) | (r1 & not(mask));
         let r2 = (self.ls[2] & mask) | (r2 & not(mask));
@@ -428,6 +418,37 @@ impl Fp {
 
         (Fp{ ls: [u1, u2, u3, u4, u5, u6]}).subtract_p()
     }
+
+    /// Returns whether or not this element is strictly lexicographically
+    /// larger than its negation.
+    pub fn lexicographically_largest(self) -> Choice {
+        // This can be determined by checking to see if the element is
+        // larger than (p - 1) // 2. If we subtract by ((p - 1) // 2) + 1
+        // and there is no underflow, then the element must be larger than
+        // (p - 1) // 2.
+
+        // First, because self is in Montgomery form we need to reduce it
+        let tmp = montgomery_reduce(
+            [self.ls[0], self.ls[1], self.ls[2], self.ls[3], self.ls[4], self.ls[5], 0, 0, 0, 0, 0, 0,]
+        );
+
+        let (_, borrow) = sbb(tmp.ls[0], 0xdcff_7fff_ffff_d556, 0);
+        let (_, borrow) = sbb(tmp.ls[1], 0x0f55_ffff_58a9_ffff, borrow);
+        let (_, borrow) = sbb(tmp.ls[2], 0xb398_6950_7b58_7b12, borrow);
+        let (_, borrow) = sbb(tmp.ls[3], 0xb23b_a5c2_79c2_895f, borrow);
+        let (_, borrow) = sbb(tmp.ls[4], 0x258d_d3db_21a5_d66b, borrow);
+        let (_, borrow) = sbb(tmp.ls[5], 0x0d00_88f5_1cbf_f34d, borrow);
+
+        // If the element was smaller, the subtraction will underflow
+        // producing a borrow value of 0xffff...ffff, otherwise it will
+        // be zero. We create a Choice representing true if there was
+        // overflow (and so this element is not lexicographically larger
+        // than its negation) and then negate it.
+
+        let borrow_u8: u8 = borrow;
+        ~Choice::from(borrow_u8 & 1).not()
+    }
+
 }
 
 impl Fp {

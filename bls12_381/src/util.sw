@@ -5,6 +5,7 @@ dep choice;
 use choice::{Choice, CtOption, ConditionallySelectable, wrapping_neg};
 use std::{u128::U128};
 use core::ops::{BitwiseXor};
+use core::num::*;
 
 
 impl ConditionallySelectable for u64 {
@@ -46,14 +47,24 @@ pub fn subtract_wrap(x: U128, y: U128) -> U128 {
     }
 }
 
-/// Compute a - (b + borrow), returning the result and the new borrow (0 or 1).
+// TODO rewrite without if branch
+// If x >= y: x-y, else max::U64 - (y-x)
+pub fn subtract_wrap_64(x: u64, y: u64) -> u64 {
+    if y > x {
+        ~u64::max() - (y - x - 1)
+    } else {
+        x - y
+    }
+}
+
+/// Compute a - (b + borrow), returning the result and the new borrow.
 pub fn sbb(a: u64, b: u64, borrow: u64) -> (u64, u64) {
     let a_128: U128 = ~U128::from(0, a);
     let b_128: U128 = ~U128::from(0, b);
-    let borrow_128: U128 = ~U128::from(0, borrow);
+    let borrow_128: U128 = ~U128::from(0, borrow >> 63);
 
     let res: U128 = subtract_wrap(a_128, b_128 + borrow_128);
-    (res.lower, res.upper >> 63) //(result, borrow)
+    (res.lower, res.upper) //(result, borrow)
 }
 
 //returns sum with carry of a and b

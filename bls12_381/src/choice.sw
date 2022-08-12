@@ -51,6 +51,7 @@ impl Choice {
     pub fn unwrap_as_bool(self) -> bool {
         self.c == 1u8
     }
+    
     pub fn from_bool(b: bool) -> Choice {
         if b {
             Choice{ c: 1u8}

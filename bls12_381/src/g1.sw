@@ -408,3 +408,15 @@ impl Eq for G1Projective {
         self.ct_eq(other).unwrap_as_bool()
     }
 }
+
+impl Add for G1Projective {
+    fn add(self, other: Self) -> Self {
+        self.add(other)
+    }
+}
+
+impl Sub for G1Projective {
+    fn subtract(self, other: Self) -> Self {
+        self + (other.neg())
+    }
+}

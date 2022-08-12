@@ -3,7 +3,8 @@ library scalar;
 dep choice; 
 dep util;
 
-use choice::{Choice, CtOption, ConditionallySelectable};
+//This import is needed because of importing ConstantTimeEq for u64 (since it's a trait for a primitive type)
+use choice::*; 
 use util::*;
 
 use core::ops::{Eq, Add, Subtract, Multiply};
@@ -53,7 +54,7 @@ const R: Scalar = Scalar{ ls: [
 ]};
 
 /// R^2 = 2^512 mod q
-const R2: Scalar = Scalar{ ls: [
+pub const R2: Scalar = Scalar{ ls: [
     0xc999_e990_f3f2_9c6d,
     0x2b6c_edcb_8792_5c23,
     0x05d3_1496_7254_398f,
@@ -89,6 +90,15 @@ impl ConditionallySelectable for Scalar {
     }
 }
 
+impl ConstantTimeEq for Scalar {
+    fn ct_eq(self, other: Self) -> Choice {
+        ~u64::ct_eq(self.ls[0], other.ls[0])
+        .binary_and(~u64::ct_eq(self.ls[1], other.ls[1]))
+        .binary_and(~u64::ct_eq(self.ls[2], other.ls[2]))
+        .binary_and(~u64::ct_eq(self.ls[3], other.ls[3]))
+    }
+}
+
 impl Scalar {
 
     pub fn zero() -> Scalar {
@@ -97,22 +107,6 @@ impl Scalar {
 
     pub fn one() -> Scalar {
         R
-    }
-
-    fn ct(self, other: Self) -> Choice {
-        ~Choice::from_bool(
-        self.ls[0] == other.ls[0]
-            && self.ls[1] == other.ls[1]
-            && self.ls[2] == other.ls[2]
-            && self.ls[3] == other.ls[3])
-    }
-
-    // TODO to make this constant time the u64 should be compared with ct_eq, but is not existing in Sway (yet)
-    pub fn eq(self, other: Self) -> bool {
-        (self.ls[0] == other.ls[0])
-            && (self.ls[1] == other.ls[1])
-            && (self.ls[2] == other.ls[2])
-            && (self.ls[3] == other.ls[3])
     }
 
     pub fn sub(self, rhs: Self) -> Self {
@@ -129,6 +123,24 @@ impl Scalar {
         let (d3, _) = adc(d3, MODULUS_SCALAR.ls[3] & borrow, carry);
 
         Scalar{ ls: [d0, d1, d2, d3]}
+    }
+
+//E: This was tested through script and work. Didn't add test to contract because contract testing is slow and this will be tested implicitly as well
+    pub fn neg(self) -> Self {
+        // Subtract `self` from `MODULUS` to negate. Ignore the final
+        // borrow because it cannot underflow; self is guaranteed to
+        // be in the field.
+        let (d0, borrow) = sbb(MODULUS_SCALAR.ls[0], self.ls[0], 0);
+        let (d1, borrow) = sbb(MODULUS_SCALAR.ls[1], self.ls[1], borrow);
+        let (d2, borrow) = sbb(MODULUS_SCALAR.ls[2], self.ls[2], borrow);
+        let (d3, _) = sbb(MODULUS_SCALAR.ls[3], self.ls[3], borrow);
+
+        // `tmp` could be `MODULUS` if `self` was zero. Create a mask that is
+        // zero if `self` was zero, and `u64::max_value()` if self was nonzero.
+        let temp: u64 = if ((self.ls[0] | self.ls[1] | self.ls[2] | self.ls[3]) == 0) { 1 } else { 0 };
+        let mask = subtract_wrap_64(temp, 1);
+
+        Scalar{ ls: [d0 & mask, d1 & mask, d2 & mask, d3 & mask]}
     }
 }
 
@@ -268,6 +280,12 @@ impl Multiply for Scalar {
         }
 }
 
+impl Eq for Scalar {
+    fn eq(self, other: Self) -> bool {
+        self.ct_eq(other).unwrap_as_bool()
+    }
+}
+
 impl Scalar {
 
     fn from(val: u64) -> Scalar {
@@ -374,5 +392,17 @@ Please file an issue on the repository and include the code that triggered this 
         //     (x * x).ct(self), // Only return Some if it's the square root.
         // )
         ~CtOption::new(self, ~Choice::from(1))
+    }
+}
+
+impl Subtract for Scalar {
+    fn subtract(self, other: Self) -> Self {
+        self.sub(other)
+    }
+}
+
+impl Multiply for Scalar {
+    fn multiply(self, other: Self) -> Self {
+        self.mul(other)
     }
 }
