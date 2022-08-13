@@ -1,6 +1,6 @@
 contract;
 
-use bls12_381::fp::Fp;
+use bls12_381::{fp::Fp, fp2::Fp2};
 
 // use bls12_381::{
 //     fp::Fp, 
@@ -26,6 +26,7 @@ abi BlsTestContract {
     // #[storage(read, write)]fn add_fp2(a: Fp2, b: Fp2) -> Fp2;
     // #[storage(read, write)]fn sub_fp2(a: Fp2, b: Fp2) -> Fp2;
     // #[storage(read, write)]fn neg_fp2(a: Fp2) -> Fp2;
+    #[storage(read, write)]fn lexicographically_largest_fp2(a: Fp2) -> Choice;
     
     // // not tested, gives Immediate18TooLarge error
     // // #[storage(read, write)]fn square_fp2(a: Fp2) -> Fp2;
@@ -76,6 +77,10 @@ impl BlsTestContract for Contract {
     //     a.neg()
     // }
 
+    #[storage(read, write)]fn lexicographically_largest_fp2(a: Fp2) -> Choice {
+        a.lexicographically_largest()
+    }
+
     // #[storage(read, write)]fn add_scalar(a: Scalar, b: Scalar) -> Scalar {
     //     a + b
     // }
@@ -87,7 +92,6 @@ impl BlsTestContract for Contract {
     // #[storage(read, write)]fn mul_fp2(a: Fp2, b: Fp2) -> Fp2 {
     //     a * b
     // }
-
 
     // #[storage(read, write)]fn scalar_sqrt(a: Scalar) -> CtOption<Scalar> {
     //     a.sqrt()

@@ -47,7 +47,7 @@ pub fn res_equals(res: Fp, should_be: Fp) -> bool {
     assert!(res.ls[5] == should_be.ls[5]);
     true
 }
-
+/*
 #[tokio::test]
 async fn test_add_fp2() {
 
@@ -116,7 +116,8 @@ async fn test_add_fp2() {
     assert!(res_equals(res.c_0, c.c_0));
     assert!(res_equals(res.c_1, c.c_1));
 }
-
+*/
+/*
 #[tokio::test]
 async fn test_sub_fp2() {
 
@@ -185,8 +186,8 @@ async fn test_sub_fp2() {
     assert!(res_equals(res.c_0, c.c_0));
     assert!(res_equals(res.c_1, c.c_1));
 }
-
-
+*/
+/*
 #[tokio::test]
 async fn test_neg_fp2() {
 
@@ -238,7 +239,8 @@ async fn test_neg_fp2() {
     assert!(res_equals(res.c_0, b.c_0));
     assert!(res_equals(res.c_1, b.c_1));
 }
-
+*/
+/*
 #[tokio::test] 
 async fn test_multiplication() {
     let a = Fp2 {
@@ -305,7 +307,7 @@ async fn test_multiplication() {
 
     assert_eq!(res, c);
 }
-
+*/
 /*
 #[tokio::test] //Immediate18TooLarge
 async fn test_squaring() {
@@ -355,3 +357,60 @@ async fn test_squaring() {
     assert_eq!(res, b);
 }
 */
+
+#[tokio::test]//stripped down version from zkcrypto impl
+async fn lexicographically_largest_fp2() {
+    let zero = Fp2 { 
+        c_0 : Fp{ ls: [0,0,0,0,0,0].to_vec()},
+        c_1 : Fp{ ls: [0,0,0,0,0,0].to_vec()},
+    };
+    let one = Fp2 {
+        c_0: Fp{ ls: [ //=R
+            0x7609_0000_0002_fffd,
+            0xebf4_000b_c40c_0002,
+            0x5f48_9857_53c7_58ba,
+            0x77ce_5853_7052_5745,
+            0x5c07_1a97_a256_ec6d,
+            0x15f6_5ec3_fa80_e493,
+        ].to_vec()},
+        c_1 : Fp{ ls: [0,0,0,0,0,0].to_vec()}
+    };
+
+    let first = Fp2 {
+        c_0: Fp{ ls: [
+            0x1128_ecad_6754_9455,
+            0x9e7a_1cff_3a4e_a1a8,
+            0xeb20_8d51_e08b_cf27,
+            0xe98a_d408_11f5_fc2b,
+            0x736c_3a59_232d_511d,
+            0x10ac_d42d_29cf_cbb6,
+        ].to_vec()},
+        c_1 : Fp{ ls: [
+            0xd328_e37c_c2f5_8d41,
+            0x948d_f085_8a60_5869,
+            0x6032_f9d5_6f93_a573,
+            0x2be4_83ef_3fff_dc87,
+            0x30ef_61f8_8f48_3c2a,
+            0x1333_f55a_3572_5be0].to_vec()}
+    };
+    let (contract_instance, _id) = get_contract_instance().await;
+
+    let res_zero = contract_instance.lexicographically_largest_fp2(zero)
+        .tx_params(TxParameters::new(None, Some(10_000_000_000_000), None, None))
+        .call_params(CallParameters::new(None, None, Some(10_000_000_000_000)))
+        .call().await.unwrap().value;
+
+    let res_one = contract_instance.lexicographically_largest_fp2(one)
+        .tx_params(TxParameters::new(None, Some(10_000_000_000_000), None, None))
+        .call_params(CallParameters::new(None, None, Some(10_000_000_000_000)))
+        .call().await.unwrap().value;
+
+    let res_first = contract_instance.lexicographically_largest_fp2(first)
+        .tx_params(TxParameters::new(None, Some(10_000_000_000_000), None, None))
+        .call_params(CallParameters::new(None, None, Some(10_000_000_000_000)))
+        .call().await.unwrap().value;
+
+    assert!(res_zero.c == 0);
+    assert!(res_one.c == 0);
+    assert!(res_first.c == 1);
+}

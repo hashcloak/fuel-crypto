@@ -107,6 +107,20 @@ impl Fp6 {
         }
     }
     */
+
+    pub fn mul_by_nonresidue(self) -> Self {
+        // Given a + bv + cv^2, this produces
+        //     av + bv^2 + cv^3
+        // but because v^3 = u + 1, we have
+        //     c(u + 1) + av + v^2
+
+        Fp6 {
+            c0: self.c2.mul_by_nonresidue(),
+            c1: self.c0,
+            c2: self.c1,
+        }
+    }
+
     //TODO: Testing. Has no dedicated tests in zkcrypto
     pub fn add(self, rhs: Fp6) -> Fp6 {
         Fp6 {
