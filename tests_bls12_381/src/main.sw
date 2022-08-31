@@ -1,6 +1,6 @@
 contract;
 
-use bls12_381::{fp::Fp, fp2::Fp2};
+use bls12_381::{fp::Fp};
 
 // use bls12_381::{
 //     fp::Fp, 
@@ -12,24 +12,24 @@ use bls12_381::choice::{CtOption, Choice};
 
 abi BlsTestContract {
     // Works
-    // #[storage(read, write)]fn add_fp(a: Fp, b: Fp) -> Fp;
-    // #[storage(read, write)]fn sub_fp(a: Fp, b: Fp) -> Fp;
+    #[storage(read, write)]fn add_fp(a: Fp, b: Fp) -> Fp;
+    #[storage(read, write)]fn sub_fp(a: Fp, b: Fp) -> Fp;
     #[storage(read, write)]fn lexicographically_largest_fp(a: Fp) -> Choice;
 
     // works but takes a long time
-    // #[storage(read, write)]fn mul_fp(a: Fp, b: Fp) -> Fp;
+    #[storage(read, write)]fn mul_fp(a: Fp, b: Fp) -> Fp;
 
-    // not tested, gives Immediate18TooLarge error
-    // #[storage(read, write)]fn square_fp(a: Fp) -> Fp;
+    // works if ran by itself
+    #[storage(read, write)]fn square_fp(a: Fp) -> Fp;
 
     // Works
     // #[storage(read, write)]fn add_fp2(a: Fp2, b: Fp2) -> Fp2;
     // #[storage(read, write)]fn sub_fp2(a: Fp2, b: Fp2) -> Fp2;
     // #[storage(read, write)]fn neg_fp2(a: Fp2) -> Fp2;
-    #[storage(read, write)]fn lexicographically_largest_fp2(a: Fp2) -> Choice;
+    // #[storage(read, write)]fn lexicographically_largest_fp2(a: Fp2) -> Choice;
     
     // // not tested, gives Immediate18TooLarge error
-    // // #[storage(read, write)]fn square_fp2(a: Fp2) -> Fp2;
+    // #[storage(read, write)]fn square_fp2(a: Fp2) -> Fp2;
 
     // #[storage(read, write)]fn mul_fp2(a: Fp2, b: Fp2) -> Fp2;
 
@@ -45,25 +45,25 @@ abi BlsTestContract {
 }
 
 impl BlsTestContract for Contract {
-    // #[storage(read, write)]fn add_fp(a: Fp, b: Fp) -> Fp {
-    //     a + b
-    // }
+    #[storage(read, write)]fn add_fp(a: Fp, b: Fp) -> Fp {
+        a + b
+    }
 
-    // #[storage(read, write)]fn sub_fp(a: Fp, b: Fp) -> Fp {
-    //     a - b
-    // }
+    #[storage(read, write)]fn sub_fp(a: Fp, b: Fp) -> Fp {
+        a - b
+    }
 
     #[storage(read, write)]fn lexicographically_largest_fp(a: Fp) -> Choice {
         a.lexicographically_largest()
     }
 
-    // #[storage(read, write)]fn mul_fp(a: Fp, b: Fp) -> Fp {
-    //     a * b
-    // }
+    #[storage(read, write)]fn mul_fp(a: Fp, b: Fp) -> Fp {
+        a * b
+    }
 
-    // #[storage(read, write)]fn square_fp(a: Fp) -> Fp {
-    //     a.square()
-    // }
+    #[storage(read, write)]fn square_fp(a: Fp) -> Fp {
+        a.square()
+    }
 
     // #[storage(read, write)]fn add_fp2(a: Fp2, b: Fp2) -> Fp2 {
     //     a + b
@@ -77,17 +77,17 @@ impl BlsTestContract for Contract {
     //     a.neg()
     // }
 
-    #[storage(read, write)]fn lexicographically_largest_fp2(a: Fp2) -> Choice {
-        a.lexicographically_largest()
-    }
+    // #[storage(read, write)]fn lexicographically_largest_fp2(a: Fp2) -> Choice {
+    //     a.lexicographically_largest()
+    // }
 
     // #[storage(read, write)]fn add_scalar(a: Scalar, b: Scalar) -> Scalar {
     //     a + b
     // }
 
-    // // #[storage(read, write)]fn square_fp2(a: Fp2) -> Fp2 {
-    // //     a.square()
-    // // }
+    // #[storage(read, write)]fn square_fp2(a: Fp2) -> Fp2 {
+    //     a.square()
+    // }
 
     // #[storage(read, write)]fn mul_fp2(a: Fp2, b: Fp2) -> Fp2 {
     //     a * b

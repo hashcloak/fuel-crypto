@@ -3,7 +3,6 @@ use fuels::{
     tx::{ConsensusParameters, ContractId},
 };
 
-
 abigen!(BlsTestContract, "out/debug/tests_bls12_381-abi.json");
 
 //TODO move this to a separate helpers file. How to achieve this in Rust/Cargo? 
@@ -48,7 +47,7 @@ pub fn res_equals(res: Fp, should_be: Fp) -> bool {
     assert!(res.ls[5] == should_be.ls[5]);
     true
 }
-/*
+
 #[tokio::test] //works
 async fn test_add_fp() {
     let small = Fp{ 
@@ -70,9 +69,8 @@ async fn test_add_fp() {
     
     assert!(res_equals(res, expected_res));
 }
-*/
 
-/*
+
 #[tokio::test] //works
 async fn test_sub_fp() {
     let a = Fp {
@@ -93,8 +91,8 @@ async fn test_sub_fp() {
         .call().await.unwrap().value;
     assert!(res_equals(res, expected_res));
 }
-*/
-/*
+
+
 #[tokio::test] //works, but takes a long time!
 async fn test_mul_fp() {
     let a = Fp{ ls:[
@@ -129,9 +127,9 @@ async fn test_mul_fp() {
         .call().await.unwrap().value;
     assert!(res_equals(res, c));
 }
-*/
-/*
-#[tokio::test] //Immediate18TooLarge
+
+
+#[tokio::test]
 async fn test_square_fp() {
     let a: Fp = Fp {
         ls: [0xd215_d276_8e83_191b,//15138237129114720539
@@ -167,7 +165,6 @@ async fn test_square_fp() {
         .call_params(CallParameters::new(None, None, Some(100_000_000)))
         .call().await.unwrap().value;
 
-        //Unclear whether this works because of Immediate18TooLarge error
     println!("{}", res.ls[0]);
     println!("{}", res.ls[1]);
     println!("{}", res.ls[2]);
@@ -176,7 +173,6 @@ async fn test_square_fp() {
     println!("{}", res.ls[5]);
     assert!(res_equals(res, expected_res));
 }
-*/
 
 #[tokio::test]
 async fn lexicographically_largest_fp() {
