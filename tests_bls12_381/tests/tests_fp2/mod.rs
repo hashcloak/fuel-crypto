@@ -6,7 +6,7 @@ use fuels::{
 abigen!(BlsTestContract, "out/debug/tests_bls12_381-abi.json");
 
 async fn get_contract_instance() -> (BlsTestContract, Bech32ContractId) {
-    let mut wallet = LocalWallet::new_random(None);
+    let mut wallet = WalletUnlocked::new_random(None);
     let num_assets = 1;
     let coins_per_asset = 100;
     let amount_per_coin = 100000;
@@ -308,8 +308,9 @@ async fn test_multiplication() {
     assert_eq!(res, c);
 }
 */
-/*
-#[tokio::test] //Immediate18TooLarge
+
+
+#[tokio::test] //still gives Immediate18TooLarge :( (12 sept)
 async fn test_squaring() {
     let a = Fp2 {
         c_0: Fp{ ls:[
@@ -349,15 +350,30 @@ async fn test_squaring() {
     };
     let (contract_instance, _id) = get_contract_instance().await;
 
-    let res = contract_instance.square_fp2(a) // results to 0 :o 
-        .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
+    let res = contract_instance.square_fp2(a)
+        .tx_params(TxParameters::new(None, Some(100_000_000), None))
         .call_params(CallParameters::new(None, None, Some(100_000_000)))
         .call().await.unwrap().value;
 
-    assert_eq!(res, b);
-}
-*/
+    println!("{}", res.c_0.ls[0]);
+    println!("{}", res.c_0.ls[1]);
+    println!("{}", res.c_0.ls[2]);
+    println!("{}", res.c_0.ls[2]);
+    println!("{}", res.c_0.ls[4]);
+    println!("{}", res.c_0.ls[5]);
 
+    println!("{}", res.c_1.ls[0]);
+    println!("{}", res.c_1.ls[1]);
+    println!("{}", res.c_1.ls[2]);
+    println!("{}", res.c_1.ls[2]);
+    println!("{}", res.c_1.ls[4]);
+    println!("{}", res.c_1.ls[5]);
+
+    assert_eq!(res.c_0, b.c_0);
+    assert_eq!(res.c_1, b.c_1);
+}
+
+/*
 #[tokio::test]//stripped down version from zkcrypto impl
 async fn lexicographically_largest_fp2() {
     let zero = Fp2 { 
@@ -414,3 +430,4 @@ async fn lexicographically_largest_fp2() {
     assert!(res_one.c == 0);
     assert!(res_first.c == 1);
 }
+*/

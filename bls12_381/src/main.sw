@@ -2,20 +2,20 @@ script;
 
 // dep fp;
 // dep fp2;
-// dep g1; //compiles but takes a really long time
+dep g1; //compiles but takes a really long time
 // dep choice;
 // dep util;
-dep scalar;
+// dep scalar;
 
 // use ::fp::{Fp, from_raw_unchecked};
 // use ::fp2::Fp2;
-// use ::g1::G1Projective;
+use ::g1::G1Projective;
 // use ::choice::*;
 use std::{assert::assert};
 // use std::logging::log;
 // use ::g1::G1Affine;
 // use ::util::*;
-use ::scalar::*;
+// use ::scalar::*;
 
 //this is a temporary file for test purposes. 
 // Logging in a library is easier when testing with a script. When testing through a contract that's not possible
@@ -32,34 +32,36 @@ fn main () {
     // assert(test_g1_equality());
     // assert(test_opposite_choice_value());
     // assert(test_add_g1());
-    assert(test_scalar_equality());
-    assert(test_scalar_neg());
+    // assert(test_scalar_equality());
+    // assert(test_scalar_neg());
+
+    assert(test_double_identity());
 }
 
-pub fn test_scalar_neg() -> bool {
-    let largest = Scalar { ls: [
-        0xffff_ffff_0000_0000,
-        0x53bd_a402_fffe_5bfe,
-        0x3339_d808_09a1_d805,
-        0x73ed_a753_299d_7d48,
-    ]};
-    let neg_largest = largest.neg();
-    assert(neg_largest == Scalar { ls: [1, 0, 0, 0]});
+// pub fn test_scalar_neg() -> bool {
+//     let largest = Scalar { ls: [
+//         0xffff_ffff_0000_0000,
+//         0x53bd_a402_fffe_5bfe,
+//         0x3339_d808_09a1_d805,
+//         0x73ed_a753_299d_7d48,
+//     ]};
+//     let neg_largest = largest.neg();
+//     assert(neg_largest == Scalar { ls: [1, 0, 0, 0]});
 
-    let zero = Scalar { ls: [0,0,0,0]};
-    let neg_zero = zero.neg();
-    assert(neg_zero == Scalar { ls: [0,0,0,0]} );
+//     let zero = Scalar { ls: [0,0,0,0]};
+//     let neg_zero = zero.neg();
+//     assert(neg_zero == Scalar { ls: [0,0,0,0]} );
 
-    let neg_one = (Scalar { ls: [1,0,0,0]}).neg();
-    assert(neg_one == largest);
+//     let neg_one = (Scalar { ls: [1,0,0,0]}).neg();
+//     assert(neg_one == largest);
     
-    true
-}
+//     true
+// }
 
-pub fn test_scalar_equality() -> bool {
-    assert(R2 == R2);
-    true
-}
+// pub fn test_scalar_equality() -> bool {
+//     assert(R2 == R2);
+//     true
+// }
 
 // pub fn test_opposite_choice_value() -> bool {
 //     !opposite_choice_value(1u8)  && opposite_choice_value(0u8)
@@ -153,11 +155,11 @@ pub fn test_g1_equality() -> bool {
 // }
 
 // This doesn't terminate (or does it maybe give the Immediate18TooLarge after forever?)
-// fn test_double_identity() -> bool {
-//     let p_id = ~G1Projective::identity();
-//     let doubled = p_id.double();
-//     true
-// }
+fn test_double_identity() -> bool {
+    let p_id = ~G1Projective::identity();
+    let doubled = p_id.double();
+    true
+}
 
 
 // pub fn res_equals(a: Fp, b: Fp) -> bool {

@@ -3,26 +3,40 @@ use fuels::{
     tx::{ConsensusParameters, ContractId},
 };
 
-// Load abi from json
 abigen!(BlsTestContract, "out/debug/tests_bls12_381-abi.json");
 
 async fn get_contract_instance() -> (BlsTestContract, Bech32ContractId) {
-    // Launch a local network and deploy the contract
-    let wallet = launch_provider_and_get_wallet().await;
+    let mut wallet = WalletUnlocked::new_random(None);
+    let num_assets = 1;
+    let coins_per_asset = 100;
+    let amount_per_coin = 100000;
+
+    let (coins, asset_ids) = setup_multiple_assets_coins(
+        wallet.address(),
+        num_assets,
+        coins_per_asset,
+        amount_per_coin,
+    );
+
+    // Custom gas limit
+    let consensus_parameters_config = ConsensusParameters::DEFAULT.with_max_gas_per_tx(1000000000);
+
+    let (client, addr) = setup_test_client(coins, None, Some(consensus_parameters_config)).await;
+    
+    let provider = Provider::new(client);
+    wallet.set_provider(provider.clone());
 
     let id = Contract::deploy(
         "./out/debug/tests_bls12_381.bin",
         &wallet,
         TxParameters::default(),
-        StorageConfiguration::with_storage_path(None)
-    )
-    .await
-    .unwrap();
+        StorageConfiguration::default(),
+    ).await.unwrap();
 
     let instance = BlsTestContractBuilder::new(id.to_string(), wallet).build();
-
     (instance, id)
 }
+
 
 fn res_equals_fp(res: Fp, should_be: Fp) -> bool {
     assert!(res.ls[0] == should_be.ls[0]);
@@ -47,7 +61,6 @@ fn res_equals(res: Fp6, c: Fp6) -> bool {
     true
 }
 
-/*
 fn get_a() -> Fp6  {
     let a = Fp6 {
         c_0: Fp2 {
@@ -169,10 +182,11 @@ fn get_b() -> Fp6 {
 
     b
 }
-*/
+/*
 #[tokio::test]
-async fn test_fp6() {
+async fn test_fp6() {    
     let (contract_instance, _id) = get_contract_instance().await;
+
     let a = Fp6 {
         c_0: Fp2 {
             c_0: Fp{ls: [
@@ -229,22 +243,29 @@ async fn test_fp6() {
             ].to_vec()},
         },
     };
-    assert!(true);
-}
 
-// #[tokio::test]
-// async fn test_square_fp6() {
-//     let (contract_instance, _id) = get_contract_instance().await;
+    let res = contract_instance.add_fp2(a, b)
+    .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
+    .call_params(CallParameters::new(None, None, Some(100_000_000)))
+    .call().await.unwrap().value;
     
-//     let res_square = contract_instance.square_fp6(get_a())
-//     .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
-//     .call_params(CallParameters::new(None, None, Some(100_000_000)))
-//     .call().await.unwrap().value;
+
+    assert!(true);
+} */
+
+#[tokio::test]
+async fn test_square_fp6() {
+    let (contract_instance, _id) = get_contract_instance().await;
     
-//     let res_expected = contract_instance.mul_fp6(get_a(), get_a())
-//     .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
-//     .call_params(CallParameters::new(None, None, Some(100_000_000)))
-//     .call().await.unwrap().value;
+    let res_square = contract_instance.square_fp6(get_a())
+    .tx_params(TxParameters::new(None, Some(100_000_000), None))
+    .call_params(CallParameters::new(None, None, Some(100_000_000)))
+    .call().await.unwrap().value;
     
-//     // assert!();TODO
-// }
+    let res_expected = contract_instance.mul_fp6(get_a(), get_a())
+    .tx_params(TxParameters::new(None, Some(100_000_000), None))
+    .call_params(CallParameters::new(None, None, Some(100_000_000)))
+    .call().await.unwrap().value;
+    
+    assert!(res_equals(res_square,res_expected ));
+}

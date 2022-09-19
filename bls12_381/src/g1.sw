@@ -3,9 +3,9 @@ library g1;
 dep fp;
 dep choice; 
 
-use ::fp::{Fp, from_raw_unchecked};
+use fp::{Fp, from_raw_unchecked};
 use choice::{Choice, CtOption, ConditionallySelectable, ConstantTimeEq};
-use core::ops::{Eq, Add};
+use core::ops::{Eq, Add, Subtract};
 
 
 // Comment from zkcrypto
@@ -247,7 +247,6 @@ impl ConditionallySelectable for G1Projective {
 
 impl G1Projective {
 
-/*
     // Not able to test this yet, doesn't terminate
     /// Computes the doubling of this point.
     pub fn double(self) -> G1Projective {
@@ -280,7 +279,6 @@ impl G1Projective {
 
         ~G1Projective::conditional_select(tmp, ~G1Projective::identity(), self.is_identity())
     }
-    */
 
     pub fn add(self, rhs: G1Projective) -> G1Projective {
         // Comment from zkcrypto
@@ -415,7 +413,7 @@ impl Add for G1Projective {
     }
 }
 
-impl Sub for G1Projective {
+impl Subtract for G1Projective {
     fn subtract(self, other: Self) -> Self {
         self + (other.neg())
     }

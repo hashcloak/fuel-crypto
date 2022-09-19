@@ -301,7 +301,7 @@ impl Scalar {
     /// **This operation is variable time with respect
     /// to the exponent.** If the exponent is fixed,
     /// this operation is effectively constant time.
-    pub fn pow_vartime(self, by: [u64; 4]) -> Scalar {
+    pub fn pow_vartime(self, by: [u64; 4]) -> Scalar {//TODO fix
         let mut res = ~Self::one();
         // let mut i = 4;
         // while i > 0 {
@@ -332,6 +332,10 @@ will give Immediate18TooLarge
 
 (It originally gave the error
 error: Internal compiler error: Verification failed: Function anon_11103 return type must match its RET instructions.
+Please file an issue on the repository and include the code that triggered this error.
+
+Sept 12: new error = 
+error: Internal compiler error: Verification failed: Function one_1 return type must match its RET instructions.
 Please file an issue on the repository and include the code that triggered this error.
 )
 */

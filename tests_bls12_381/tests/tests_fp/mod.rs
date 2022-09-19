@@ -7,7 +7,7 @@ abigen!(BlsTestContract, "out/debug/tests_bls12_381-abi.json");
 
 //TODO move this to a separate helpers file. How to achieve this in Rust/Cargo? 
 async fn get_contract_instance() -> (BlsTestContract, Bech32ContractId) {
-    let mut wallet = LocalWallet::new_random(None);
+    let mut wallet = WalletUnlocked::new_random(None);
     let num_assets = 1;
     let coins_per_asset = 100;
     let amount_per_coin = 100000;
@@ -63,7 +63,7 @@ async fn test_add_fp() {
     let (contract_instance, _id) = get_contract_instance().await;
 
     let res = contract_instance.add_fp(small, random)
-    .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
+    .tx_params(TxParameters::new(None, Some(100_000_000), None))
     .call_params(CallParameters::new(None, None, Some(100_000_000)))
     .call().await.unwrap().value;
     
@@ -86,12 +86,11 @@ async fn test_sub_fp() {
     let (_instance, _id) = get_contract_instance().await;
 
     let res = _instance.sub_fp(a, b)
-        .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
+        .tx_params(TxParameters::new(None, Some(100_000_000), None))
         .call_params(CallParameters::new(None, None, Some(100_000_000)))
         .call().await.unwrap().value;
     assert!(res_equals(res, expected_res));
 }
-
 
 #[tokio::test] //works, but takes a long time!
 async fn test_mul_fp() {
@@ -122,7 +121,7 @@ async fn test_mul_fp() {
     let (_instance, _id) = get_contract_instance().await;
 
     let res = _instance.mul_fp(a, b)
-        .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
+        .tx_params(TxParameters::new(None, Some(100_000_000), None))
         .call_params(CallParameters::new(None, None, Some(100_000_000)))
         .call().await.unwrap().value;
     assert!(res_equals(res, c));
@@ -161,7 +160,7 @@ async fn test_square_fp() {
     let (_instance, _id) = get_contract_instance().await;
 
     let res = _instance.square_fp(a)
-        .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
+        .tx_params(TxParameters::new(None, Some(100_000_000), None))
         .call_params(CallParameters::new(None, None, Some(100_000_000)))
         .call().await.unwrap().value;
 
@@ -174,6 +173,7 @@ async fn test_square_fp() {
     assert!(res_equals(res, expected_res));
 }
 
+/*
 #[tokio::test]
 async fn lexicographically_largest_fp() {
     let zero = Fp{ ls: [0,0,0,0,0,0].to_vec()};
@@ -213,27 +213,27 @@ async fn lexicographically_largest_fp() {
     let (contract_instance, _id) = get_contract_instance().await;
 
     let res_zero = contract_instance.lexicographically_largest_fp(zero)
-        .tx_params(TxParameters::new(None, Some(10_000_000_000_000), None, None))
+        .tx_params(TxParameters::new(None, Some(10_000_000_000_000), None))
         .call_params(CallParameters::new(None, None, Some(10_000_000_000_000)))
         .call().await.unwrap().value;
 
     let res_one = contract_instance.lexicographically_largest_fp(one)
-        .tx_params(TxParameters::new(None, Some(10_000_000_000_000), None, None))
+        .tx_params(TxParameters::new(None, Some(10_000_000_000_000), None))
         .call_params(CallParameters::new(None, None, Some(10_000_000_000_000)))
         .call().await.unwrap().value;
 
     let res_first = contract_instance.lexicographically_largest_fp(first)
-        .tx_params(TxParameters::new(None, Some(10_000_000_000_000), None, None))
+        .tx_params(TxParameters::new(None, Some(10_000_000_000_000), None))
         .call_params(CallParameters::new(None, None, Some(10_000_000_000_000)))
         .call().await.unwrap().value;
 
     let res_second = contract_instance.lexicographically_largest_fp(second)
-        .tx_params(TxParameters::new(None, Some(10_000_000_000_000), None, None))
+        .tx_params(TxParameters::new(None, Some(10_000_000_000_000), None))
         .call_params(CallParameters::new(None, None, Some(10_000_000_000_000)))
         .call().await.unwrap().value;
 
     let res_third = contract_instance.lexicographically_largest_fp(third)
-        .tx_params(TxParameters::new(None, Some(10_000_000_000_000), None, None))
+        .tx_params(TxParameters::new(None, Some(10_000_000_000_000), None))
         .call_params(CallParameters::new(None, None, Some(10_000_000_000_000)))
         .call().await.unwrap().value;
     
@@ -243,3 +243,4 @@ async fn lexicographically_largest_fp() {
     assert!(res_second.c == 1);
     assert!(res_third.c == 1);
 }
+*/

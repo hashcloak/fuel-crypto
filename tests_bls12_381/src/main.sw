@@ -14,7 +14,7 @@ abi BlsTestContract {
     // Works
     #[storage(read, write)]fn add_fp(a: Fp, b: Fp) -> Fp;
     #[storage(read, write)]fn sub_fp(a: Fp, b: Fp) -> Fp;
-    #[storage(read, write)]fn lexicographically_largest_fp(a: Fp) -> Choice;
+    // #[storage(read, write)]fn lexicographically_largest_fp(a: Fp) -> Choice;
 
     // works but takes a long time
     #[storage(read, write)]fn mul_fp(a: Fp, b: Fp) -> Fp;
@@ -28,7 +28,7 @@ abi BlsTestContract {
     // #[storage(read, write)]fn neg_fp2(a: Fp2) -> Fp2;
     // #[storage(read, write)]fn lexicographically_largest_fp2(a: Fp2) -> Choice;
     
-    // // not tested, gives Immediate18TooLarge error
+    // // not tested, still gives Immediate18TooLarge error
     // #[storage(read, write)]fn square_fp2(a: Fp2) -> Fp2;
 
     // #[storage(read, write)]fn mul_fp2(a: Fp2, b: Fp2) -> Fp2;
@@ -53,9 +53,9 @@ impl BlsTestContract for Contract {
         a - b
     }
 
-    #[storage(read, write)]fn lexicographically_largest_fp(a: Fp) -> Choice {
-        a.lexicographically_largest()
-    }
+    // #[storage(read, write)]fn lexicographically_largest_fp(a: Fp) -> Choice {
+    //     a.lexicographically_largest()
+    // }
 
     #[storage(read, write)]fn mul_fp(a: Fp, b: Fp) -> Fp {
         a * b
