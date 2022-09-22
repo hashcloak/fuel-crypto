@@ -134,10 +134,13 @@ impl Scalar {
         let (d2, borrow) = sbb(MODULUS_SCALAR.ls[2], self.ls[2], borrow);
         let (d3, _) = sbb(MODULUS_SCALAR.ls[3], self.ls[3], borrow);
 
-        // `tmp` could be `MODULUS` if `self` was zero. Create a mask that is
-        // zero if `self` was zero, and `u64::max_value()` if self was nonzero.
-        let temp: u64 = if ((self.ls[0] | self.ls[1] | self.ls[2] | self.ls[3]) == 0) { 1 } else { 0 };
-        let mask = subtract_wrap_64(temp, 1);
+        // The mask should be 0 when a==p and 2^65-1 otherwise        
+        // limbs = 0 when self = 0
+        let limbs = self.ls[0] | self.ls[1] | self.ls[2] | self.ls[3];
+        // p mod p = 0, so this checks whether self is p
+        let scalar_is_0_mod_p = is_zero_u64(limbs);
+        // mask = a_is_p - 1. This will give either 1-1 (=0) or 0-1 (wrap around to 2^64-1)
+        let mask = subtract_1_wrap(scalar_is_0_mod_p);
 
         Scalar{ ls: [d0 & mask, d1 & mask, d2 & mask, d3 & mask]}
     }

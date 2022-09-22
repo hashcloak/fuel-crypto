@@ -33,3 +33,10 @@ This starts a Fuel node with a volatile database that will be cleared when shut 
  cd tests-bls
  forc test
  ```
+
+## Running a script
+Also to run a script a Fuel Node has to be spun up. 
+
+```
+forc run --unsigned --pretty-print
+```

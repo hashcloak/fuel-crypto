@@ -10,7 +10,7 @@ use std::{option::Option, u128::*, vec::Vec};
 use core::ops::{Eq, Add, Subtract, Multiply};
 
 // Little endian big integer with 6 limbs
-// in Montgomery form (!)
+// in Montgomery form
 pub struct Fp{ls: [u64;6]}
 
 /// p = 4002409555221667393417789825735904156556882819939007885332058136124031650490837864442687629129015664037894272559787
@@ -93,34 +93,23 @@ impl Fp {
         R
     }
 
-    // TODO to make this constant time the u64 should be compared with ct_eq, but is not existing in Sway (yet)
-    pub fn eq(self, other: Self) -> bool {
-        (self.ls[0] == other.ls[0])
-            && (self.ls[1] == other.ls[1])
-            && (self.ls[2] == other.ls[2])
-            && (self.ls[3] == other.ls[3])
-            && (self.ls[4] == other.ls[4])
-            && (self.ls[5] == other.ls[5])
-    }
-
+    // -a mod p
     pub fn neg(self) -> Fp {
-        let(d0, borrow) = sbb(MODULUS[0], self.ls[0], 0);
-        let(d1, borrow) = sbb(MODULUS[1], self.ls[1], borrow);
-        let(d2, borrow) = sbb(MODULUS[2], self.ls[2], borrow);
-        let(d3, borrow) = sbb(MODULUS[3], self.ls[3], borrow);
-        let(d4, borrow) = sbb(MODULUS[4], self.ls[4], borrow);
-        let(d5, _) = sbb(MODULUS[5], self.ls[5], borrow);
+        let (d0, borrow) = sbb(MODULUS[0], self.ls[0], 0);
+        let (d1, borrow) = sbb(MODULUS[1], self.ls[1], borrow);
+        let (d2, borrow) = sbb(MODULUS[2], self.ls[2], borrow);
+        let (d3, borrow) = sbb(MODULUS[3], self.ls[3], borrow);
+        let (d4, borrow) = sbb(MODULUS[4], self.ls[4], borrow);
+        let (d5, _) = sbb(MODULUS[5], self.ls[5], borrow);
 
-        // We need a mask that's 0 when a==p and 2^65-1 otherwise
-        // TODO improve this
-        let mut a_is_p = 0;
-        if (self.ls[0] | self.ls[1] | self.ls[2] | self.ls[3] | self.ls[4] | self.ls[5] == 0) {
-            a_is_p = 1; //don't know is there's a native conversion
-        } else {
-            a_is_p = 0;
-        }
-
-        let mask = subtract_wrap_64(a_is_p, 1);
+        // The mask should be 0 when a==p and 2^65-1 otherwise        
+        // limbs = 0 when self = 0
+        let limbs = (self.ls[0] | self.ls[1] | self.ls[2] | self.ls[3] | self.ls[4] | self.ls[5]);
+        // p mod p = 0, so this checks whether self is p
+        // a_is_p = 0 when self = 0, otherwise a_is_p = 1
+        let a_is_p: u64 = is_zero_u64(limbs);
+        // mask = a_is_p - 1. This will give either 1-1 (=0) or 0-1 (wrap around to 2^64-1)
+        let mask = subtract_1_wrap(a_is_p);
 
         Fp {
             ls: [d0 & mask, d1 & mask, d2 & mask, d3 & mask, d4 & mask, d5 & mask]
@@ -129,15 +118,14 @@ impl Fp {
 
     // If a >= p, return a-p, else return a
     pub fn subtract_p(self) -> Fp {
-        let(r0, borrow) = sbb(self.ls[0], MODULUS[0], 0);
-        let(r1, borrow) = sbb(self.ls[1], MODULUS[1], borrow);
-        let(r2, borrow) = sbb(self.ls[2], MODULUS[2], borrow);
-        let(r3, borrow) = sbb(self.ls[3], MODULUS[3], borrow);
-        let(r4, borrow) = sbb(self.ls[4], MODULUS[4], borrow);
-        let(r5, borrow) = sbb(self.ls[5], MODULUS[5], borrow);
+        let (r0, borrow) = sbb(self.ls[0], MODULUS[0], 0);
+        let (r1, borrow) = sbb(self.ls[1], MODULUS[1], borrow);
+        let (r2, borrow) = sbb(self.ls[2], MODULUS[2], borrow);
+        let (r3, borrow) = sbb(self.ls[3], MODULUS[3], borrow);
+        let (r4, borrow) = sbb(self.ls[4], MODULUS[4], borrow);
+        let (r5, borrow) = sbb(self.ls[5], MODULUS[5], borrow);
 
-        // If underflow occurred on the final limb, borrow = 0xfff...fff, otherwise
-        // borrow = 0x000...000. Thus, we use it as a mask!
+        // The final borrow is  0xfff...fff if there was underflow. Otherwise 0.
         let mut mask = borrow;
         let r0 = (self.ls[0] & mask) | (r0 & not(mask));
         let r1 = (self.ls[1] & mask) | (r1 & not(mask));
@@ -189,47 +177,47 @@ impl Fp {
         let rhs4 = rhs.ls[4];
         let rhs5 = rhs.ls[5];
 
-        let(t0, carry) = mac(0, self0, rhs0, 0);
-        let(t1, carry) = mac(0, self0, rhs1, carry);
-        let(t2, carry) = mac(0, self0, rhs2, carry);
-        let(t3, carry) = mac(0, self0, rhs3, carry);
-        let(t4, carry) = mac(0, self0, rhs4, carry);
-        let(t5, t6) = mac(0, self0, rhs5, carry);
+        let (t0, carry) = mac(0, self0, rhs0, 0);
+        let (t1, carry) = mac(0, self0, rhs1, carry);
+        let (t2, carry) = mac(0, self0, rhs2, carry);
+        let (t3, carry) = mac(0, self0, rhs3, carry);
+        let (t4, carry) = mac(0, self0, rhs4, carry);
+        let (t5, t6) = mac(0, self0, rhs5, carry);
 
-        let(t1, carry) = mac(t1, self1, rhs0, 0);
-        let(t2, carry) = mac(t2, self1, rhs1, carry);
-        let(t3, carry) = mac(t3, self1, rhs2, carry);
-        let(t4, carry) = mac(t4, self1, rhs3, carry);
-        let(t5, carry) = mac(t5, self1, rhs4, carry);
-        let(t6, t7) = mac(t6, self1, rhs5, carry);
+        let (t1, carry) = mac(t1, self1, rhs0, 0);
+        let (t2, carry) = mac(t2, self1, rhs1, carry);
+        let (t3, carry) = mac(t3, self1, rhs2, carry);
+        let (t4, carry) = mac(t4, self1, rhs3, carry);
+        let (t5, carry) = mac(t5, self1, rhs4, carry);
+        let (t6, t7) = mac(t6, self1, rhs5, carry);
 
-        let(t2, carry) = mac(t2, self2, rhs0, 0);
-        let(t3, carry) = mac(t3, self2, rhs1, carry);
-        let(t4, carry) = mac(t4, self2, rhs2, carry);
-        let(t5, carry) = mac(t5, self2, rhs3, carry);
-        let(t6, carry) = mac(t6, self2, rhs4, carry);
-        let(t7, t8) = mac(t7, self2, rhs5, carry);
+        let (t2, carry) = mac(t2, self2, rhs0, 0);
+        let (t3, carry) = mac(t3, self2, rhs1, carry);
+        let (t4, carry) = mac(t4, self2, rhs2, carry);
+        let (t5, carry) = mac(t5, self2, rhs3, carry);
+        let (t6, carry) = mac(t6, self2, rhs4, carry);
+        let (t7, t8) = mac(t7, self2, rhs5, carry);
 
-        let(t3, carry) = mac(t3, self3, rhs0, 0);
-        let(t4, carry) = mac(t4, self3, rhs1, carry);
-        let(t5, carry) = mac(t5, self3, rhs2, carry);
-        let(t6, carry) = mac(t6, self3, rhs3, carry);
-        let(t7, carry) = mac(t7, self3, rhs4, carry);
-        let(t8, t9) = mac(t8, self3, rhs5, carry);
+        let (t3, carry) = mac(t3, self3, rhs0, 0);
+        let (t4, carry) = mac(t4, self3, rhs1, carry);
+        let (t5, carry) = mac(t5, self3, rhs2, carry);
+        let (t6, carry) = mac(t6, self3, rhs3, carry);
+        let (t7, carry) = mac(t7, self3, rhs4, carry);
+        let (t8, t9) = mac(t8, self3, rhs5, carry);
 
-        let(t4, carry) = mac(t4, self4, rhs0, 0);
-        let(t5, carry) = mac(t5, self4, rhs1, carry);
-        let(t6, carry) = mac(t6, self4, rhs2, carry);
-        let(t7, carry) = mac(t7, self4, rhs3, carry);
-        let(t8, carry) = mac(t8, self4, rhs4, carry);
-        let(t9, t10) = mac(t9, self4, rhs5, carry);
+        let (t4, carry) = mac(t4, self4, rhs0, 0);
+        let (t5, carry) = mac(t5, self4, rhs1, carry);
+        let (t6, carry) = mac(t6, self4, rhs2, carry);
+        let (t7, carry) = mac(t7, self4, rhs3, carry);
+        let (t8, carry) = mac(t8, self4, rhs4, carry);
+        let (t9, t10) = mac(t9, self4, rhs5, carry);
 
-        let(t5, carry) = mac(t5, self5, rhs0, 0);
-        let(t6, carry) = mac(t6, self5, rhs1, carry);
-        let(t7, carry) = mac(t7, self5, rhs2, carry);
-        let(t8, carry) = mac(t8, self5, rhs3, carry);
-        let(t9, carry) = mac(t9, self5, rhs4, carry);
-        let(t10, t11) = mac(t10, self5, rhs5, carry);
+        let (t5, carry) = mac(t5, self5, rhs0, 0);
+        let (t6, carry) = mac(t6, self5, rhs1, carry);
+        let (t7, carry) = mac(t7, self5, rhs2, carry);
+        let (t8, carry) = mac(t8, self5, rhs3, carry);
+        let (t9, carry) = mac(t9, self5, rhs4, carry);
+        let (t10, t11) = mac(t10, self5, rhs5, carry);
 
         let res: [u64;12] = [t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11];
         montgomery_reduce(res)
@@ -307,69 +295,8 @@ impl Fp {
         ~Fp::zero()
     }
 
-//TODO implement this one for T=6 when sum_of_products_2 is working correctly. 
-// (sum_of_products_2 can be tested through testing fp2 multiplication, but this is not running atm because of Immediate18TooLarge)
-
-        /// Returns `c = a.zip(b).fold(0, |acc, (a_i, b_i)| acc + a_i * b_i)`.
-    ///
-    /// Implements Algorithm 2 from Patrick Longa's
-    /// [ePrint 2022-367](https://eprint.iacr.org/2022/367) §3.
-    // pub fn sum_of_products(a: [Fp; T], b: [Fp; T]) -> Fp { //Elena T = 6 or T = 2
-    //     // For a single `a x b` multiplication, operand scanning (schoolbook) takes each
-    //     // limb of `a` in turn, and multiplies it by all of the limbs of `b` to compute
-    //     // the result as a double-width intermediate representation, which is then fully
-    //     // reduced at the end. Here however we have pairs of multiplications (a_i, b_i),
-    //     // the results of which are summed.
-    //     //
-    //     // The intuition for this algorithm is two-fold:
-    //     // - We can interleave the operand scanning for each pair, by processing the jth
-    //     //   limb of each `a_i` together. As these have the same offset within the overall
-    //     //   operand scanning flow, their results can be summed directly.
-    //     // - We can interleave the multiplication and reduction steps, resulting in a
-    //     //   single bitshift by the limb size after each iteration. This means we only
-    //     //   need to store a single extra limb overall, instead of keeping around all the
-    //     //   intermediate results and eventually having twice as many limbs.
-
-    //     // Algorithm 2, line 2
-    //     let (u0, u1, u2, u3, u4, u5) = // Elena range and fold dont seem to exist in Sway
-    //         (0..6).fold((0, 0, 0, 0, 0, 0), |(u0, u1, u2, u3, u4, u5), j| {
-    //             // Algorithm 2, line 3
-    //             // For each pair in the overall sum of products:
-    //             let (t0, t1, t2, t3, t4, t5, t6) = (0..T).fold(
-    //                 (u0, u1, u2, u3, u4, u5, 0),
-    //                 |(t0, t1, t2, t3, t4, t5, t6), i| {
-    //                     // Compute digit_j x row and accumulate into `u`.
-    //                     let (t0, carry) = mac(t0, a[i].ls[j], b[i].ls[0], 0);
-    //                     let (t1, carry) = mac(t1, a[i].ls[j], b[i].ls[1], carry);
-    //                     let (t2, carry) = mac(t2, a[i].ls[j], b[i].ls[2], carry);
-    //                     let (t3, carry) = mac(t3, a[i].ls[j], b[i].ls[3], carry);
-    //                     let (t4, carry) = mac(t4, a[i].ls[j], b[i].ls[4], carry);
-    //                     let (t5, carry) = mac(t5, a[i].ls[j], b[i].ls[5], carry);
-    //                     let (t6, _) = adc(t6, 0, carry);
-
-    //                     (t0, t1, t2, t3, t4, t5, t6)
-    //                 },
-    //             );
-
-    //             // Algorithm 2, lines 4-5
-    //             // This is a single step of the usual Montgomery reduction process.
-    //             let k = wrapping_mul(t0, INV);
-    //             let (_, carry) = mac(t0, k, MODULUS[0], 0);
-    //             let (r1, carry) = mac(t1, k, MODULUS[1], carry);
-    //             let (r2, carry) = mac(t2, k, MODULUS[2], carry);
-    //             let (r3, carry) = mac(t3, k, MODULUS[3], carry);
-    //             let (r4, carry) = mac(t4, k, MODULUS[4], carry);
-    //             let (r5, carry) = mac(t5, k, MODULUS[5], carry);
-    //             let (r6, _) = adc(t6, 0, carry);
-
-    //             (r1, r2, r3, r4, r5, r6)
-    //         });
-
-    //     // Because we represent F_p elements in non-redundant form, we need a final
-    //     // conditional subtraction to ensure the output is in range.
-    //     (Fp([u0, u1, u2, u3, u4, u5])).subtract_p()
-    // }
-
+    // In Rust this is implemented as sum_of_products for T, but this is not possible in Sway
+    // Since specifically T=2 and T=6 is used, we implement both of them separately
     pub fn sum_of_products_6(a: [Fp; 6], b: [Fp; 6]) -> Fp { 
         let mut u1 = 0;
         let mut u2 = 0;
@@ -524,7 +451,7 @@ impl Fp {
 
 impl Fp {
 
-//TODO pow_vartime has to be implemented + CtOption is not constant time 
+//TODO pow_vartime has to be implemented
     /// Computes the multiplicative inverse of this field
     /// element, returning None in the case that this element
     /// is zero.

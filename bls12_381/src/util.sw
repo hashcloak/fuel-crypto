@@ -6,6 +6,7 @@ use choice::{Choice, CtOption, ConditionallySelectable, wrapping_neg};
 use std::{u128::U128};
 use core::ops::{BitwiseXor};
 use core::num::*;
+use std::flags::{disable_panic_on_overflow, enable_panic_on_overflow};
 
 
 impl ConditionallySelectable for u64 {
@@ -35,7 +36,17 @@ impl ConditionallySelectable for u32 {
     }
 }
 
-// TODO rewrite without if branch
+// If input == 0u64, return 1. Otherwise return 0. 
+// Done in assembly, because natively comparison becomes a bool. 
+pub fn is_zero_u64(input: u64) -> u64 {
+    asm(r1: input, r2) {
+        eq r2 r1 zero;
+        r2: u64
+    }
+}
+
+// TODO rewrite without if branch. This one is used with variable a and b
+// See resources below
 // If x >= y: x-y, else max::U128 - (y-x)
 pub fn subtract_wrap(x: U128, y: U128) -> U128 {
     if y > x {
@@ -48,6 +59,9 @@ pub fn subtract_wrap(x: U128, y: U128) -> U128 {
 }
 
 // TODO rewrite without if branch
+// In practice this is only being called with fixed values, so we can make it more specific. 
+// 1 -1
+// 0 -1
 // If x >= y: x-y, else max::U64 - (y-x)
 pub fn subtract_wrap_64(x: u64, y: u64) -> u64 {
     if y > x {
@@ -55,6 +69,19 @@ pub fn subtract_wrap_64(x: u64, y: u64) -> u64 {
     } else {
         x - y
     }
+}
+
+//
+pub fn subtract_1_wrap(x: u64) -> u64 {
+    disable_panic_on_overflow();
+    let res = asm(underflow, r1: x, r2, r3) {
+        subi r2 r1 i1; // x - 1
+        move underflow of; // move the underflow to a variable
+        or r3 r2 underflow; // if 1-1 then this is 0 | 0 = 0, if 0-1 this is 0 | u64::max
+        r3
+    };
+    enable_panic_on_overflow();
+    res
 }
 
 /// Compute a - (b + borrow), returning the result and the new borrow.
