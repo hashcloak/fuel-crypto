@@ -127,8 +127,7 @@ async fn test_mul_fp() {
     assert!(res_equals(res, c));
 }
 
-
-#[tokio::test]
+#[tokio::test] //works, but takes a long time
 async fn test_square_fp() {
     let a: Fp = Fp {
         ls: [0xd215_d276_8e83_191b,//15138237129114720539
@@ -138,15 +137,6 @@ async fn test_square_fp() {
         0x6436_b6f7_f4d9_5dfb,//7221160228616232443
         0x1060_6628_ad4a_4d90].to_vec()//1180055427263122832
     };
-
-    // let a_again: Fp = Fp {
-    //     ls: [0xd215_d276_8e83_191b,
-    //     0x5085_d80f_8fb2_8261,//5802281256283701857
-    //     0xce9a_032d_df39_3a56,//14887215013780077142
-    //     0x3e9c_4fff_2ca0_c4bb,//4511568884102382779
-    //     0x6436_b6f7_f4d9_5dfb,//7221160228616232443
-    //     0x1060_6628_ad4a_4d90].to_vec()//1180055427263122832
-    // };
 
     let expected_res: Fp = Fp {
         ls: [0x33d9_c42a_3cb3_e235,
@@ -164,16 +154,11 @@ async fn test_square_fp() {
         .call_params(CallParameters::new(None, None, Some(100_000_000)))
         .call().await.unwrap().value;
 
-    println!("{}", res.ls[0]);
-    println!("{}", res.ls[1]);
-    println!("{}", res.ls[2]);
-    println!("{}", res.ls[2]);
-    println!("{}", res.ls[4]);
-    println!("{}", res.ls[5]);
     assert!(res_equals(res, expected_res));
 }
 
 /*
+Running this one will give Immediate18TooLarge
 #[tokio::test]
 async fn lexicographically_largest_fp() {
     let zero = Fp{ ls: [0,0,0,0,0,0].to_vec()};

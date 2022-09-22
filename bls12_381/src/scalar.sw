@@ -125,7 +125,7 @@ impl Scalar {
         Scalar{ ls: [d0, d1, d2, d3]}
     }
 
-//E: This was tested through script and work. Didn't add test to contract because contract testing is slow and this will be tested implicitly as well
+//E: This was tested through script and works. Didn't add test to contract because contract testing is slow and this will be tested implicitly as well
     pub fn neg(self) -> Self {
         // Subtract `self` from `MODULUS` to negate. Ignore the final
         // borrow because it cannot underflow; self is guaranteed to
@@ -266,7 +266,7 @@ impl Scalar {
     }
 
     pub fn double(self) -> Scalar {
-        // TODO: This can be achieved more efficiently with a bitshift.
+        // zkcrypto comment: TODO: This can be achieved more efficiently with a bitshift.
         self.add(self)
     }
 }
@@ -304,7 +304,7 @@ impl Scalar {
     /// **This operation is variable time with respect
     /// to the exponent.** If the exponent is fixed,
     /// this operation is effectively constant time.
-    pub fn pow_vartime(self, by: [u64; 4]) -> Scalar {//TODO fix
+    pub fn pow_vartime(self, by: [u64; 4]) -> Scalar {//TODO implement when possible, this gives an error when called from sqrt
         let mut res = ~Self::one();
         // let mut i = 4;
         // while i > 0 {
