@@ -127,8 +127,7 @@ async fn test_mul_fp() {
     assert!(res_equals(res, c));
 }
 
-/*
-#[tokio::test] //Immediate18TooLarge
+#[tokio::test] //works, but takes a long time
 async fn test_square_fp() {
     let a: Fp = Fp {
         ls: [0xd215_d276_8e83_191b,//15138237129114720539
@@ -138,15 +137,6 @@ async fn test_square_fp() {
         0x6436_b6f7_f4d9_5dfb,//7221160228616232443
         0x1060_6628_ad4a_4d90].to_vec()//1180055427263122832
     };
-
-    // let a_again: Fp = Fp {
-    //     ls: [0xd215_d276_8e83_191b,
-    //     0x5085_d80f_8fb2_8261,//5802281256283701857
-    //     0xce9a_032d_df39_3a56,//14887215013780077142
-    //     0x3e9c_4fff_2ca0_c4bb,//4511568884102382779
-    //     0x6436_b6f7_f4d9_5dfb,//7221160228616232443
-    //     0x1060_6628_ad4a_4d90].to_vec()//1180055427263122832
-    // };
 
     let expected_res: Fp = Fp {
         ls: [0x33d9_c42a_3cb3_e235,
@@ -165,6 +155,77 @@ async fn test_square_fp() {
         .call().await.unwrap().value;
 
     assert!(res_equals(res, expected_res));
+}
 
+/*
+Running this one will give Immediate18TooLarge
+#[tokio::test]
+async fn lexicographically_largest_fp() {
+    let zero = Fp{ ls: [0,0,0,0,0,0].to_vec()};
+    let one = Fp{ ls: [ //=R
+        0x7609_0000_0002_fffd,
+        0xebf4_000b_c40c_0002,
+        0x5f48_9857_53c7_58ba,
+        0x77ce_5853_7052_5745,
+        0x5c07_1a97_a256_ec6d,
+        0x15f6_5ec3_fa80_e493,
+    ].to_vec()};
+    let first = Fp{ ls: [
+        0xa1fa_ffff_fffe_5557,
+        0x995b_fff9_76a3_fffe,
+        0x03f4_1d24_d174_ceb4,
+        0xf654_7998_c199_5dbd,
+        0x778a_468f_507a_6034,
+        0x0205_5993_1f7f_8103
+    ].to_vec()};
+    let second = Fp{ ls: [
+        0x1804_0000_0001_5554,
+        0x8550_0005_3ab0_0001,
+        0x633c_b57c_253c_276f,
+        0x6e22_d1ec_31eb_b502,
+        0xd391_6126_f2d1_4ca2,
+        0x17fb_b857_1a00_6596,
+    ].to_vec()};
+    let third = Fp{ ls: [
+        0x43f5_ffff_fffc_aaae,
+        0x32b7_fff2_ed47_fffd,
+        0x07e8_3a49_a2e9_9d69,
+        0xeca8_f331_8332_bb7a,
+        0xef14_8d1e_a0f4_c069,
+        0x040a_b326_3eff_0206,
+    ].to_vec()};
+
+    let (contract_instance, _id) = get_contract_instance().await;
+
+    let res_zero = contract_instance.lexicographically_largest_fp(zero)
+        .tx_params(TxParameters::new(None, Some(10_000_000_000_000), None))
+        .call_params(CallParameters::new(None, None, Some(10_000_000_000_000)))
+        .call().await.unwrap().value;
+
+    let res_one = contract_instance.lexicographically_largest_fp(one)
+        .tx_params(TxParameters::new(None, Some(10_000_000_000_000), None))
+        .call_params(CallParameters::new(None, None, Some(10_000_000_000_000)))
+        .call().await.unwrap().value;
+
+    let res_first = contract_instance.lexicographically_largest_fp(first)
+        .tx_params(TxParameters::new(None, Some(10_000_000_000_000), None))
+        .call_params(CallParameters::new(None, None, Some(10_000_000_000_000)))
+        .call().await.unwrap().value;
+
+    let res_second = contract_instance.lexicographically_largest_fp(second)
+        .tx_params(TxParameters::new(None, Some(10_000_000_000_000), None))
+        .call_params(CallParameters::new(None, None, Some(10_000_000_000_000)))
+        .call().await.unwrap().value;
+
+    let res_third = contract_instance.lexicographically_largest_fp(third)
+        .tx_params(TxParameters::new(None, Some(10_000_000_000_000), None))
+        .call_params(CallParameters::new(None, None, Some(10_000_000_000_000)))
+        .call().await.unwrap().value;
+    
+    assert!(res_zero.c == 0);
+    assert!(res_one.c == 0);
+    assert!(res_first.c == 0);
+    assert!(res_second.c == 1);
+    assert!(res_third.c == 1);
 }
 */
