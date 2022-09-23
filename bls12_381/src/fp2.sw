@@ -7,18 +7,21 @@ use fp::Fp;
 use core::ops::{Eq, Add, Subtract, Multiply};
 use choice::*; 
 
+// Element in the quadratic extension field F_{p^2}
 pub struct Fp2 {
     c0: Fp,
     c1: Fp,
 }
 
 impl ConstantTimeEq for Fp2 {
+    // returns (self == other), as a choice
     fn ct_eq(self, other: Self) -> Choice {
         self.c0.ct_eq(other.c0) & self.c1.ct_eq(other.c1)
     }
 }
 
 impl ConditionallySelectable for Fp2 {
+    // Select a if choice == 1 or select b if choice == 0, in constant time
     fn conditional_select(a: Self, b: Self, choice: Choice) -> Self {
         Fp2 {
             c0: ~Fp::conditional_select(a.c0, b.c0, choice),
@@ -28,6 +31,7 @@ impl ConditionallySelectable for Fp2 {
 }
 
 impl Fp2 {
+    // in the zkcrypto repo this is implemented as trait From<Fp>, but this isn't possible in Sway
     fn from(f: Fp) -> Fp2 {
         Fp2 {
             c0: f,
@@ -35,21 +39,21 @@ impl Fp2 {
         }
     }
 
-    pub fn zero() -> Fp2 {
+    fn zero() -> Fp2 {
         Fp2 {
             c0: ~Fp::zero(),
             c1: ~Fp::zero(),
         }
     }
 
-    pub fn one() -> Fp2 {
+    fn one() -> Fp2 {
         Fp2 {
             c0: ~Fp::one(),
             c1: ~Fp::zero(),
         }
     }
 
-    pub fn is_zero(self) -> Choice {
+    fn is_zero(self) -> Choice {
         self.c0.is_zero().binary_and(self.c1.is_zero())
     }
 
@@ -59,7 +63,7 @@ impl Fp2 {
 
 /*
     // not tested, gives Immediate18TooLarge error
-    pub fn square(self) -> Fp2 {
+    fn square(self) -> Fp2 {
         // Complex squaring:
         //
         // v0  = c0 * c1
@@ -83,36 +87,49 @@ impl Fp2 {
     }
   */
 
-    pub fn mul(self, rhs: Fp2) -> Fp2 {
+    fn mul(self, rhs: Fp2) -> Fp2 {
+        // Explanation from zkcrypto repo:
+        // F_{p^2} x F_{p^2} multiplication implemented with operand scanning (schoolbook)
+        // computes the result as:
+        //
+        //   a·b = (a_0 b_0 + a_1 b_1 β) + (a_0 b_1 + a_1 b_0)i
+        //
+        // In BLS12-381's F_{p^2}, our β is -1, so the resulting F_{p^2} element is:
+        //
+        //   c_0 = a_0 b_0 - a_1 b_1
+        //   c_1 = a_0 b_1 + a_1 b_0
+        //
+        // Each of these is a "sum of products", which we can compute efficiently.
         Fp2 {
             c0: ~Fp::sum_of_products_2([self.c0, self.c1.neg()], [rhs.c0, rhs.c1]),
             c1: ~Fp::sum_of_products_2([self.c0, self.c1], [rhs.c1, rhs.c0]),
         }
     }
 
-    pub fn add(self, rhs: Fp2) -> Fp2 {
+    fn add(self, rhs: Fp2) -> Fp2 {
         Fp2 {
             c0: self.c0 + rhs.c0,
             c1: self.c1 + rhs.c1,
         }
     }
 
-    pub fn sub(self, rhs: Fp2) -> Fp2 {
+    fn sub(self, rhs: Fp2) -> Fp2 {
         Fp2 {
             c0: self.c0 - rhs.c0,
             c1: self.c1 - rhs.c1,
         }
     }
 
-    pub fn neg(self) -> Fp2 {
+    fn neg(self) -> Fp2 {
         Fp2 {
             c0: (self.c0).neg(),
             c1: (self.c1).neg(),
         }
     }
 
-    // Is not tested directly, but will be indirectly
-    pub fn mul_by_nonresidue(self) -> Fp2 {
+    // Is not tested directly, but will be indirectly in consequent extension fields
+    fn mul_by_nonresidue(self) -> Fp2 {
+        // Explanation from zkcrypto
         // Multiply a + bu by u + 1, getting
         // au + a + bu^2 + bu
         // and because u^2 = -1, we get
@@ -124,38 +141,32 @@ impl Fp2 {
         }
     }
 
-    /// Returns whether or not this element is strictly lexicographically
-    /// larger than its negation.
-    pub fn lexicographically_largest(self) -> Choice {
-        // If this element's c1 coefficient is lexicographically largest
-        // then it is lexicographically largest. Otherwise, in the event
-        // the c1 coefficient is zero and the c0 coefficient is
-        // lexicographically largest, then this element is lexicographically
-        // largest.
-
+    // returns whether self > -self, lexographically speaking
+    fn lexicographically_largest(self) -> Choice {
+        // lexicographically_largest(self.c1) || (self.c1 == 0 && lexicographically_largest(self.c0)) 
         self.c1.lexicographically_largest()
         .binary_or(self.c1.is_zero().binary_and(self.c0.lexicographically_largest()))
     }
 
-    pub fn conjugate(self) -> Fp2 {
+    // returns (self.c0, -self.c1)
+    fn conjugate(self) -> Fp2 {
         Fp2{
             c0: self.c0,
             c1: (self.c1).neg(),
         }
     }
+}
 
-    /// Raises this element to p.
-    pub fn frobenius_map(self) -> Fp2 {
-        //needs to be verified
-        // This is always just a conjugation. If you're curious why, here's
-        // an article about it: https://alicebob.cryptoland.net/the-frobenius-endomorphism-with-finite-fields/
-        // self.conjugate() //showing error
-        Fp2{
-            c0: self.c0,
-            c1: (self.c1).neg(),
-        }
+impl Fp2 {
+    // This goes in a separate impl, because if we use previously defined functions in Fp2 impl, 
+    // Sway will not recognize them from inside the same impl
+
+    /// returns self^p, the Frobenius map
+    fn frobenius_map(self) -> Fp2 {
+        // For fp2, self^p equals the conjugate.
+        // Example explanation here: https://alicebob.modp.net/the-frobenius-endomorphism-with-finite-fields/
+        self.conjugate()
     }
-
 }
 
 impl Eq for Fp2 {
@@ -177,7 +188,7 @@ impl Subtract for Fp2 {
 }
 
 impl Multiply for Fp2 {
-        fn multiply(self, other: Self) -> Self {
-            self.mul(other)
-        }
+    fn multiply(self, other: Self) -> Self {
+        self.mul(other)
+    }
 }

@@ -7,7 +7,6 @@ use fp::{Fp, from_raw_unchecked};
 use choice::{Choice, CtOption, ConditionallySelectable, ConstantTimeEq};
 use core::ops::{Eq, Add, Subtract};
 
-
 // Comment from zkcrypto
 /// This is an element of $\mathbb{G}_1$ represented in the affine coordinate space.
 /// It is ideal to keep elements in this representation to reduce memory usage and
@@ -37,13 +36,13 @@ fn mul_by_3b(a: Fp) -> Fp {
 }
 
 impl ConstantTimeEq for G1Affine {
+    // returns (self == other), as a choice
     fn ct_eq(self, other: Self) -> Choice {
         // Comment from zkcrypto
         // The only cases in which two points are equal are
         // 1. infinity is set on both
         // 2. infinity is not set on both, and their coordinates are equal
-
-        (self.infinity & other.infinity)
+        self.infinity.binary_and(other.infinity)
         .binary_or(
                 (self.infinity.not())
                 .binary_and(other.infinity.not())
@@ -53,7 +52,7 @@ impl ConstantTimeEq for G1Affine {
     }
 }
 
-pub trait From_Proj {
+pub trait FROM_PROJ {
     fn from(p: G1Projective) -> Self;
 }
 
@@ -67,13 +66,14 @@ fn unwrap_or(input: CtOption<Fp>, default: Fp) -> Fp {
 //TODO
 // - needs fp invert, which is not working yet
 // - will use already created fn `unwrap_or` since adding unwrap_or to trait CtOption can't work yet
-// impl From_Proj for G1Affine {
+// impl FROM_PROJ for G1Affine {
 //     fn from(p: G1Projective) -> Self {
 // ..
 //     }
 // }
 
 impl ConditionallySelectable for G1Affine {
+    // Select a if choice == 1 or select b if choice == 0, in constant time.
     fn conditional_select(a: Self, b: Self, choice: Choice) -> Self {
         G1Affine {
             x: ~Fp::conditional_select(a.x, b.x, choice),
@@ -91,7 +91,7 @@ impl Eq for G1Affine {
 
 impl G1Affine {
     /// Returns the identity of the group: the point at infinity.
-    pub fn identity() -> G1Affine {
+    fn identity() -> G1Affine {
         G1Affine {
             x: ~Fp::zero(),
             y: ~Fp::one(),
@@ -99,12 +99,13 @@ impl G1Affine {
         }
     }
 
-    pub fn is_identity(self) -> Choice {
+    // returns true if this is the point at infinity
+    fn is_identity(self) -> Choice {
         self.infinity
     }
 
     // TODO TEST WHEN POSSIBLE: Uses mul_by_x on G1Projective which uses double, which can't compile
-    // pub fn is_torsion_free(self) -> Choice {
+    // fn is_torsion_free(self) -> Choice {
         // Comment from zkcrypto
     //     // Algorithm from Section 6 of https://eprint.iacr.org/2021/1130
     //     // Updated proof of correctness in https://eprint.iacr.org/2022/352
@@ -117,12 +118,14 @@ impl G1Affine {
     // }
 
     //Errors to Immediate18TooLarge
-    // pub fn is_on_curve(self) -> Choice {
+    // fn is_on_curve(self) -> Choice {
     //     // y^2 - x^3 ?= 4
     //     (self.y.square() - (self.x.square() * self.x)).ct_eq(B) | self.infinity
     // }
 
-    pub fn generator() -> G1Affine {
+    // returns a fixed generator of the group 
+    // see notes of zkcrypto on how this was chosen [here at paragraph `Fixed generators`](https://github.com/zkcrypto/bls12_381/blob/main/src/notes/design.rs)
+    fn generator() -> G1Affine {
         G1Affine {
             x: from_raw_unchecked([
                 0x5cb3_8790_fd53_0c16,
@@ -144,6 +147,7 @@ impl G1Affine {
         }
     }
 
+    // returns negation of point
     fn neg(self) -> G1Affine {//will be tested with subtraction (TODO)
         G1Affine {
             x: self.x,
@@ -164,6 +168,7 @@ pub const BETA: Fp = from_raw_unchecked([
     0x051b_a4ab_241b_6160,
 ]);
 
+// returns new point with coordinates (BETA * x, y)
 fn endomorphism(p: G1Affine) -> G1Affine {
     // Comment from zkcrypto
     // Endomorphism of the points on the curve.
@@ -174,6 +179,7 @@ fn endomorphism(p: G1Affine) -> G1Affine {
     res
 }
 
+// Element of G1, represented with projective coordinates
 pub struct G1Projective {
     x: Fp,
     y: Fp,
@@ -184,7 +190,7 @@ pub struct G1Projective {
 impl G1Projective {
     // Comment from zkcrypto
     /// Returns the identity of the group: the point at infinity.
-    pub fn identity() -> G1Projective {
+    fn identity() -> G1Projective {
         G1Projective {
             x: ~Fp::zero(),
             y: ~Fp::one(),
@@ -192,11 +198,13 @@ impl G1Projective {
         }
     }
 
-    pub fn is_identity(self) -> Choice {
+    // returns true if self is the point at infinity
+    fn is_identity(self) -> Choice {
         self.z.is_zero()
     }
 
-    pub fn neg(self) -> G1Projective { //will be tested with subtraction (TODO)
+    // returns point negation
+    fn neg(self) -> G1Projective { //will be tested with subtraction (TODO)
         G1Projective {
             x: self.x,
             y: self.y.neg(),
@@ -205,14 +213,16 @@ impl G1Projective {
     }
 
     //Errors to Immediate18TooLarge
-    // pub fn is_on_curve(self) -> Choice {
+    // fn is_on_curve(self) -> Choice {
     //     // Y^2 Z = X^3 + b Z^3
 
     //     (self.y.square() * self.z).ct_eq(self.x.square() * self.x + self.z.square() * self.z * B)
     //         | self.z.is_zero()
     // }
 
-    pub fn generator() -> G1Projective {
+    // returns a fixed generator of the group 
+    // see notes of zkcrypto on how this was chosen [here at paragraph `Fixed generators`](https://github.com/zkcrypto/bls12_381/blob/main/src/notes/design.rs)
+    fn generator() -> G1Projective {
         G1Projective {
             x: from_raw_unchecked([
                 0x5cb3_8790_fd53_0c16,
@@ -236,6 +246,7 @@ impl G1Projective {
 } 
 
 impl ConditionallySelectable for G1Projective {
+    // Select a if choice == 1 or select b if choice == 0, in constant time.
     fn conditional_select(a: Self, b: Self, choice: Choice) -> Self {
         G1Projective {
             x: ~Fp::conditional_select(a.x, b.x, choice),
@@ -248,10 +259,9 @@ impl ConditionallySelectable for G1Projective {
 impl G1Projective {
 
     // Not able to test this yet, doesn't terminate
-    /// Computes the doubling of this point.
-    pub fn double(self) -> G1Projective {
-        // Algorithm 9, https://eprint.iacr.org/2015/1060.pdf
-
+    // returns doubling of point
+    // uses Algorithm 9, https://eprint.iacr.org/2015/1060.pdf
+    fn double(self) -> G1Projective {
         let t0 = self.y.square();
         let z3 = t0 + t0;
         let z3 = z3 + z3;
@@ -280,10 +290,9 @@ impl G1Projective {
         ~G1Projective::conditional_select(tmp, ~G1Projective::identity(), self.is_identity())
     }
 
-    pub fn add(self, rhs: G1Projective) -> G1Projective {
-        // Comment from zkcrypto
-        // Algorithm 7, https://eprint.iacr.org/2015/1060.pdf
-
+    // return self + rhs
+    // Uses Algorithm 7, https://eprint.iacr.org/2015/1060.pdf
+    fn add(self, rhs: G1Projective) -> G1Projective {
         let t0 = self.x * rhs.x;
         let t1 = self.y * rhs.y;
         let t2 = self.z * rhs.z;
@@ -325,11 +334,9 @@ impl G1Projective {
         }
     }
 
-//TODO TEST
-    pub fn add_mixed(self, rhs: G1Affine) -> G1Projective {
-        // Comment from zkcrypto
-        // Algorithm 8, https://eprint.iacr.org/2015/1060.pdf
-
+    // returns self added to another point that is in the affine representation
+    // Uses Algorithm 8, https://eprint.iacr.org/2015/1060.pdf
+    fn add_mixed(self, rhs: G1Affine) -> G1Projective {
         let t0 = self.x * rhs.x;
         let t1 = self.y * rhs.y;
         let t3 = rhs.x + rhs.y;
@@ -367,11 +374,11 @@ impl G1Projective {
     }
 }
 
-pub trait From_Aff {
+pub trait FROM_AFF {
     fn from(p: G1Affine) -> Self;
 }
 
-impl From_Aff for G1Projective {
+impl FROM_AFF for G1Projective {
     fn from(p: G1Affine) -> Self {
         G1Projective {
             x: p.x,
@@ -382,6 +389,7 @@ impl From_Aff for G1Projective {
 }
 
 impl ConstantTimeEq for G1Projective {
+    // returns (self == other), as a choice
     fn ct_eq(self, other: Self) -> Choice {
         // Comments from zkcrypto
         // Is (xz, yz, z) equal to (x'z', y'z', z') when converted to affine?
@@ -395,9 +403,14 @@ impl ConstantTimeEq for G1Projective {
         let self_is_zero = self.z.is_zero();
         let other_is_zero = other.z.is_zero();
 
-        self_is_zero.binary_and(other_is_zero) // Both point at infinity
-        .binary_or(((~Choice::not(self_is_zero)).binary_and(~Choice::not(other_is_zero)).binary_and(x1.ct_eq(x2).binary_and(y1.ct_eq(y2)))))
-        // Neither point at infinity, coordinates are the same
+        // they are equal if:
+        // - both points are infinity
+        // - neither is infinity, and coordinates are the same
+        self_is_zero.binary_and(other_is_zero)
+        .binary_or(
+            ((~Choice::not(self_is_zero)).binary_and(~Choice::not(other_is_zero))
+                .binary_and(x1.ct_eq(x2).binary_and(y1.ct_eq(y2))))
+            )
     }
 }
 

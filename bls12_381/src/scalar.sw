@@ -8,6 +8,8 @@ use util::*;
 
 use core::ops::{Eq, Add, Subtract, Multiply};
 
+// element of scalar field Fq
+// Montgomery form: aR mod q, where R = 2^256
 pub struct Scalar { ls: [u64; 4] }
 
 /// Constant representing the modulus
@@ -34,6 +36,8 @@ const MODULUS_LIMBS_32: [u32; 8] = [
 // The number of bits needed to represent the modulus.
 const MODULUS_BITS: u32 = 255;
 
+// GENERATOR = 7 
+// Explanation from zkcrypto: multiplicative generator of r-1 order, that is also quadratic nonresidue
 const GENERATOR: Scalar = Scalar{ ls: [
     0x0000_000e_ffff_fff1,
     0x17e3_63d3_0018_9c0f,
@@ -71,6 +75,14 @@ const R3: Scalar = Scalar{ ls: [
 // 2^S * t = MODULUS - 1 with t odd
 const S: u32 = 32;
 
+// Explanation from zkcrypto:
+/// GENERATOR^t where t * 2^s + 1 = q
+/// with t odd. In other words, this
+/// is a 2^s root of unity.
+///
+/// `GENERATOR = 7 mod q` is a generator
+/// of the q - 1 order multiplicative
+/// subgroup.
 const ROOT_OF_UNITY: Scalar = Scalar{ ls: [
     0xb9b5_8d8c_5f0e_466a,
     0x5b1b_4c80_1819_d7ec,
@@ -79,6 +91,7 @@ const ROOT_OF_UNITY: Scalar = Scalar{ ls: [
 ]};
 
 impl ConditionallySelectable for Scalar {
+    // Select a if choice == 1 or select b if choice == 0, in constant time.
     fn conditional_select(a: Self, b: Self, choice: Choice) -> Self {
         Scalar{ ls: [
             ~u64::conditional_select(a.ls[0], b.ls[0], choice),
@@ -90,32 +103,32 @@ impl ConditionallySelectable for Scalar {
 }
 
 impl ConstantTimeEq for Scalar {
+    // returns (self == other), as a choice
     fn ct_eq(self, other: Self) -> Choice {
         ~u64::ct_eq(self.ls[0], other.ls[0])
-        .binary_and(~u64::ct_eq(self.ls[1], other.ls[1]))
-        .binary_and(~u64::ct_eq(self.ls[2], other.ls[2]))
-        .binary_and(~u64::ct_eq(self.ls[3], other.ls[3]))
+        & ~u64::ct_eq(self.ls[1], other.ls[1])
+        & ~u64::ct_eq(self.ls[2], other.ls[2])
+        & ~u64::ct_eq(self.ls[3], other.ls[3])
     }
 }
 
 impl Scalar {
-
-    pub fn zero() -> Scalar {
+    fn zero() -> Scalar {
         Scalar{ ls: [0, 0, 0, 0]}
     }
 
-    pub fn one() -> Scalar {
+    fn one() -> Scalar {
         R
     }
 
-    pub fn sub(self, rhs: Self) -> Self {
+    // returns self - rhs mod q
+    fn sub(self, rhs: Self) -> Self {
         let (d0, borrow) = sbb(self.ls[0], rhs.ls[0], 0);
         let (d1, borrow) = sbb(self.ls[1], rhs.ls[1], borrow);
         let (d2, borrow) = sbb(self.ls[2], rhs.ls[2], borrow);
         let (d3, borrow) = sbb(self.ls[3], rhs.ls[3], borrow);
 
-        // If underflow occurred on the final limb, borrow = 0xfff...fff, otherwise
-        // borrow = 0x000.. .ls00. Thus, we use it as a mask to conditionally add the modulus.
+        // The final borrow is 11..11 if there was underflow. Otherwise 0. Therefore, it's used as a mask
         let (d0, carry) = adc(d0, MODULUS_SCALAR.ls[0] & borrow, 0);
         let (d1, carry) = adc(d1, MODULUS_SCALAR.ls[1] & borrow, carry);
         let (d2, carry) = adc(d2, MODULUS_SCALAR.ls[2] & borrow, carry);
@@ -124,8 +137,9 @@ impl Scalar {
         Scalar{ ls: [d0, d1, d2, d3]}
     }
 
-//E: This was tested through script and works. Didn't add test to contract because contract testing is slow and this will be tested implicitly as well
-    pub fn neg(self) -> Self {
+    // returns -self mod q
+    fn neg(self) -> Self {
+        // Explanation from zkcrypto repo
         // Subtract `self` from `MODULUS` to negate. Ignore the final
         // borrow because it cannot underflow; self is guaranteed to
         // be in the field.
@@ -147,20 +161,25 @@ impl Scalar {
 }
 
 impl Scalar {
-
-    /// Adds `rhs` to `self`, returning the result.
-    pub fn add(self, rhs: Self) -> Self {
+    // returns self + rhs mod q
+    fn add(self, rhs: Self) -> Self {
         let (d0, carry) = adc(self.ls[0], rhs.ls[0], 0);
         let (d1, carry) = adc(self.ls[1], rhs.ls[1], carry);
         let (d2, carry) = adc(self.ls[2], rhs.ls[2], carry);
         let (d3, _) = adc(self.ls[3], rhs.ls[3], carry);
 
-        // Attempt to subtract the modulus, to ensure the value
-        // is smaller than the modulus.
+        // Subtract q to ensure the element is always mod q
         (Scalar{ls:[d0, d1, d2, d3]}).sub(MODULUS_SCALAR)
     }
 
-    pub fn montgomery_reduce(
+
+    /*
+    returns t mod q (as Scalar)
+
+    according to zkcrypto repo this is based on Algorithm 14.32 in Handbook of Applied Cryptography
+    <http://cacr.uwaterloo.ca/hac/about/chap14.pdf>
+    */
+    fn montgomery_reduce(
         r0: u64,
         r1: u64,
         r2: u64,
@@ -170,10 +189,6 @@ impl Scalar {
         r6: u64,
         r7: u64,
     ) -> Self {
-        // The Montgomery reduction here is based on Algorithm 14.32 in
-        // Handbook of Applied Cryptography
-        // <http://cacr.uwaterloo.ca/hac/about/chap14.pdf>.
-
         let k = wrapping_mul(r0, INV);
         let (_, carry) = mac(r0, k, MODULUS_SCALAR.ls[0], 0);
         let (r1, carry) = mac(r1, k, MODULUS_SCALAR.ls[1], carry);
@@ -202,15 +217,15 @@ impl Scalar {
         let (r6, carry) = mac(r6, k, MODULUS_SCALAR.ls[3], carry);
         let (r7, _) = adc(r7, carry2, carry);
 
-        // Result may be within MODULUS of the correct value
+        // Subtract q to ensure the element is always mod q
         (Scalar{ ls:[r4, r5, r6, r7]}).sub(MODULUS_SCALAR)
     }
 }
 
 impl Scalar {
-    pub fn mul(self, rhs: Self) -> Self {
+    // returns self * rhs mod q
+    fn mul(self, rhs: Self) -> Self {
         // Schoolbook multiplication
-
         let (r0, carry) = mac(0, self.ls[0], rhs.ls[0], 0);
         let (r1, carry) = mac(0, self.ls[0], rhs.ls[1], carry);
         let (r2, carry) = mac(0, self.ls[0], rhs.ls[2], carry);
@@ -234,7 +249,8 @@ impl Scalar {
         ~Scalar::montgomery_reduce(r0, r1, r2, r3, r4, r5, r6, r7)
     }
 
-    pub fn square(self) -> Scalar {
+    // returns self ^ 2 mod q
+    fn square(self) -> Scalar {
         let (r1, carry) = mac(0, self.ls[0], self.ls[1], 0);
         let (r2, carry) = mac(0, self.ls[0], self.ls[2], carry);
         let (r3, r4) = mac(0, self.ls[0], self.ls[3], carry);
@@ -264,7 +280,8 @@ impl Scalar {
         ~Scalar::montgomery_reduce(r0, r1, r2, r3, r4, r5, r6, r7)
     }
 
-    pub fn double(self) -> Scalar {
+    // returns self + self mod q
+    fn double(self) -> Scalar {
         // zkcrypto comment: TODO: This can be achieved more efficiently with a bitshift.
         self.add(self)
     }
@@ -295,7 +312,6 @@ impl Eq for Scalar {
 }
 
 impl Scalar {
-
     fn from(val: u64) -> Scalar {
         Scalar{ ls: [val, 0, 0, 0]} * R2
     }

@@ -3,7 +3,7 @@ library fp;
 dep choice; 
 dep util;
 
-//This import is needed because of importing ConstantTimeEq for u64 (since it's a trait for a primitive type)
+//This wildcard import is needed because of importing ConstantTimeEq for u64 (since it's a trait for a primitive type)
 use choice::*; 
 use util::*;
 use std::{option::Option, u128::*, vec::Vec};
@@ -57,6 +57,7 @@ const R3: Fp = Fp{ls: [
 ]};
 
 impl ConditionallySelectable for Fp {
+    // Select a if choice == 1 or select b if choice == 0, in constant time.
     fn conditional_select(a: Fp, b: Fp, choice: Choice) -> Fp {
         Fp{ ls: [
             ~u64::conditional_select(a.ls[0], b.ls[0], choice),
@@ -69,31 +70,33 @@ impl ConditionallySelectable for Fp {
     }
 }
 
+// returns the binary not for u64
 fn not(input: u64) -> u64 {
     ~u64::max() - input
 }
 
 impl ConstantTimeEq for Fp {
+    // returns (self == other), as a choice
     fn ct_eq(self, other: Fp) -> Choice {
         ~u64::ct_eq(self.ls[0], other.ls[0])
-        .binary_and(~u64::ct_eq(self.ls[1], other.ls[1]))
-        .binary_and(~u64::ct_eq(self.ls[2], other.ls[2]))
-        .binary_and(~u64::ct_eq(self.ls[3], other.ls[3]))
-        .binary_and(~u64::ct_eq(self.ls[4], other.ls[4]))
-        .binary_and(~u64::ct_eq(self.ls[5], other.ls[5]))
+        & ~u64::ct_eq(self.ls[1], other.ls[1])
+        & ~u64::ct_eq(self.ls[2], other.ls[2])
+        & ~u64::ct_eq(self.ls[3], other.ls[3])
+        & ~u64::ct_eq(self.ls[4], other.ls[4])
+        & ~u64::ct_eq(self.ls[5], other.ls[5])
     }
 }
 
 impl Fp {
     pub fn zero() -> Fp {
-        Fp{ls: [0, 0, 0, 0, 0, 0]}
+        Fp{ ls: [0, 0, 0, 0, 0, 0] }
     }
 
     pub fn one() -> Fp {
         R
     }
 
-    // -a mod p
+    // returns -a mod p
     pub fn neg(self) -> Fp {
         let (d0, borrow) = sbb(MODULUS[0], self.ls[0], 0);
         let (d1, borrow) = sbb(MODULUS[1], self.ls[1], borrow);
@@ -102,7 +105,7 @@ impl Fp {
         let (d4, borrow) = sbb(MODULUS[4], self.ls[4], borrow);
         let (d5, _) = sbb(MODULUS[5], self.ls[5], borrow);
 
-        // The mask should be 0 when a==p and 2^65-1 otherwise        
+        // The mask should be 0 when a==p, otherwise 2^65-1 (= 11..11) 
         // limbs = 0 when self = 0
         let limbs = (self.ls[0] | self.ls[1] | self.ls[2] | self.ls[3] | self.ls[4] | self.ls[5]);
         // p mod p = 0, so this checks whether self is p
@@ -125,7 +128,7 @@ impl Fp {
         let (r4, borrow) = sbb(self.ls[4], MODULUS[4], borrow);
         let (r5, borrow) = sbb(self.ls[5], MODULUS[5], borrow);
 
-        // The final borrow is  0xfff...fff if there was underflow. Otherwise 0.
+        // The final borrow is 11..11 if there was underflow. Otherwise 0. Therefore, it's used as a mask
         let mut mask = borrow;
         let r0 = (self.ls[0] & mask) | (r0 & not(mask));
         let r1 = (self.ls[1] & mask) | (r1 & not(mask));
@@ -145,10 +148,19 @@ pub fn from_raw_unchecked(v: [u64; 6]) -> Fp {
 }
 
 impl Fp {
+    // This goes in a separate impl, because if we use previously defined functions in Fp impl, 
+    // Sway will not recognize them from inside the same impl
+
     pub fn is_zero(self) -> Choice {
         self.ct_eq(~Fp::zero())
     }
 
+    /* 
+    returns self + rhs mod p. 
+
+    each limbs is added and the possible carry is carried over to next limb
+    if needed, 1 reduction by p is done to make it mod p
+    */ 
     fn add(self, rhs: Fp) -> Fp {
         let (d0, carry) = adc(self.ls[0], rhs.ls[0], 0);
         let (d1, carry) = adc(self.ls[1], rhs.ls[1], carry);
@@ -157,11 +169,15 @@ impl Fp {
         let (d4, carry) = adc(self.ls[4], rhs.ls[4], carry);
         let (d5, _) = adc(self.ls[5], rhs.ls[5], carry);
 
-        // Attempt to subtract the modulus, to ensure the value
-        // is smaller than the modulus.
-        (Fp{ls:[d0, d1, d2, d3, d4, d5]}).subtract_p()
+        // Subtract p if necessary, so the element is always mod p
+        (Fp{ ls: [d0, d1, d2, d3, d4, d5] }).subtract_p()
     }
 
+    /*
+    returns self * rhs mod p
+
+    schoolbook mult, followed by montgomery reduction
+    */
     pub fn mul(self, rhs: Fp) -> Fp {
         let self0 = self.ls[0];
         let self1 = self.ls[1];
@@ -223,6 +239,7 @@ impl Fp {
         montgomery_reduce(res)
     }
 
+    // returns self^2 mod p 
     pub fn square(self) -> Fp {
         let (t1, carry) = mac(0, self.ls[0], self.ls[1], 0);
         let (t2, carry) = mac(0, self.ls[0], self.ls[2], carry);
@@ -275,6 +292,10 @@ impl Fp {
 }
 
 impl Fp {
+    // This goes in a separate impl, because if we use previously defined functions in Fp impl, 
+    // Sway will not recognize them from inside the same impl
+
+    // returns self - rhs mod p
     fn sub(self, rhs: Fp) -> Fp {
         (rhs.neg()).add(self)
     }
@@ -295,8 +316,14 @@ impl Fp {
         ~Fp::zero()
     }
 
-    // In Rust this is implemented as sum_of_products for T, but this is not possible in Sway
-    // Since specifically T=2 and T=6 is used, we implement both of them separately
+    /*
+    returns c = a.zip(b).fold(0, |acc, (a_i, b_i)| acc + a_i * b_i)
+
+    according to zkcrypto this implements Algorithm 2 from Patrick Longa's
+    [ePrint 2022-367](https://eprint.iacr.org/2022/367) §3
+
+    EXTRA NOTE: In the zkcrypto repo (Rust) this is implemented as sum_of_products for T, but this is not possible in Sway. Since specifically T=2 and T=6 is used, we implement both of them separately
+    */
     pub fn sum_of_products_6(a: [Fp; 6], b: [Fp; 6]) -> Fp { 
         let mut u1 = 0;
         let mut u2 = 0;
@@ -306,7 +333,8 @@ impl Fp {
         let mut u6 = 0;
 
         let mut j = 0;
-
+        
+        // Algorithm 2, line 3. For all pairs (a_i, b_j) calculate the sum of products
         while j < 6 {
             let mut t0 = u1;
             let mut t1 = u2;
@@ -325,7 +353,7 @@ impl Fp {
                 let (t4_temp, carry) = mac(t4, a[i].ls[j], b[i].ls[4], carry);
                 let (t5_temp, carry) = mac(t5, a[i].ls[j], b[i].ls[5], carry);
                 let (t6_temp, _) = adc(t6, 0, carry);
-                // assigning directly to t0..t6 didn't work.
+                // assigning directly to t0..t6 in the tuples didn't work, so we assign manually here
                 t0 = t0_temp;
                 t1 = t1_temp;
                 t2 = t2_temp;
@@ -335,7 +363,8 @@ impl Fp {
                 t6 = t6_temp;
                 i += 1;
             }
-
+            
+            // Algorithm 2, lines 4-5
             let k = wrapping_mul(t0, INV);
             let (_, carry) = mac(t0, k, MODULUS[0], 0);
             let (u1_temp, carry) = mac(t1, k, MODULUS[1], carry);
@@ -344,7 +373,7 @@ impl Fp {
             let (u4_temp, carry) = mac(t4, k, MODULUS[4], carry);
             let (u5_temp, carry) = mac(t5, k, MODULUS[5], carry);
             let (u6_temp, _) = adc(t6, 0, carry);
-            // assigning directly to u1..u6 didn't work.
+            // assigning directly to u1..u6 in the tuples didn't work, so we assign manually here
             u1 = u1_temp;
             u2 = u2_temp;
             u3 = u3_temp;
@@ -354,7 +383,8 @@ impl Fp {
             j += 1;
         }
 
-        (Fp{ ls: [u1, u2, u3, u4, u5, u6]}).subtract_p()
+        // Subtract p if necessary, so the element is always mod p
+        (Fp{ ls: [u1, u2, u3, u4, u5, u6] }).subtract_p()
     }
 
     pub fn sum_of_products_2(a: [Fp; 2], b: [Fp; 2]) -> Fp { 
@@ -367,6 +397,7 @@ impl Fp {
 
         let mut j = 0;
 
+        // Algorithm 2, line 3. For all pairs (a_i, b_j) calculate the sum of products
         while j < 6 {
             let mut t0 = u1;
             let mut t1 = u2;
@@ -385,7 +416,7 @@ impl Fp {
                 let (t4_temp, carry) = mac(t4, a[i].ls[j], b[i].ls[4], carry);
                 let (t5_temp, carry) = mac(t5, a[i].ls[j], b[i].ls[5], carry);
                 let (t6_temp, _) = adc(t6, 0, carry);
-                // assigning directly to t0..t6 didn't work.
+                // assigning directly to t0..t6 in the tuples didn't work, so we assign manually here
                 t0 = t0_temp;
                 t1 = t1_temp;
                 t2 = t2_temp;
@@ -396,6 +427,7 @@ impl Fp {
                 i += 1;
             }
 
+            // Algorithm 2, lines 4-5
             let k = wrapping_mul(t0, INV);
             let (_, carry) = mac(t0, k, MODULUS[0], 0);
             let (u1_temp, carry) = mac(t1, k, MODULUS[1], carry);
@@ -404,7 +436,7 @@ impl Fp {
             let (u4_temp, carry) = mac(t4, k, MODULUS[4], carry);
             let (u5_temp, carry) = mac(t5, k, MODULUS[5], carry);
             let (u6_temp, _) = adc(t6, 0, carry);
-            // assigning directly to u1..u6 didn't work.
+            // assigning directly to u1..u6 in the tuples didn't work, so we assign manually here
             u1 = u1_temp;
             u2 = u2_temp;
             u3 = u3_temp;
@@ -414,22 +446,26 @@ impl Fp {
             j += 1;
         }
 
-        (Fp{ ls: [u1, u2, u3, u4, u5, u6]}).subtract_p()
+        // Subtract p if necessary, so the element is always mod p
+        (Fp{ ls: [u1, u2, u3, u4, u5, u6] }).subtract_p()
     }
 
     /// Returns whether or not this element is strictly lexicographically
     /// larger than its negation.
-    pub fn lexicographically_largest(self) -> Choice {
-        // This can be determined by checking to see if the element is
-        // larger than (p - 1) // 2. If we subtract by ((p - 1) // 2) + 1
-        // and there is no underflow, then the element must be larger than
-        // (p - 1) // 2.
 
-        // First, because self is in Montgomery form we need to reduce it
+    // returns whether self > -self, lexographically speaking
+    pub fn lexicographically_largest(self) -> Choice {
+
+        // Check whether self >= (p-1)/2. If this is the case, we return "true"
+        // Subtract (p-1)/2 + 1. If there is no underflow, self was larger. 
+
+
+        // Make sure it's mod p
         let tmp = montgomery_reduce(
             [self.ls[0], self.ls[1], self.ls[2], self.ls[3], self.ls[4], self.ls[5], 0, 0, 0, 0, 0, 0,]
         );
 
+        // Subtract (p-1)/2 + 1
         let (_, borrow) = sbb(tmp.ls[0], 0xdcff_7fff_ffff_d556, 0);
         let (_, borrow) = sbb(tmp.ls[1], 0x0f55_ffff_58a9_ffff, borrow);
         let (_, borrow) = sbb(tmp.ls[2], 0xb398_6950_7b58_7b12, borrow);
@@ -437,24 +473,20 @@ impl Fp {
         let (_, borrow) = sbb(tmp.ls[4], 0x258d_d3db_21a5_d66b, borrow);
         let (_, borrow) = sbb(tmp.ls[5], 0x0d00_88f5_1cbf_f34d, borrow);
 
-        // If the element was smaller, the subtraction will underflow
-        // producing a borrow value of 0xffff...ffff, otherwise it will
-        // be zero. We create a Choice representing true if there was
-        // overflow (and so this element is not lexicographically larger
-        // than its negation) and then negate it.
-
+        // If there was underflow, borrow is 11..11. Otherwise, it is 0. 
         let borrow_u8: u8 = borrow;
-        ~Choice::from(borrow_u8 & 1).not()
+        // Return "true" if there was no underflow. Otherwise return "false"
+        ~Choice::from(borrow & 1).not()
     }
 
 }
 
 impl Fp {
+    // This goes in a separate impl, because if we use previously defined functions in Fp impl, 
+    // Sway will not recognize them from inside the same impl
 
-//TODO pow_vartime has to be implemented
-    /// Computes the multiplicative inverse of this field
-    /// element, returning None in the case that this element
-    /// is zero.
+//TODO pow_vartime has to be implemented for this to work
+    // returns Some(self^-1 mod p) or None if self == 0
     pub fn invert(self) -> CtOption<Fp> {
         // Exponentiate by p - 2
         let t = self.pow_vartime([
@@ -495,6 +527,12 @@ impl Multiply for Fp {
     }
 }
 
+/*
+returns t mod p (as Fp)
+
+according to zkcrypto repo this is based on Algorithm 14.32 in Handbook of Applied Cryptography
+<http://cacr.uwaterloo.ca/hac/about/chap14.pdf>
+*/
 pub fn montgomery_reduce(t: [u64;12]) -> Fp {
     let k = wrapping_mul(t[0], INV);
 
@@ -551,5 +589,5 @@ pub fn montgomery_reduce(t: [u64;12]) -> Fp {
     let r10: (u64, u64) = mac(r10_11.0, k, MODULUS[5], r9.1);
     let r11_12 = adc(t[11], r10_11.1, r10.1);
 
-    (Fp { ls: [r6.0, r7.0, r8.0, r9.0, r10.0, r11_12.0]}).subtract_p()
+    (Fp{ ls: [r6.0, r7.0, r8.0, r9.0, r10.0, r11_12.0] }).subtract_p()
 }
