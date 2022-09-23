@@ -124,6 +124,19 @@ impl Fp2 {
         }
     }
 
+    /// Returns whether or not this element is strictly lexicographically
+    /// larger than its negation.
+    pub fn lexicographically_largest(self) -> Choice {
+        // If this element's c1 coefficient is lexicographically largest
+        // then it is lexicographically largest. Otherwise, in the event
+        // the c1 coefficient is zero and the c0 coefficient is
+        // lexicographically largest, then this element is lexicographically
+        // largest.
+
+        self.c1.lexicographically_largest()
+        .binary_or(self.c1.is_zero().binary_and(self.c0.lexicographically_largest()))
+    }
+
     pub fn conjugate(self) -> Fp2 {
         Fp2{
             c0: self.c0,
