@@ -6,20 +6,34 @@ use fuels::{
 abigen!(BlsTestContract, "out/debug/tests_bls12_381-abi.json");
 
 async fn get_contract_instance() -> (BlsTestContract, Bech32ContractId) {
-    // Launch a local network and deploy the contract
-    let wallet = launch_provider_and_get_wallet().await;
+    let mut wallet = WalletUnlocked::new_random(None);
+    let num_assets = 1;
+    let coins_per_asset = 100;
+    let amount_per_coin = 100000;
+
+    let (coins, asset_ids) = setup_multiple_assets_coins(
+        wallet.address(),
+        num_assets,
+        coins_per_asset,
+        amount_per_coin,
+    );
+
+    // Custom gas limit
+    let consensus_parameters_config = ConsensusParameters::DEFAULT.with_max_gas_per_tx(10_000_000_000_000);
+
+    let (client, addr) = setup_test_client(coins, None, Some(consensus_parameters_config)).await;
+    
+    let provider = Provider::new(client);
+    wallet.set_provider(provider.clone());
 
     let id = Contract::deploy(
         "./out/debug/tests_bls12_381.bin",
         &wallet,
         TxParameters::default(),
-        StorageConfiguration::with_storage_path(None)
-    )
-    .await
-    .unwrap();
+        StorageConfiguration::default(),
+    ).await.unwrap();
 
     let instance = BlsTestContractBuilder::new(id.to_string(), wallet).build();
-
     (instance, id)
 }
 
@@ -57,7 +71,7 @@ async fn test_addition() {
     let (contract_instance, _id) = get_contract_instance().await;
 
     let res = contract_instance.add_scalar(a, a_2)
-    .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
+    .tx_params(TxParameters::new(None, Some(100_000_000), None))
     .call_params(CallParameters::new(None, None, Some(100_000_000)))
     .call().await.unwrap().value;
     
@@ -72,7 +86,7 @@ async fn test_addition() {
 
     let one = Scalar{ ls: [1,0,0,0].to_vec() };
     let res_2 = contract_instance.add_scalar(a_3, one)
-    .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
+    .tx_params(TxParameters::new(None, Some(100_000_000), None))
     .call_params(CallParameters::new(None, None, Some(100_000_000)))
     .call().await.unwrap().value;
     
@@ -116,7 +130,7 @@ Please file an issue on the repository and include the code that triggered this 
 //     let j = 0;
 //     while j < 101 {
 //         let square_root = contract_instance.scalar_sqrt(square)
-//             .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
+//             .tx_params(TxParameters::new(None, Some(100_000_000), None))
 //             .call_params(CallParameters::new(None, None, Some(100_000_000)))
 //             .call().await.unwrap().value;
 //         // let square_root = square.sqrt();

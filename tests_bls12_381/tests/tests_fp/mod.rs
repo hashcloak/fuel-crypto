@@ -7,7 +7,7 @@ abigen!(BlsTestContract, "out/debug/tests_bls12_381-abi.json");
 
 //TODO move this to a separate helpers file. How to achieve this in Rust/Cargo? 
 async fn get_contract_instance() -> (BlsTestContract, Bech32ContractId) {
-    let mut wallet = LocalWallet::new_random(None);
+    let mut wallet = WalletUnlocked::new_random(None);
     let num_assets = 1;
     let coins_per_asset = 100;
     let amount_per_coin = 100000;
@@ -63,7 +63,7 @@ async fn test_add_fp() {
     let (contract_instance, _id) = get_contract_instance().await;
 
     let res = contract_instance.add_fp(small, random)
-    .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
+    .tx_params(TxParameters::new(None, Some(100_000_000), None))
     .call_params(CallParameters::new(None, None, Some(100_000_000)))
     .call().await.unwrap().value;
     
@@ -85,7 +85,7 @@ async fn test_sub_fp() {
     let (_instance, _id) = get_contract_instance().await;
 
     let res = _instance.sub_fp(a, b)
-        .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
+        .tx_params(TxParameters::new(None, Some(100_000_000), None))
         .call_params(CallParameters::new(None, None, Some(100_000_000)))
         .call().await.unwrap().value;
     assert!(res_equals(res, expected_res));
@@ -121,7 +121,7 @@ async fn test_mul_fp() {
     let (_instance, _id) = get_contract_instance().await;
 
     let res = _instance.mul_fp(a, b)
-        .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
+        .tx_params(TxParameters::new(None, Some(100_000_000), None))
         .call_params(CallParameters::new(None, None, Some(100_000_000)))
         .call().await.unwrap().value;
     assert!(res_equals(res, c));
@@ -160,7 +160,7 @@ async fn test_square_fp() {
     let (_instance, _id) = get_contract_instance().await;
 
     let res = _instance.square_fp(a)
-        .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
+        .tx_params(TxParameters::new(None, Some(100_000_000), None))
         .call_params(CallParameters::new(None, None, Some(100_000_000)))
         .call().await.unwrap().value;
 

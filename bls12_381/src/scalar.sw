@@ -329,6 +329,9 @@ impl Scalar {
 
 impl Scalar {
 
+// Sept 12: new error = 
+// error: Internal compiler error: Verification failed: Function one_1 return type must match its RET instructions.
+// Please file an issue on the repository and include the code that triggered this error.
     /// Computes the square root of this element, if it exists.
     pub fn sqrt(self) -> CtOption<Scalar> {
         // Tonelli-Shank's algorithm for q mod 16 = 1

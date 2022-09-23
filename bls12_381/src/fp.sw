@@ -291,9 +291,19 @@ impl Fp {
         (rhs.neg()).add(self)
     }
 
-
-//TODO implement this from zkcrypto
+// TODO implement when performing *many* squares is possible
     pub fn pow_vartime(self, by: [u64; 6]) -> Self {
+        // let mut res = Self::one();
+        // for e in by.iter().rev() {
+        //     for i in (0..64).rev() {
+        //         res = res.square();
+
+        //         if ((*e >> i) & 1) == 1 {
+        //             res *= self;
+        //         }
+        //     }
+        // }
+        // res
         ~Fp::zero()
     }
 
