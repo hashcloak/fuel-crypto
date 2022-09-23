@@ -1,6 +1,7 @@
 library fp;
 
 use std::{option::*, u128::*, vec::Vec};
+use core::ops::{Eq, Add, Subtract, Multiply};
 
 // Little endian big integer with 6 limbs
 // in Montgomery form (!)
@@ -48,6 +49,17 @@ const R3: Fp = Fp{ls: [
     0x2512_d435_6572_4728,
     0x0aa6_3460_9175_5d4d,
 ]};
+
+// type Choice doesn't seem to exist in Sway, so we use a bool
+fn conditional_select(a: u64, b: u64, choice: bool) -> u64 {
+    // TODO make constant time impl
+    let mut mask = 0;
+    if (choice) {
+        mask = ~u64::max();
+    }
+
+    b ^ (mask & (a ^ b))
+}
 
 fn not(input: u64) -> u64 {
     ~u64::max() - input
@@ -125,13 +137,25 @@ impl Fp {
     }
 
     // TODO to make this constant time the u64 should be compared with ct_eq, but is not existing in Sway (yet)
-    fn eq(self, other: Self) -> bool {
+    pub fn eq(self, other: Self) -> bool {
         (self.ls[0] == other.ls[0])
             && (self.ls[1] == other.ls[1])
             && (self.ls[2] == other.ls[2])
             && (self.ls[3] == other.ls[3])
             && (self.ls[4] == other.ls[4])
             && (self.ls[5] == other.ls[5])
+    }
+    
+    // type Choice doesn't seem to exist in Sway, so we use a bool
+    fn conditional_select(a: Self, b: Self, choice: bool) -> Self {
+        Fp{ ls: [
+            conditional_select(a.ls[0], b.ls[0], choice),
+            conditional_select(a.ls[1], b.ls[1], choice),
+            conditional_select(a.ls[2], b.ls[2], choice),
+            conditional_select(a.ls[3], b.ls[3], choice),
+            conditional_select(a.ls[4], b.ls[4], choice),
+            conditional_select(a.ls[5], b.ls[5], choice),
+        ]}
     }
 
     pub fn neg(self) -> Fp {
@@ -433,6 +457,30 @@ impl Fp {
         // conditional subtraction to ensure the output is in range.
         (Fp{ ls: [u0, u1, u2, u3, u4, u5]}).subtract_p()
     }
+}
+
+impl Eq for Fp {
+    fn eq(self, other: Self) -> bool {
+        self.eq(other)
+    }
+}
+
+impl Add for Fp {
+    fn add(self, other: Self) -> Self {
+        self.add(other)
+    }
+}
+
+impl Subtract for Fp {
+    fn subtract(self, other: Self) -> Self {
+        self.sub(other)
+    }
+}
+
+impl Multiply for Fp {
+        fn multiply(self, other: Self) -> Self {
+            self.mul(other)
+        }
 }
 
 pub fn montgomery_reduce(t: [u64;12]) -> Fp {
