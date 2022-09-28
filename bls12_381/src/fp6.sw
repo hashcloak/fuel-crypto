@@ -2,11 +2,10 @@ library fp6;
 
 dep fp2;
 dep fp;
-dep choice; 
 
 use fp::{Fp, from_raw_unchecked};
 use fp2::Fp2;
-use choice::{Choice, CtOption, ConstantTimeEq, ConditionallySelectable};
+use utils::choice::{Choice, CtOption, ConstantTimeEq, ConditionallySelectable};
 use core::ops::{Eq, Add, Subtract, Multiply};
 
 // Element in F_{p^6}

@@ -1,9 +1,8 @@
 library scalar;
 
-dep choice; 
 dep util;
 
-use choice::*;
+use utils::choice::*;
 use util::*;
 
 use core::ops::{Eq, Add, Subtract, Multiply};

@@ -8,7 +8,7 @@ use bls12_381::{fp::Fp};
 //     fp2::Fp2, 
 //     fp6::Fp6, 
 //     scalar::Scalar};
-use bls12_381::choice::{CtOption, Choice};
+use utils::choice::{CtOption, Choice};
 
 abi BlsTestContract {
     // Works

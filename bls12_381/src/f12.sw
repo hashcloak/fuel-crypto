@@ -3,7 +3,7 @@ library fp12;
 dep fp6;
 
 use fp6::Fp6;
-use choice::{ConstantTimeEq};
+use utils::choice::{ConstantTimeEq};
 use core::ops::{Eq, Add, Subtract, Multiply};
 
 // Element in F_{p^12}

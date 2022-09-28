@@ -1,11 +1,10 @@
 library fp2;
 
 dep fp;
-dep choice; 
 
 use fp::Fp;
 use core::ops::{Eq, Add, Subtract, Multiply};
-use choice::*; 
+use utils::choice::*; 
 
 // Element in the quadratic extension field F_{p^2}
 pub struct Fp2 {

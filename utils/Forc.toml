@@ -2,7 +2,6 @@
 authors = ["Hashcloak"]
 entry = "lib.sw"
 license = "Apache-2.0"
-name = "bls12_381"
+name = "utils"
 
 [dependencies]
-utils = { path = "../utils" }

@@ -1,7 +1,6 @@
 library util;
 
-dep choice;
-use choice::{Choice, ConditionallySelectable, CtOption, wrapping_neg};
+use utils::choice::{Choice, ConditionallySelectable, CtOption, wrapping_neg};
 use std::{u128::U128};
 use core::ops::{BitwiseXor};
 use core::num::*;

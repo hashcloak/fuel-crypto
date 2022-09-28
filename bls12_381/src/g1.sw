@@ -1,10 +1,9 @@
 library g1;
 
 dep fp;
-dep choice; 
 
 use fp::{Fp, from_raw_unchecked};
-use choice::{Choice, CtOption, ConditionallySelectable, ConstantTimeEq};
+use utils::choice::{Choice, CtOption, ConditionallySelectable, ConstantTimeEq};
 use core::ops::{Eq, Add, Subtract};
 
 // Comment from zkcrypto
