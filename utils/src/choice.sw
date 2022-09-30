@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 use core::num::*;
-use std::{option::Option, u128::U128};
+use std::{option::Option, u128::U128, assert::assert};
 use core::ops::{Eq, BitwiseAnd, BitwiseOr, BitwiseXor};
 
 /////////////// IMPORTANT<start> ///////////////

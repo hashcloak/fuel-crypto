@@ -5,7 +5,7 @@ dep util;
 //This wildcard import is needed because of importing ConstantTimeEq for u64 (since it's a trait for a primitive type)
 use utils::choice::*; 
 use util::*;
-use std::{option::Option, u128::*, vec::Vec};
+use std::{option::Option, u128::U128, vec::Vec};
 use core::ops::{Eq, Add, Subtract, Multiply};
 
 // Little endian big integer with 6 limbs
