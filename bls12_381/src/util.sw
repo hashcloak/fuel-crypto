@@ -1,6 +1,7 @@
 library util;
 
 use utils::choice::{Choice, ConditionallySelectable, CtOption, wrapping_neg};
+use utils::integer_utils::adc; 
 use std::{u128::U128};
 use core::ops::{BitwiseXor};
 use core::num::*;
@@ -61,19 +62,6 @@ pub fn sbb(a: u64, b: u64, borrow: u64) -> (u64, u64) {
     (
         res.lower,
         res.upper,
-    )
-}
-
-//returns sum with carry of a and b as (result, carry)
-pub fn adc(a: u64, b: u64, carry: u64) -> (u64, u64) {
-    let a_128: U128 = ~U128::from(0, a);
-    let b_128: U128 = ~U128::from(0, b);
-    let carry_128: U128 = ~U128::from(0, carry);
-
-    let sum = a_128 + b_128 + carry_128;
-    (
-        sum.lower,
-        sum.upper,
     )
 }
 

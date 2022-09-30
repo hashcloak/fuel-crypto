@@ -3,6 +3,8 @@ Various Cryptographic Primitives in Sway for the Fuel VM
 
 # Testing 
 
+For testing we use `fuels`, read about it [here](https://fuellabs.github.io/fuels-rs/v0.25.0/). 
+
 ## BLS
 
  To run tests for bls folder: 
