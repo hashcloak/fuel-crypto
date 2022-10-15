@@ -2,7 +2,7 @@ library scalar;
 
 dep util;
 
-use utils::choice::*;
+use utils::{choice::*, integer_utils::adc}; 
 use util::*;
 
 use core::ops::{Eq, Add, Subtract, Multiply};
