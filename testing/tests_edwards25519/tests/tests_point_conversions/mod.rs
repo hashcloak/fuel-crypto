@@ -1,41 +1,8 @@
+use crate::utils::{helpers::get_contract_methods, Element, ge25519_p2};
 use fuels::{
     prelude::*,
     tx::{ConsensusParameters, ContractId},
 };
-
-abigen!(EdwardsTestContract, "out/debug/tests_edwards25519-abi.json");
-
-async fn get_contract_instance() -> (EdwardsTestContractMethods, Bech32ContractId) {
-    let mut wallet = WalletUnlocked::new_random(None);
-    let num_assets = 1;
-    let coins_per_asset = 100;
-    let amount_per_coin = 100000;
-
-    let (coins, asset_ids) = setup_multiple_assets_coins(
-        wallet.address(),
-        num_assets,
-        coins_per_asset,
-        amount_per_coin,
-    );
-
-    // Custom gas limit
-    let consensus_parameters_config = ConsensusParameters::DEFAULT.with_max_gas_per_tx(1000000000);
-
-    let (client, addr) = setup_test_client(coins, vec![], None, Some(consensus_parameters_config)).await;
-    
-    let provider = Provider::new(client);
-    wallet.set_provider(provider.clone());
-
-    let id = Contract::deploy(
-        "./out/debug/tests_edwards25519.bin",
-        &wallet,
-        TxParameters::default(),
-        StorageConfiguration::default(),
-    ).await.unwrap();
-
-    let instance = EdwardsTestContract::new(id.to_string(), wallet);
-    (instance.methods(), id)
-}
 
 /*
 source: https://crypto.stackexchange.com/questions/99798/test-vectors-points-for-ed25519
@@ -62,35 +29,41 @@ bG: x-coord: 4810849582570641271179980369236022802539194883548625030583118401914
 bG: y-coord: 13228837014764440841117560545823854143168584625415590819123131242008409842892
 
 */
-/*
-#[tokio::test]
-async fn test_p1p1_to_p2() {
-    let x = Element{ l_0: 1738742601995546, 
-        l_1: 1146398526822698, 
-        l_2: 2070867633025821, 
-        l_3: 562264141797630, 
-        l_4: 587772402128613 };
-    let y = Element{ l_0: 1801439850948184, 
-        l_1: 1351079888211148, 
-        l_2: 450359962737049, 
-        l_3: 900719925474099, 
-        l_4: 1801439850948198 };
-    let z = Element{ l_0: 1, l_1: 0, l_2: 0, l_3: 0, l_4: 0 };
-    let test_point = ge25519_p2 { x:x, y:y, z:z };
 
-    let (_instance, _id) = get_contract_instance().await;
+mod success {
+  use super::*;
 
-    let res = _instance.dbl_p1p1(test_point)
-        .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
-        .call_params(CallParameters::new(None, None, Some(100_000_000)))
-        .call().await.unwrap().value;
+  /*
+  // Can't be compiled yet Immediate18TooLarge
+  #[tokio::test]
+  async fn test_p1p1_to_p2() {
+      let x = Element{ l_0: 1738742601995546, 
+          l_1: 1146398526822698, 
+          l_2: 2070867633025821, 
+          l_3: 562264141797630, 
+          l_4: 587772402128613 };
+      let y = Element{ l_0: 1801439850948184, 
+          l_1: 1351079888211148, 
+          l_2: 450359962737049, 
+          l_3: 900719925474099, 
+          l_4: 1801439850948198 };
+      let z = Element{ l_0: 1, l_1: 0, l_2: 0, l_3: 0, l_4: 0 };
+      let test_point = ge25519_p2 { x:x, y:y, z:z };
 
-    print!("{}", res.x);
-    print!("{}", res.y);
-    print!("{}", res.z);
-    print!("{}", res.t);
-    // assert!(res.x == 24727413235106541002554574571675588834622768167397638456726423682521233608206);
-    // assert!(res.y == 15549675580280190176352668710449542251549572066445060580507079593062643049417);
+      let (_instance, _id) = get_contract_methods().await;
 
-}
- */
+      let res = _instance.dbl_p1p1(test_point)
+          .tx_params(TxParameters::new(None, Some(100_000_000), None, None))
+          .call_params(CallParameters::new(None, None, Some(100_000_000)))
+          .call().await.unwrap().value;
+
+      print!("{}", res.x);
+      print!("{}", res.y);
+      print!("{}", res.z);
+      print!("{}", res.t);
+      // assert!(res.x == 24727413235106541002554574571675588834622768167397638456726423682521233608206);
+      // assert!(res.y == 15549675580280190176352668710449542251549572066445060580507079593062643049417);
+
+  }
+   */
+} 
