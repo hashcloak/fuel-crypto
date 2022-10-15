@@ -1,0 +1,9 @@
+[project]
+authors = ["Hashcloak"]
+entry = "main.sw"
+license = "Apache-2.0"
+name = "tests_edwards25519"
+
+[dependencies]
+edwards25519 = { path = "../../edwards25519" }
+utils = { path = "../../utils" }

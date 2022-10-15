@@ -11,6 +11,8 @@ Cargo.lock
 
 */Cargo.lock
 */Forc.lock
+testing/*/Cargo.lock
+testing/*/Forc.lock
 
 */out/*
 */target/*
