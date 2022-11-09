@@ -75,9 +75,9 @@ impl ConditionallySelectable for G1Affine {
     // Select a if choice == 1 or select b if choice == 0, in constant time.
     fn conditional_select(a: Self, b: Self, choice: Choice) -> Self {
         G1Affine {
-            x: ~Fp::conditional_select(a.x, b.x, choice),
-            y: ~Fp::conditional_select(a.y, b.y, choice),
-            infinity: ~Choice::conditional_select(a.infinity, b.infinity, choice),
+            x: Fp::conditional_select(a.x, b.x, choice),
+            y: Fp::conditional_select(a.y, b.y, choice),
+            infinity: Choice::conditional_select(a.infinity, b.infinity, choice),
         }
     }
 }
@@ -92,9 +92,9 @@ impl G1Affine {
     /// Returns the identity of the group: the point at infinity.
     fn identity() -> G1Affine {
         G1Affine {
-            x: ~Fp::zero(),
-            y: ~Fp::one(),
-            infinity: ~Choice::from(1u8),
+            x: Fp::zero(),
+            y: Fp::one(),
+            infinity: Choice::from(1u8),
         }
     }
 
@@ -142,7 +142,7 @@ impl G1Affine {
                 0x0e1c_8c3f_ad00_59c0,
                 0x0bbc_3efc_5008_a26a,
             ]),
-            infinity: ~Choice::from(0u8),
+            infinity: Choice::from(0u8),
         }
     }
 
@@ -150,7 +150,7 @@ impl G1Affine {
     fn neg(self) -> G1Affine {//will be tested with subtraction (TODO)
         G1Affine {
             x: self.x,
-            y: ~Fp::conditional_select(self.y.neg(), ~Fp::one(), self.infinity),
+            y: Fp::conditional_select(self.y.neg(), Fp::one(), self.infinity),
             infinity: self.infinity,
         }
     }
@@ -191,9 +191,9 @@ impl G1Projective {
     /// Returns the identity of the group: the point at infinity.
     fn identity() -> G1Projective {
         G1Projective {
-            x: ~Fp::zero(),
-            y: ~Fp::one(),
-            z: ~Fp::zero(),
+            x: Fp::zero(),
+            y: Fp::one(),
+            z: Fp::zero(),
         }
     }
 
@@ -239,7 +239,7 @@ impl G1Projective {
                 0x0e1c_8c3f_ad00_59c0,
                 0x0bbc_3efc_5008_a26a,
             ]),
-            z: ~Fp::one(),
+            z: Fp::one(),
         }
     }
 } 
@@ -248,46 +248,14 @@ impl ConditionallySelectable for G1Projective {
     // Select a if choice == 1 or select b if choice == 0, in constant time.
     fn conditional_select(a: Self, b: Self, choice: Choice) -> Self {
         G1Projective {
-            x: ~Fp::conditional_select(a.x, b.x, choice),
-            y: ~Fp::conditional_select(a.y, b.y, choice),
-            z: ~Fp::conditional_select(a.z, b.z, choice),
+            x: Fp::conditional_select(a.x, b.x, choice),
+            y: Fp::conditional_select(a.y, b.y, choice),
+            z: Fp::conditional_select(a.z, b.z, choice),
         }
     }
 }
 
-impl G1Projective {
-
-    // Not able to test this yet, doesn't terminate
-    // returns doubling of point
-    // uses Algorithm 9, https://eprint.iacr.org/2015/1060.pdf
-    fn double(self) -> G1Projective {
-        let t0 = self.y.square();
-        let z3 = t0 + t0;
-        let z3 = z3 + z3;
-        let z3 = z3 + z3;
-        let t1 = self.y * self.z;
-        let t2 = self.z.square();
-        let t2 = mul_by_3b(t2);
-        let x3 = t2 * z3;
-        let y3 = t0 + t2;
-        let z3 = t1 * z3;
-        let t1 = t2 + t2;
-        let t2 = t1 + t2;
-        let t0 = t0 - t2;
-        let y3 = t0 * y3;
-        let y3 = x3 + y3;
-        let t1 = self.x * self.y;
-        let x3 = t0 * t1;
-        let x3 = x3 + x3;
-
-        let tmp = G1Projective {
-            x: x3,
-            y: y3,
-            z: z3,
-        };
-
-        ~G1Projective::conditional_select(tmp, ~G1Projective::identity(), self.is_identity())
-    }
+impl Add for G1Projective {
 
     // return self + rhs
     // Uses Algorithm 7, https://eprint.iacr.org/2015/1060.pdf
@@ -332,6 +300,41 @@ impl G1Projective {
             z: z3,
         }
     }
+}
+
+impl G1Projective {
+
+    // Not able to test this yet, doesn't terminate
+    // returns doubling of point
+    // uses Algorithm 9, https://eprint.iacr.org/2015/1060.pdf
+    fn double(self) -> G1Projective {
+        let t0 = self.y.square();
+        let z3 = t0 + t0;
+        let z3 = z3 + z3;
+        let z3 = z3 + z3;
+        let t1 = self.y * self.z;
+        let t2 = self.z.square();
+        let t2 = mul_by_3b(t2);
+        let x3 = t2 * z3;
+        let y3 = t0 + t2;
+        let z3 = t1 * z3;
+        let t1 = t2 + t2;
+        let t2 = t1 + t2;
+        let t0 = t0 - t2;
+        let y3 = t0 * y3;
+        let y3 = x3 + y3;
+        let t1 = self.x * self.y;
+        let x3 = t0 * t1;
+        let x3 = x3 + x3;
+
+        let tmp = G1Projective {
+            x: x3,
+            y: y3,
+            z: z3,
+        };
+
+        G1Projective::conditional_select(tmp, G1Projective::identity(), self.is_identity())
+    }
 
     // returns self added to another point that is in the affine representation
     // Uses Algorithm 8, https://eprint.iacr.org/2015/1060.pdf
@@ -369,7 +372,7 @@ impl G1Projective {
             z: z3,
         };
 
-        ~G1Projective::conditional_select(tmp, self, rhs.is_identity())
+        G1Projective::conditional_select(tmp, self, rhs.is_identity())
     }
 }
 
@@ -382,7 +385,7 @@ impl FROM_AFF for G1Projective {
         G1Projective {
             x: p.x,
             y: p.y,
-            z: ~Fp::conditional_select(~Fp::one(), ~Fp::zero(), p.infinity),
+            z: Fp::conditional_select(Fp::one(), Fp::zero(), p.infinity),
         }
     }
 }
@@ -407,7 +410,7 @@ impl ConstantTimeEq for G1Projective {
         // - neither is infinity, and coordinates are the same
         self_is_zero.binary_and(other_is_zero)
         .binary_or(
-            ((~Choice::not(self_is_zero)).binary_and(~Choice::not(other_is_zero))
+            ((Choice::not(self_is_zero)).binary_and(Choice::not(other_is_zero))
                 .binary_and(x1.ct_eq(x2).binary_and(y1.ct_eq(y2))))
             )
     }
@@ -416,12 +419,6 @@ impl ConstantTimeEq for G1Projective {
 impl Eq for G1Projective {
     fn eq(self, other: Self) -> bool {
         self.ct_eq(other).unwrap_as_bool()
-    }
-}
-
-impl Add for G1Projective {
-    fn add(self, other: Self) -> Self {
-        self.add(other)
     }
 }
 

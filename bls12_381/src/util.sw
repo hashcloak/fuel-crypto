@@ -20,7 +20,7 @@ pub fn is_zero_u64(input: u64) -> u64 {
 // If x >= y: x-y, else max::U128 - (y-x)
 pub fn subtract_wrap(x: U128, y: U128) -> U128 {
     if y > x {
-        ~U128::max() - (y - x - U128 {
+        U128::max() - (y - x - U128 {
             lower: 1,
             upper: 0,
         })
@@ -54,9 +54,9 @@ pub fn subtract_1_wrap(x: u64) -> u64 {
 
 /// Compute a - (b + borrow), returning the result and the new borrow as (result, borrow)
 pub fn sbb(a: u64, b: u64, borrow: u64) -> (u64, u64) {
-    let a_128: U128 = ~U128::from(0, a);
-    let b_128: U128 = ~U128::from(0, b);
-    let borrow_128: U128 = ~U128::from(0, borrow >> 63);
+    let a_128: U128 = U128::from((0, a));
+    let b_128: U128 = U128::from((0, b));
+    let borrow_128: U128 = U128::from((0, borrow >> 63));
 
     let res: U128 = subtract_wrap(a_128, b_128 + borrow_128);
     (
@@ -67,10 +67,10 @@ pub fn sbb(a: u64, b: u64, borrow: u64) -> (u64, u64) {
 
 //returns the result and new carry of a + b*c + carry as (result, carry)
 pub fn mac(a: u64, b: u64, c: u64, carry: u64) -> (u64, u64) {
-    let a_128: U128 = ~U128::from(0, a);
-    let b_128: U128 = ~U128::from(0, b);
-    let c_128: U128 = ~U128::from(0, c);
-    let carry_128: U128 = ~U128::from(0, carry);
+    let a_128: U128 = U128::from((0, a));
+    let b_128: U128 = U128::from((0, b));
+    let c_128: U128 = U128::from((0, c));
+    let carry_128: U128 = U128::from((0, carry));
 
     let res: U128 = a_128 + (b_128 * c_128) + carry_128;
     (
@@ -81,7 +81,7 @@ pub fn mac(a: u64, b: u64, c: u64, carry: u64) -> (u64, u64) {
 
 //returns a*b mod 2^64
 pub fn wrapping_mul(a: u64, b: u64) -> u64 {
-    let a_128: U128 = ~U128::from(0, a);
-    let b_128: U128 = ~U128::from(0, b);
+    let a_128: U128 = U128::from((0, a));
+    let b_128: U128 = U128::from((0, b));
     (a_128 * b_128).lower
 }

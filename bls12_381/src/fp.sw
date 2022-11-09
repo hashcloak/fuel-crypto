@@ -59,30 +59,30 @@ impl ConditionallySelectable for Fp {
     // Select a if choice == 1 or select b if choice == 0, in constant time.
     fn conditional_select(a: Fp, b: Fp, choice: Choice) -> Fp {
         Fp{ ls: [
-            ~u64::conditional_select(a.ls[0], b.ls[0], choice),
-            ~u64::conditional_select(a.ls[1], b.ls[1], choice),
-            ~u64::conditional_select(a.ls[2], b.ls[2], choice),
-            ~u64::conditional_select(a.ls[3], b.ls[3], choice),
-            ~u64::conditional_select(a.ls[4], b.ls[4], choice),
-            ~u64::conditional_select(a.ls[5], b.ls[5], choice),
+            u64::conditional_select(a.ls[0], b.ls[0], choice),
+            u64::conditional_select(a.ls[1], b.ls[1], choice),
+            u64::conditional_select(a.ls[2], b.ls[2], choice),
+            u64::conditional_select(a.ls[3], b.ls[3], choice),
+            u64::conditional_select(a.ls[4], b.ls[4], choice),
+            u64::conditional_select(a.ls[5], b.ls[5], choice),
         ]}
     }
 }
 
 // returns the binary not for u64
 fn not(input: u64) -> u64 {
-    ~u64::max() - input
+    u64::max() - input
 }
 
 impl ConstantTimeEq for Fp {
     // returns (self == other), as a choice
     fn ct_eq(self, other: Fp) -> Choice {
-        ~u64::ct_eq(self.ls[0], other.ls[0])
-        & ~u64::ct_eq(self.ls[1], other.ls[1])
-        & ~u64::ct_eq(self.ls[2], other.ls[2])
-        & ~u64::ct_eq(self.ls[3], other.ls[3])
-        & ~u64::ct_eq(self.ls[4], other.ls[4])
-        & ~u64::ct_eq(self.ls[5], other.ls[5])
+        u64::ct_eq(self.ls[0], other.ls[0])
+        & u64::ct_eq(self.ls[1], other.ls[1])
+        & u64::ct_eq(self.ls[2], other.ls[2])
+        & u64::ct_eq(self.ls[3], other.ls[3])
+        & u64::ct_eq(self.ls[4], other.ls[4])
+        & u64::ct_eq(self.ls[5], other.ls[5])
     }
 }
 
@@ -146,13 +146,7 @@ pub fn from_raw_unchecked(v: [u64; 6]) -> Fp {
     Fp{ ls: v }
 }
 
-impl Fp {
-    // This goes in a separate impl, because if we use previously defined functions in Fp impl, 
-    // Sway will not recognize them from inside the same impl
-
-    pub fn is_zero(self) -> Choice {
-        self.ct_eq(~Fp::zero())
-    }
+impl Add for Fp {
 
     /* 
     returns self + rhs mod p. 
@@ -170,6 +164,15 @@ impl Fp {
 
         // Subtract p if necessary, so the element is always mod p
         (Fp{ ls: [d0, d1, d2, d3, d4, d5] }).subtract_p()
+    }
+}
+
+impl Fp {
+    // This goes in a separate impl, because if we use previously defined functions in Fp impl, 
+    // Sway will not recognize them from inside the same impl
+
+    pub fn is_zero(self) -> Choice {
+        self.ct_eq(Fp::zero())
     }
 
     /*
@@ -312,7 +315,7 @@ impl Fp {
         //     }
         // }
         // res
-        ~Fp::zero()
+        Fp::zero()
     }
 
     /*
@@ -475,7 +478,7 @@ impl Fp {
         // If there was underflow, borrow is 11..11. Otherwise, it is 0. 
         let borrow_u8: u8 = borrow;
         // Return "true" if there was no underflow. Otherwise return "false"
-        ~Choice::from(borrow & 1).not()
+        Choice::from(borrow & 1).not()
     }
 
 }
@@ -497,7 +500,7 @@ impl Fp {
             0x1a01_11ea_397f_e69a,
         ]);
 
-        ~CtOption::new_from_bool(t, !self.is_zero().unwrap_as_bool())
+        CtOption::new_from_bool(t, !self.is_zero().unwrap_as_bool())
     }
 }
 
@@ -505,12 +508,6 @@ impl Fp {
 impl Eq for Fp {
     fn eq(self, other: Self) -> bool {
         self.ct_eq(other).unwrap_as_bool()
-    }
-}
-
-impl Add for Fp {
-    fn add(self, other: Self) -> Self {
-        self.add(other)
     }
 }
 

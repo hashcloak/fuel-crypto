@@ -93,10 +93,10 @@ impl ConditionallySelectable for Scalar {
     // Select a if choice == 1 or select b if choice == 0, in constant time.
     fn conditional_select(a: Self, b: Self, choice: Choice) -> Self {
         Scalar{ ls: [
-            ~u64::conditional_select(a.ls[0], b.ls[0], choice),
-            ~u64::conditional_select(a.ls[1], b.ls[1], choice),
-            ~u64::conditional_select(a.ls[2], b.ls[2], choice),
-            ~u64::conditional_select(a.ls[3], b.ls[3], choice),
+            u64::conditional_select(a.ls[0], b.ls[0], choice),
+            u64::conditional_select(a.ls[1], b.ls[1], choice),
+            u64::conditional_select(a.ls[2], b.ls[2], choice),
+            u64::conditional_select(a.ls[3], b.ls[3], choice),
         ]}
     }
 }
@@ -104,10 +104,10 @@ impl ConditionallySelectable for Scalar {
 impl ConstantTimeEq for Scalar {
     // returns (self == other), as a choice
     fn ct_eq(self, other: Self) -> Choice {
-        ~u64::ct_eq(self.ls[0], other.ls[0])
-        & ~u64::ct_eq(self.ls[1], other.ls[1])
-        & ~u64::ct_eq(self.ls[2], other.ls[2])
-        & ~u64::ct_eq(self.ls[3], other.ls[3])
+        u64::ct_eq(self.ls[0], other.ls[0])
+        & u64::ct_eq(self.ls[1], other.ls[1])
+        & u64::ct_eq(self.ls[2], other.ls[2])
+        & u64::ct_eq(self.ls[3], other.ls[3])
     }
 }
 
@@ -159,7 +159,7 @@ impl Scalar {
     }
 }
 
-impl Scalar {
+impl Add for Scalar {
     // returns self + rhs mod q
     fn add(self, rhs: Self) -> Self {
         let (d0, carry) = adc(self.ls[0], rhs.ls[0], 0);
@@ -170,8 +170,9 @@ impl Scalar {
         // Subtract q to ensure the element is always mod q
         (Scalar{ls:[d0, d1, d2, d3]}).sub(MODULUS_SCALAR)
     }
+}
 
-
+impl Scalar {
     /*
     returns t mod q (as Scalar)
 
@@ -245,7 +246,7 @@ impl Scalar {
         let (r5, carry) = mac(r5, self.ls[3], rhs.ls[2], carry);
         let (r6, r7) = mac(r6, self.ls[3], rhs.ls[3], carry);
 
-        ~Scalar::montgomery_reduce(r0, r1, r2, r3, r4, r5, r6, r7)
+        Scalar::montgomery_reduce(r0, r1, r2, r3, r4, r5, r6, r7)
     }
 
     // returns self ^ 2 mod q
@@ -276,19 +277,13 @@ impl Scalar {
         let (r6, carry) = mac(r6, self.ls[3], self.ls[3], carry);
         let (r7, _) = adc(0, r7, carry);
 
-        ~Scalar::montgomery_reduce(r0, r1, r2, r3, r4, r5, r6, r7)
+        Scalar::montgomery_reduce(r0, r1, r2, r3, r4, r5, r6, r7)
     }
 
     // returns self + self mod q
     fn double(self) -> Scalar {
         // zkcrypto comment: TODO: This can be achieved more efficiently with a bitshift.
         self.add(self)
-    }
-}
-
-impl Add for Scalar {
-    fn add(self, other: Self) -> Self {
-        self.add(other)
     }
 }
 
@@ -325,7 +320,7 @@ impl Scalar {
     /// to the exponent.** If the exponent is fixed,
     /// this operation is effectively constant time.
     pub fn pow_vartime(self, by: [u64; 4]) -> Scalar {//TODO implement when possible, this gives an error when called from sqrt
-        let mut res = ~Self::one();
+        let mut res = Self::one();
         let mut i = 4;
         while i > 0 {
             let e = by[i -1];
@@ -389,24 +384,24 @@ Please file an issue on the repository and include the code that triggered this 
         // while max_v > 0 {
         //     let mut k = 1;
         //     let mut tmp = b.square();
-        //     let mut j_less_than_v: Choice = ~Choice::from(1u8);
+        //     let mut j_less_than_v: Choice = Choice::from(1u8);
 
         //     let mut j = 2; // j in 2..max_v
         //     while j <= max_v {
-        //         let tmp_is_one = ~Choice::from_bool(tmp.eq(~Scalar::one()));
-        //         let squared = ~Scalar::conditional_select(tmp, z, tmp_is_one).square();
-        //         tmp = ~Scalar::conditional_select(squared, tmp, tmp_is_one);
-        //         let new_z = ~Scalar::conditional_select(z, squared, tmp_is_one);
-        //         let j_less_than_v_bool = ~Choice::unwrap_as_bool(j_less_than_v) && j != v;
-        //         j_less_than_v = ~Choice::from_bool(j_less_than_v_bool);
+        //         let tmp_is_one = Choice::from_bool(tmp.eq(Scalar::one()));
+        //         let squared = Scalar::conditional_select(tmp, z, tmp_is_one).square();
+        //         tmp = Scalar::conditional_select(squared, tmp, tmp_is_one);
+        //         let new_z = Scalar::conditional_select(z, squared, tmp_is_one);
+        //         let j_less_than_v_bool = Choice::unwrap_as_bool(j_less_than_v) && j != v;
+        //         j_less_than_v = Choice::from_bool(j_less_than_v_bool);
         //         k = ~u32::conditional_select(j, k, tmp_is_one);
-        //         z = ~Scalar::conditional_select(z, new_z, j_less_than_v);
+        //         z = Scalar::conditional_select(z, new_z, j_less_than_v);
 
         //         j += 1;
         //     }
 
         //     let result = x * z;
-        //     x = ~Scalar::conditional_select(result, x, ~Choice::from_bool(b.eq(~Scalar::one())));
+        //     x = Scalar::conditional_select(result, x, Choice::from_bool(b.eq(Scalar::one())));
         //     z = z.square();
         //     b *= z;
         //     v = k;
@@ -414,10 +409,10 @@ Please file an issue on the repository and include the code that triggered this 
         //     max_v -= 1;
         // }
 
-        // ~CtOption::new(
+        // CtOption::new(
         //     x,
         //     (x * x).ct(self), // Only return Some if it's the square root.
         // )
-        ~CtOption::new(self, ~Choice::from(1))
+        CtOption::new(self, Choice::from(1))
     }
 }

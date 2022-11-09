@@ -16,8 +16,8 @@ impl ConditionallySelectable for Fp12 {
     // Select a if choice == 1 or select b if choice == 0, in constant time
     fn conditional_select(a: Self, b: Self, choice: Choice) -> Self {
         Fp12 {
-            c0: ~Fp6::conditional_select(a.c0, b.c0, choice),
-            c1: ~Fp6::conditional_select(a.c1, b.c1, choice),
+            c0: Fp6::conditional_select(a.c0, b.c0, choice),
+            c1: Fp6::conditional_select(a.c1, b.c1, choice),
         }
     }
 }
@@ -36,36 +36,36 @@ impl Fp12 {
 
     pub fn zero() -> Self {
         Fp12 {
-            c0: ~Fp6::zero(),
-            c1: ~Fp6::zero(),
+            c0: Fp6::zero(),
+            c1: Fp6::zero(),
         }
     }
 
     pub fn one() -> Self {
         Fp12 {
-            c0: ~Fp6::one(),
-            c1: ~Fp6::zero(),
+            c0: Fp6::one(),
+            c1: Fp6::zero(),
         }
     }
 
     fn from(f: Fp) -> Fp12 {
         Fp12 {
-            c0: ~Fp6::from(f),
-            c1: ~Fp6::zero(),
+            c0: Fp6::from(f),
+            c1: Fp6::zero(),
         }
     }
 
     fn from(f: Fp2) -> Fp12 {
         Fp12 {
-            c0: ~Fp6::from(f),
-            c1: ~Fp6::zero(),
+            c0: Fp6::from(f),
+            c1: Fp6::zero(),
         }
     }
 
     fn from(f: Fp6) -> Fp12 {
         Fp12 {
             c0: f,
-            c1: ~Fp6::zero(),
+            c1: Fp6::zero(),
         }
     }
 

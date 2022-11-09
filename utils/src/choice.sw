@@ -55,7 +55,7 @@ pub trait From {
 }
 
 // Conversion Choice <-> u8
-impl From for Choice {
+impl From<u8> for Choice {
     fn from(input: u8) -> Self {
         Choice { c: input  }
     }
@@ -101,7 +101,7 @@ impl Choice {
 impl Choice {
     // return a Choice with the opposite internal value (1u8 or 0u8)
     pub fn not(self) -> Choice {
-        ~Choice::from_bool(opposite_choice_value(self.c))
+        Choice::from_bool(opposite_choice_value(self.c))
     }
 }
 
@@ -135,7 +135,7 @@ pub trait ConditionallySelectable {
 
 impl ConditionallySelectable for u8 {
     // Select a if choice == 1 or select b if choice == 0, in constant time.
-    fn conditional_select(a: u8, b: u8, choice: Choice) -> u32 {
+    fn conditional_select(a: u8, b: u8, choice: Choice) -> u8 {
         // If choice == 0, mask = 00...00
         // Else if choice == 1, mask = 11..11
         let mask = wrapping_neg(choice.unwrap_u8());
@@ -174,7 +174,7 @@ impl ConditionallySelectable for u64 {
 impl ConditionallySelectable for Choice {
     // Select a if choice == 1 or select b if choice == 0, in constant time.
     fn conditional_select(a: Self, b: Self, choice: Choice) -> Self {
-        ~Choice::from(~u8::conditional_select(a.c, b.c, choice))
+        Choice::from(u8::conditional_select(a.c, b.c, choice))
     }
 }
 
@@ -193,7 +193,7 @@ impl BitwiseAnd for Choice {
     // Returns the choice for the binary 'and' of the inner values of self and other
     // Note that we still can't use the `&` operator for this binary_and, but have to use the function name
     fn binary_and(self, other: Self) -> Self {
-        ~Choice::from(self.c & other.c)
+        Choice::from(self.c & other.c)
     }
 }
 
@@ -212,7 +212,7 @@ impl BitwiseOr for Choice {
     // Returns the choice for the binary 'or' of the inner values of self and other
     // Note that we still can't use the `|` operator for this binary_or, but have to use the function name
     fn binary_or(self, other: Self) -> Self {
-        ~Choice::from(self.c | other.c)
+        Choice::from(self.c | other.c)
     }
 }
 
@@ -279,14 +279,14 @@ pub trait ConstantTimeEq {
 
 // returns a+b mod 2^64. The result loses the carry.
 fn add_wrap_64(a: u64, b :u64) -> u64 {
-    let a_128: U128 = ~U128::from(0, a);
-    let b_128: U128 = ~U128::from(0, b);
+    let a_128: U128 = U128::from((0, a));
+    let b_128: U128 = U128::from((0, b));
     (a_128 + b_128).lower
 }
 
 // returns -a mod 2^64
 pub fn wrapping_neg(a: u64) -> u64 {
-   add_wrap_64(~u64::max() - a, 1)
+   add_wrap_64(u64::max() - a, 1)
 }
 
 impl ConstantTimeEq for u64 {
@@ -301,6 +301,6 @@ impl ConstantTimeEq for u64 {
 
         // Result is the opposite of the high bit (now shifted to low).
         let res: u8 = y ^ (1u64);
-        ~Choice::from(res)
+        Choice::from(res)
     }
 }

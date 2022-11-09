@@ -23,8 +23,23 @@ impl ConditionallySelectable for Fp2 {
     // Select a if choice == 1 or select b if choice == 0, in constant time
     fn conditional_select(a: Self, b: Self, choice: Choice) -> Self {
         Fp2 {
-            c0: ~Fp::conditional_select(a.c0, b.c0, choice),
-            c1: ~Fp::conditional_select(a.c1, b.c1, choice),
+            c0: Fp::conditional_select(a.c0, b.c0, choice),
+            c1: Fp::conditional_select(a.c1, b.c1, choice),
+        }
+    }
+}
+
+impl Eq for Fp2 {
+    fn eq(self, other: Self) -> bool {
+        self.ct_eq(other).unwrap_as_bool()
+    }
+}
+
+impl Add for Fp2 {
+    fn add(self, rhs: Fp2) -> Fp2 {
+        Fp2 {
+            c0: self.c0 + rhs.c0,
+            c1: self.c1 + rhs.c1,
         }
     }
 }
@@ -34,30 +49,26 @@ impl Fp2 {
     fn from(f: Fp) -> Fp2 {
         Fp2 {
             c0: f,
-            c1: ~Fp::zero(),
+            c1: Fp::zero(),
         }
     }
 
     fn zero() -> Fp2 {
         Fp2 {
-            c0: ~Fp::zero(),
-            c1: ~Fp::zero(),
+            c0: Fp::zero(),
+            c1: Fp::zero(),
         }
     }
 
     fn one() -> Fp2 {
         Fp2 {
-            c0: ~Fp::one(),
-            c1: ~Fp::zero(),
+            c0: Fp::one(),
+            c1: Fp::zero(),
         }
     }
 
     fn is_zero(self) -> Choice {
         self.c0.is_zero().binary_and(self.c1.is_zero())
-    }
-
-    fn eq(self, other: Self) -> bool {
-        self.ct_eq(other).unwrap_as_bool()
     }
 
 /*
@@ -100,15 +111,8 @@ impl Fp2 {
         //
         // Each of these is a "sum of products", which we can compute efficiently.
         Fp2 {
-            c0: ~Fp::sum_of_products_2([self.c0, self.c1.neg()], [rhs.c0, rhs.c1]),
-            c1: ~Fp::sum_of_products_2([self.c0, self.c1], [rhs.c1, rhs.c0]),
-        }
-    }
-
-    fn add(self, rhs: Fp2) -> Fp2 {
-        Fp2 {
-            c0: self.c0 + rhs.c0,
-            c1: self.c1 + rhs.c1,
+            c0: Fp::sum_of_products_2([self.c0, self.c1.neg()], [rhs.c0, rhs.c1]),
+            c1: Fp::sum_of_products_2([self.c0, self.c1], [rhs.c1, rhs.c0]),
         }
     }
 
@@ -165,18 +169,6 @@ impl Fp2 {
         // For fp2, self^p equals the conjugate.
         // Example explanation here: https://alicebob.modp.net/the-frobenius-endomorphism-with-finite-fields/
         self.conjugate()
-    }
-}
-
-impl Eq for Fp2 {
-    fn eq(self, other: Self) -> bool {
-        self.eq(other)
-    }
-}
-
-impl Add for Fp2 {
-    fn add(self, other: Self) -> Self {
-        self.add(other)
     }
 }
 

@@ -26,47 +26,61 @@ impl ConditionallySelectable for Fp6 {
     // Select a if choice == 1 or select b if choice == 0, in constant time
     fn conditional_select(a: Self, b: Self, choice: Choice) -> Self {
         Fp6 {
-            c0: ~Fp2::conditional_select(a.c0, b.c0, choice),
-            c1: ~Fp2::conditional_select(a.c1, b.c1, choice),
-            c2: ~Fp2::conditional_select(a.c2, b.c2, choice),
+            c0: Fp2::conditional_select(a.c0, b.c0, choice),
+            c1: Fp2::conditional_select(a.c1, b.c1, choice),
+            c2: Fp2::conditional_select(a.c2, b.c2, choice),
+        }
+    }
+}
+
+impl Eq for Fp6 {
+    fn eq(self, other: Self) -> bool {
+        self.ct_eq(other).unwrap_as_bool()
+    }
+}
+
+impl Add for Fp6 {
+    //TODO: Testing. Has no dedicated tests in zkcrypto
+    fn add(self, rhs: Fp6) -> Fp6 {
+        Fp6 {
+            c0: self.c0 + rhs.c0,
+            c1: self.c1 + rhs.c1,
+            c2: self.c2 + rhs.c2,
         }
     }
 }
 
 impl Fp6 {
-    fn eq(self, other: Self) -> bool {
-        self.ct_eq(other).unwrap_as_bool()
-    }
 
     fn from(f: Fp) -> Fp6 {//TODO is it possibly to have multiple functions with same name and different arguments?
         Fp6 {
-            c0: ~Fp2::from(f),
-            c1: ~Fp2::zero(),
-            c2: ~Fp2::zero(),
+            c0: Fp2::from(f),
+            c1: Fp2::zero(),
+            c2: Fp2::zero(),
         }
     }
 
     fn from(f: Fp2) -> Fp6 {
         Fp6 {
             c0: f,
-            c1: ~Fp2::zero(),
-            c2: ~Fp2::zero(),
+            c1: Fp2::zero(),
+            c2: Fp2::zero(),
         }
     }
 
     fn zero() -> Self {
         Fp6 {
-            c0: ~Fp2::zero(),
-            c1: ~Fp2::zero(),
-            c2: ~Fp2::zero(),
+            c0: Fp2::zero(),
+            c1: Fp2::zero(),
+            c2: Fp2::zero(),
         }
     }
 
     fn one() -> Self {
         Fp6 {
-            c0: ~Fp2::one(),
-            c1: ~Fp2::zero(),
-            c2: ~Fp2::zero(),
+            c0: Fp2::one(),
+            c1: Fp2::zero(),
+            c2: Fp2::zero(),
         }
     }
     
@@ -89,14 +103,6 @@ impl Fp6 {
     }
 
     //TODO: Testing. Has no dedicated tests in zkcrypto
-    fn add(self, rhs: Fp6) -> Fp6 {
-        Fp6 {
-            c0: self.c0 + rhs.c0,
-            c1: self.c1 + rhs.c1,
-            c2: self.c2 + rhs.c2,
-        }
-    }
-    //TODO: Testing. Has no dedicated tests in zkcrypto
     fn sub(self, rhs: Fp6) -> Fp6 {
         Fp6 {
             c0: self.c0 - rhs.c0,
@@ -111,18 +117,6 @@ impl Fp6 {
             c1: self.c1.neg(),
             c2: self.c2.neg(),
         }
-    }
-}
-
-impl Eq for Fp6 {
-    fn eq(self, other: Self) -> bool {
-        self.eq(other)
-    }
-}
-
-impl Add for Fp6 {
-    fn add(self, other: Self) -> Self {
-        self.add(other)
     }
 }
 
