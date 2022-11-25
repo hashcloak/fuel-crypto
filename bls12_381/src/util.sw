@@ -1,7 +1,7 @@
 library util;
 
 use utils::choice::{Choice, ConditionallySelectable, CtOption, wrapping_neg};
-use utils::integer_utils::adc; 
+use utils::integer_utils::adc;
 use std::{u128::U128};
 use core::ops::{BitwiseXor};
 use core::num::*;
@@ -40,8 +40,7 @@ pub fn subtract_1_wrap(x: u64) -> u64 {
         - See example use of enabling overflow here: https://github.com/FuelLabs/sway/blob/master/sway-lib-std/src/u128.sw
         - See definition $of (used in the assembly portion of the code) here: https://github.com/FuelLabs/fuel-specs/blob/master/specs/vm/main.md
     */
-
-    disable_panic_on_overflow(); 
+    disable_panic_on_overflow();
     let res = asm(underflow, r1: x, r2, r3) { // set register 1 (r1) to value x, and allocate registers underflow, r2, r3
         subi r2 r1 i1; // r2 = r1 - 1 = x - 1
         move underflow of; // move the underflow (which goes into $of automatically) to a variable (named overflow)
@@ -59,10 +58,7 @@ pub fn sbb(a: u64, b: u64, borrow: u64) -> (u64, u64) {
     let borrow_128: U128 = U128::from((0, borrow >> 63));
 
     let res: U128 = subtract_wrap(a_128, b_128 + borrow_128);
-    (
-        res.lower,
-        res.upper,
-    )
+    (res.lower, res.upper)
 }
 
 //returns the result and new carry of a + b*c + carry as (result, carry)
@@ -73,10 +69,7 @@ pub fn mac(a: u64, b: u64, c: u64, carry: u64) -> (u64, u64) {
     let carry_128: U128 = U128::from((0, carry));
 
     let res: U128 = a_128 + (b_128 * c_128) + carry_128;
-    (
-        res.lower,
-        res.upper,
-    )
+    (res.lower, res.upper)
 }
 
 //returns a*b mod 2^64

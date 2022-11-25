@@ -1,11 +1,11 @@
-[project]
-name = "bls12_381"
+[package]
+name = "new_tests_bls12_381"
 version = "0.1.0"
-authors = ["Hashcloak"]
 edition = "2021"
+authors = ["HashCloak"]
 license = "Apache-2.0"
 
-[dependencies]
+[dev-dependencies]
 fuels = { version = "0.31.1", features = ["fuel-core-lib"] }
 tokio = { version = "1.12", features = ["rt", "macros"] }
 

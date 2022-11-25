@@ -10,7 +10,9 @@ use core::ops::{Eq, Add, Subtract, Multiply};
 
 // Little endian big integer with 6 limbs
 // in Montgomery form
-pub struct Fp{ls: [u64;6]}
+pub struct Fp{
+  ls: [u64;6]
+}
 
 /// p = 4002409555221667393417789825735904156556882819939007885332058136124031650490837864442687629129015664037894272559787
 pub const MODULUS: [u64; 6] = [
@@ -119,7 +121,7 @@ impl Fp {
     }
 
     // If a >= p, return a-p, else return a
-    pub fn subtract_p(self) -> Fp {
+    fn subtract_p(self) -> Fp {
         let (r0, borrow) = sbb(self.ls[0], MODULUS[0], 0);
         let (r1, borrow) = sbb(self.ls[1], MODULUS[1], borrow);
         let (r2, borrow) = sbb(self.ls[2], MODULUS[2], borrow);
@@ -180,7 +182,7 @@ impl Fp {
 
     schoolbook mult, followed by montgomery reduction
     */
-    pub fn mul(self, rhs: Fp) -> Fp {
+    fn mul(self, rhs: Fp) -> Fp {
         let self0 = self.ls[0];
         let self1 = self.ls[1];
         let self2 = self.ls[2];

@@ -9,8 +9,8 @@ For testing we use `fuels`, read about it [here](https://fuellabs.github.io/fuel
 
  To run tests for bls folder: 
  ```
- cd testing/tests_bls12_381
- forc test
+ cd testing/new_tests_bls12_381
+ cargo test
  ```
 
 ## Testing with a script

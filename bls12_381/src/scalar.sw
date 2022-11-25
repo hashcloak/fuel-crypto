@@ -2,23 +2,27 @@ library scalar;
 
 dep util;
 
-use utils::{choice::*, integer_utils::adc}; 
+use utils::{choice::*, integer_utils::adc};
 use util::*;
 
-use core::ops::{Eq, Add, Subtract, Multiply};
+use core::ops::{Add, Eq, Multiply, Subtract};
 
 // element of scalar field Fq
 // Montgomery form: aR mod q, where R = 2^256
-pub struct Scalar { ls: [u64; 4] }
+pub struct Scalar {
+    ls: [u64; 4],
+}
 
 /// Constant representing the modulus
 /// q = 0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000001
-pub const MODULUS_SCALAR: Scalar = Scalar{ ls: [
-    0xffff_ffff_0000_0001,
-    0x53bd_a402_fffe_5bfe,
-    0x3339_d808_09a1_d805,
-    0x73ed_a753_299d_7d48,
-]};
+pub const MODULUS_SCALAR: Scalar = Scalar {
+    ls: [
+        0xffff_ffff_0000_0001,
+        0x53bd_a402_fffe_5bfe,
+        0x3339_d808_09a1_d805,
+        0x73ed_a753_299d_7d48,
+    ],
+};
 
 /// The modulus as u32 limbs.
 const MODULUS_LIMBS_32: [u32; 8] = [
@@ -37,39 +41,47 @@ const MODULUS_BITS: u32 = 255;
 
 // GENERATOR = 7 
 // Explanation from zkcrypto: multiplicative generator of r-1 order, that is also quadratic nonresidue
-const GENERATOR: Scalar = Scalar{ ls: [
-    0x0000_000e_ffff_fff1,
-    0x17e3_63d3_0018_9c0f,
-    0xff9c_5787_6f84_57b0,
-    0x3513_3220_8fc5_a8c4,
-]};
+const GENERATOR: Scalar = Scalar {
+    ls: [
+        0x0000_000e_ffff_fff1,
+        0x17e3_63d3_0018_9c0f,
+        0xff9c_5787_6f84_57b0,
+        0x3513_3220_8fc5_a8c4,
+    ],
+};
 
 /// INV = -(q^{-1} mod 2^64) mod 2^64
 const INV: u64 = 0xffff_fffe_ffff_ffff;
 
 /// R = 2^256 mod q
-const R: Scalar = Scalar{ ls: [
-    0x0000_0001_ffff_fffe,
-    0x5884_b7fa_0003_4802,
-    0x998c_4fef_ecbc_4ff5,
-    0x1824_b159_acc5_056f,
-]};
+const R: Scalar = Scalar {
+    ls: [
+        0x0000_0001_ffff_fffe,
+        0x5884_b7fa_0003_4802,
+        0x998c_4fef_ecbc_4ff5,
+        0x1824_b159_acc5_056f,
+    ],
+};
 
 /// R^2 = 2^512 mod q
-pub const R2: Scalar = Scalar{ ls: [
-    0xc999_e990_f3f2_9c6d,
-    0x2b6c_edcb_8792_5c23,
-    0x05d3_1496_7254_398f,
-    0x0748_d9d9_9f59_ff11,
-]};
+pub const R2: Scalar = Scalar {
+    ls: [
+        0xc999_e990_f3f2_9c6d,
+        0x2b6c_edcb_8792_5c23,
+        0x05d3_1496_7254_398f,
+        0x0748_d9d9_9f59_ff11,
+    ],
+};
 
 /// R^3 = 2^768 mod q
-const R3: Scalar = Scalar{ ls: [
-    0xc62c_1807_439b_73af,
-    0x1b3e_0d18_8cf0_6990,
-    0x73d1_3c71_c7b5_f418,
-    0x6e2a_5bb9_c8db_33e9,
-]};
+const R3: Scalar = Scalar {
+    ls: [
+        0xc62c_1807_439b_73af,
+        0x1b3e_0d18_8cf0_6990,
+        0x73d1_3c71_c7b5_f418,
+        0x6e2a_5bb9_c8db_33e9,
+    ],
+};
 
 // 2^S * t = MODULUS - 1 with t odd
 const S: u32 = 32;
@@ -82,38 +94,41 @@ const S: u32 = 32;
 /// `GENERATOR = 7 mod q` is a generator
 /// of the q - 1 order multiplicative
 /// subgroup.
-const ROOT_OF_UNITY: Scalar = Scalar{ ls: [
-    0xb9b5_8d8c_5f0e_466a,
-    0x5b1b_4c80_1819_d7ec,
-    0x0af5_3ae3_52a3_1e64,
-    0x5bf3_adda_19e9_b27b,
-]};
+const ROOT_OF_UNITY: Scalar = Scalar {
+    ls: [
+        0xb9b5_8d8c_5f0e_466a,
+        0x5b1b_4c80_1819_d7ec,
+        0x0af5_3ae3_52a3_1e64,
+        0x5bf3_adda_19e9_b27b,
+    ],
+};
 
 impl ConditionallySelectable for Scalar {
     // Select a if choice == 1 or select b if choice == 0, in constant time.
     fn conditional_select(a: Self, b: Self, choice: Choice) -> Self {
-        Scalar{ ls: [
-            u64::conditional_select(a.ls[0], b.ls[0], choice),
-            u64::conditional_select(a.ls[1], b.ls[1], choice),
-            u64::conditional_select(a.ls[2], b.ls[2], choice),
-            u64::conditional_select(a.ls[3], b.ls[3], choice),
-        ]}
+        Scalar {
+            ls: [
+                u64::conditional_select(a.ls[0], b.ls[0], choice),
+                u64::conditional_select(a.ls[1], b.ls[1], choice),
+                u64::conditional_select(a.ls[2], b.ls[2], choice),
+                u64::conditional_select(a.ls[3], b.ls[3], choice),
+            ],
+        }
     }
 }
 
 impl ConstantTimeEq for Scalar {
     // returns (self == other), as a choice
     fn ct_eq(self, other: Self) -> Choice {
-        u64::ct_eq(self.ls[0], other.ls[0])
-        & u64::ct_eq(self.ls[1], other.ls[1])
-        & u64::ct_eq(self.ls[2], other.ls[2])
-        & u64::ct_eq(self.ls[3], other.ls[3])
+        u64::ct_eq(self.ls[0], other.ls[0]) & u64::ct_eq(self.ls[1], other.ls[1]) & u64::ct_eq(self.ls[2], other.ls[2]) & u64::ct_eq(self.ls[3], other.ls[3])
     }
 }
 
 impl Scalar {
     fn zero() -> Scalar {
-        Scalar{ ls: [0, 0, 0, 0]}
+        Scalar {
+            ls: [0, 0, 0, 0],
+        }
     }
 
     fn one() -> Scalar {
@@ -133,7 +148,9 @@ impl Scalar {
         let (d2, carry) = adc(d2, MODULUS_SCALAR.ls[2] & borrow, carry);
         let (d3, _) = adc(d3, MODULUS_SCALAR.ls[3] & borrow, carry);
 
-        Scalar{ ls: [d0, d1, d2, d3]}
+        Scalar {
+            ls: [d0, d1, d2, d3],
+        }
     }
 
     // returns -self mod q
@@ -155,7 +172,9 @@ impl Scalar {
         // mask = a_is_p - 1. This will give either 1-1 (=0) or 0-1 (wrap around to 2^64-1)
         let mask = subtract_1_wrap(scalar_is_0_mod_p);
 
-        Scalar{ ls: [d0 & mask, d1 & mask, d2 & mask, d3 & mask]}
+        Scalar {
+            ls: [d0 & mask, d1 & mask, d2 & mask, d3 & mask],
+        }
     }
 }
 
@@ -168,7 +187,9 @@ impl Add for Scalar {
         let (d3, _) = adc(self.ls[3], rhs.ls[3], carry);
 
         // Subtract q to ensure the element is always mod q
-        (Scalar{ls:[d0, d1, d2, d3]}).sub(MODULUS_SCALAR)
+        (Scalar {
+            ls: [d0, d1, d2, d3],
+        }).sub(MODULUS_SCALAR)
     }
 }
 
@@ -218,7 +239,9 @@ impl Scalar {
         let (r7, _) = adc(r7, carry2, carry);
 
         // Subtract q to ensure the element is always mod q
-        (Scalar{ ls:[r4, r5, r6, r7]}).sub(MODULUS_SCALAR)
+        (Scalar {
+            ls: [r4, r5, r6, r7],
+        }).sub(MODULUS_SCALAR)
     }
 }
 
@@ -294,9 +317,9 @@ impl Subtract for Scalar {
 }
 
 impl Multiply for Scalar {
-        fn multiply(self, other: Self) -> Self {
-            self.mul(other)
-        }
+    fn multiply(self, other: Self) -> Self {
+        self.mul(other)
+    }
 }
 
 impl Eq for Scalar {
@@ -307,12 +330,13 @@ impl Eq for Scalar {
 
 impl Scalar {
     fn from(val: u64) -> Scalar {
-        Scalar{ ls: [val, 0, 0, 0]} * R2
+        Scalar {
+            ls: [val, 0, 0, 0],
+        } * R2
     }
 }
 
 impl Scalar {
-
     /// Exponentiates `self` by `by`, where `by` is a
     /// little-endian order integer exponent.
     ///
@@ -323,12 +347,12 @@ impl Scalar {
         let mut res = Self::one();
         let mut i = 4;
         while i > 0 {
-            let e = by[i -1];
+            let e = by[i - 1];
             let mut j = 65;
             while j > 0 {
                 res = res.square();
 
-                if ((e >> (j-1)) & 1) == 1 {
+                if ((e >> (j - 1)) & 1) == 1 {
                     res *= self;
                     // res.mul_assign(self);
                 }
@@ -338,8 +362,7 @@ impl Scalar {
         }
         res
     }
-} 
-
+}
 impl Scalar {
 /*
 functions
@@ -357,12 +380,10 @@ error: Internal compiler error: Verification failed: Function one_1 return type 
 Please file an issue on the repository and include the code that triggered this error.
 )
 */
-
     /// Computes the square root of this element, if it exists.
     pub fn sqrt(self) -> CtOption<Scalar> {
         // Tonelli-Shank's algorithm for q mod 16 = 1
         // https://eprint.iacr.org/2012/685.pdf (page 12, algorithm 5)
-
         // w = self^((t - 1) // 2)
         //   = self^6104339283789297388802252303364915521546564123189034618274734669823
         let w = self.pow_vartime([
@@ -375,17 +396,13 @@ Please file an issue on the repository and include the code that triggered this 
         // let mut v = S;
         // let mut x = self * w;
         // let mut b = x * w;
-
         // // Initialize z as the 2^S root of unity.
         // let mut z = ROOT_OF_UNITY;
-
         // let mut max_v = S;
-
         // while max_v > 0 {
         //     let mut k = 1;
         //     let mut tmp = b.square();
         //     let mut j_less_than_v: Choice = Choice::from(1u8);
-
         //     let mut j = 2; // j in 2..max_v
         //     while j <= max_v {
         //         let tmp_is_one = Choice::from_bool(tmp.eq(Scalar::one()));
@@ -396,19 +413,15 @@ Please file an issue on the repository and include the code that triggered this 
         //         j_less_than_v = Choice::from_bool(j_less_than_v_bool);
         //         k = ~u32::conditional_select(j, k, tmp_is_one);
         //         z = Scalar::conditional_select(z, new_z, j_less_than_v);
-
         //         j += 1;
         //     }
-
         //     let result = x * z;
         //     x = Scalar::conditional_select(result, x, Choice::from_bool(b.eq(Scalar::one())));
         //     z = z.square();
         //     b *= z;
         //     v = k;
-
         //     max_v -= 1;
         // }
-
         // CtOption::new(
         //     x,
         //     (x * x).ct(self), // Only return Some if it's the square root.

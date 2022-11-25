@@ -4,7 +4,7 @@ dep fp6;
 
 use fp6::Fp6;
 use utils::choice::{ConstantTimeEq};
-use core::ops::{Eq, Add, Subtract, Multiply};
+use core::ops::{Add, Eq, Multiply, Subtract};
 
 // Element in F_{p^12}
 pub struct Fp12 {

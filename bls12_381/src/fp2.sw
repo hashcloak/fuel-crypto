@@ -46,34 +46,33 @@ impl Add for Fp2 {
 
 impl Fp2 {
     // in the zkcrypto repo this is implemented as trait From<Fp>, but this isn't possible in Sway
-    fn from(f: Fp) -> Fp2 {
+    pub fn from(f: Fp) -> Fp2 {
         Fp2 {
             c0: f,
             c1: Fp::zero(),
         }
     }
 
-    fn zero() -> Fp2 {
+    pub fn zero() -> Fp2 {
         Fp2 {
             c0: Fp::zero(),
             c1: Fp::zero(),
         }
     }
 
-    fn one() -> Fp2 {
+    pub fn one() -> Fp2 {
         Fp2 {
             c0: Fp::one(),
             c1: Fp::zero(),
         }
     }
 
-    fn is_zero(self) -> Choice {
+    pub fn is_zero(self) -> Choice {
         self.c0.is_zero().binary_and(self.c1.is_zero())
     }
 
-/*
     // not tested, gives Immediate18TooLarge error
-    fn square(self) -> Fp2 {
+    pub fn square(self) -> Fp2 {
         // Complex squaring:
         //
         // v0  = c0 * c1
@@ -95,7 +94,6 @@ impl Fp2 {
             c1: c * self.c1,
         }
     }
-  */
 
     fn mul(self, rhs: Fp2) -> Fp2 {
         // Explanation from zkcrypto repo:
@@ -123,7 +121,7 @@ impl Fp2 {
         }
     }
 
-    fn neg(self) -> Fp2 {
+    pub fn neg(self) -> Fp2 {
         Fp2 {
             c0: (self.c0).neg(),
             c1: (self.c1).neg(),
@@ -131,7 +129,7 @@ impl Fp2 {
     }
 
     // Is not tested directly, but will be indirectly in consequent extension fields
-    fn mul_by_nonresidue(self) -> Fp2 {
+    pub fn mul_by_nonresidue(self) -> Fp2 {
         // Explanation from zkcrypto
         // Multiply a + bu by u + 1, getting
         // au + a + bu^2 + bu
@@ -145,7 +143,7 @@ impl Fp2 {
     }
 
     // returns whether self > -self, lexographically speaking
-    fn lexicographically_largest(self) -> Choice {
+    pub fn lexicographically_largest(self) -> Choice {
         // lexicographically_largest(self.c1) || (self.c1 == 0 && lexicographically_largest(self.c0)) 
         self.c1.lexicographically_largest()
         .binary_or(self.c1.is_zero().binary_and(self.c0.lexicographically_largest()))
