@@ -13,6 +13,13 @@ For testing we use `fuels`, read about it [here](https://fuellabs.github.io/fuel
  cargo test
  ```
 
+ To run tests with printing use
+
+ ```
+ cargo test -- --nocapture
+
+```
+
 ## Testing with a script
 You can use scripts locally to do intermediate tests. To run a script a local Fuel node must be spun up.
 

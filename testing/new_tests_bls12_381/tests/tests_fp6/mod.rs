@@ -130,15 +130,27 @@ mod success {
   }
   
   #[tokio::test]
+  async fn test_mul_fp6() {
+      let (contract_instance, _id) = get_contract_instance().await;
+      
+      let res_expected = contract_instance.mul_fp6(get_a(), get_b())
+          .tx_params(TxParameters::new(None, Some(100_000_000_000), None))
+          .call().await.unwrap().value;
+      
+          //TODO FIX THIS!!!!
+      assert!(true);
+  }
+
+  #[tokio::test]
   async fn test_square_fp6() {
       let (contract_instance, _id) = get_contract_instance().await;
       
       let res_square = contract_instance.square_fp6(get_a())
-          .tx_params(TxParameters::new(None, Some(1_000_000_000), None))
+          .tx_params(TxParameters::new(None, Some(100_000_000_000), None))
           .call().await.unwrap().value;
       
       let res_expected = contract_instance.mul_fp6(get_a(), get_a())
-          .tx_params(TxParameters::new(None, Some(1_000_000_000), None))
+          .tx_params(TxParameters::new(None, Some(100_000_000_000), None))
           .call().await.unwrap().value;
       
       assert!(res_square == res_expected);

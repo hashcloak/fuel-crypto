@@ -167,6 +167,7 @@ impl Multiply for Fp6 {
 }
 
 impl Fp6 {
+    #[inline(never)]
     pub fn square(self) -> Self {
         let s0 = self.c0.square();
         let ab = self.c0 * self.c1;
