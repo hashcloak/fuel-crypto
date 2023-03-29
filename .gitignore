@@ -16,3 +16,5 @@ testing/*/Forc.lock
 
 */out/*
 */target/*
+*/*/target/*
+*/*/out/*

@@ -1,0 +1,16 @@
+[package]
+name = "p256"
+description = "NIST P-256 (secp256r1) elliptic curve"
+version = "0.1.0"
+edition = "2021"
+authors = ["HashCloak"]
+license = "Apache-2.0"
+
+[dev-dependencies]
+fuels = { version = "0.37", features = ["fuel-core-lib"] }
+tokio = { version = "1.12", features = ["rt", "macros"] }
+
+[[test]]
+harness = true
+name = "integration_tests"
+path = "tests/harness.rs"

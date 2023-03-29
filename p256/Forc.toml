@@ -1,7 +1,8 @@
 [project]
 authors = ["HashCloak"]
-entry = "lib.sw"
+entry = "main.sw"
 license = "Apache-2.0"
-name = "utils"
+name = "p256"
 
 [dependencies]
+utils = { path = "../utils" }
