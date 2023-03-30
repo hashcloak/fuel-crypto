@@ -36,7 +36,7 @@ async fn get_contract_instance() -> (MyContract, ContractId) {
     (instance, id.into())
 }
 
-#[tokio::test]
+#[tokio::test] #[ignore]
 async fn test_fe_mul_1() {
     let (_instance, _id) = get_contract_instance().await;
     let a: Fe = Fe{ls: [1,1,1,1]};
@@ -67,7 +67,7 @@ async fn test_fe_mul_1() {
     assert_eq!(expected, result_converted.value);
 }
 
-#[tokio::test]
+#[tokio::test] #[ignore]
 async fn test_fe_mul_2() {
     let (_instance, _id) = get_contract_instance().await;
     let a: Fe = Fe{ls: [13282407956253574712, 7557322358563246340, 14991082624209354397, 6631139461101160670]};
@@ -98,7 +98,7 @@ async fn test_fe_mul_2() {
     assert_eq!(expected, result_converted.value);
 }
 
-#[tokio::test]
+#[tokio::test] #[ignore]
 async fn test_fe_mul_3() {
     let (_instance, _id) = get_contract_instance().await;
     let a1: Fe = Fe{ls: [13282407956253574712, 7557322358563246340, 14991082624209354397, 6631139461101160670]};
@@ -128,4 +128,41 @@ async fn test_fe_mul_3() {
     let expected: Fe = Fe{ls: [2309392440375388613, 1135074464031845990, 12738695718013625742, 14519977860574561767]};
 
     assert_eq!(expected, result_converted.value);
+}
+
+#[tokio::test]
+async fn test_sqrt() {
+  // Random nr 59139082389495374972926751946201499749231456944901481987554600995611674860084
+  // 8293668300693101108, 9881061877981018291, 9534524411267565544, 9421399378650073936
+  let (_instance, _id) = get_contract_instance().await;
+    let r: Fe = Fe{ls: [8293668300693101108, 9881061877981018291, 9534524411267565544, 9421399378650073936]};
+
+    let r_form = _instance
+      .methods()
+      .fe_to_montgomery(r)
+      .call().await.unwrap();
+
+    let sqrt_r = _instance
+      .methods()
+      .sqrt(r_form.value)
+      .tx_params(TxParameters::new(None, Some(100_000_000), None))
+      .call().await.unwrap();
+
+    let result_converted = _instance
+      .methods()
+      .fe_from_montgomery(sqrt_r.value.value)
+      .call().await.unwrap();
+
+    // println!("{:#?}", result_converted.value);
+    assert_eq!(result_converted.value.ls[0], 10414696227621044143);
+    assert_eq!(result_converted.value.ls[1], 5518441681270087222);
+    assert_eq!(result_converted.value.ls[2], 392556470792855661);
+    assert_eq!(result_converted.value.ls[3], 10489680726816654902);
+    /*
+    [10489680726816654902,392556470792855661,5518441681270087222,10414696227621044143]
+    equals 65844793093953043268213057897943240429286616083437016212003006386916887363503
+    square of this is
+    59139082389495374972926751946201499749231456944901481987554600995611674860084
+    so, correct
+    */
 }

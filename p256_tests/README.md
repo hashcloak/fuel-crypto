@@ -7,4 +7,5 @@ To test the p256 library with the Rust integration, we need a contract. In this 
 ```
 forc build
 cargo test
+#cargo test -- --nocapture
 ```

@@ -1,6 +1,7 @@
 library field64;
 
 use utils::{integer_utils::adc, integer_utils::sbb, integer_utils::mac}; 
+use core::ops::{Add, Subtract, Multiply};
 
 // Little endian
 // ls[0] + ls[1] * 2^64 + ls[2] * 2^128 + ls[3] * 2^192
@@ -176,3 +177,21 @@ pub fn fe_square(w: Fe) -> Fe {
 
 //     let t_27_21_0 = fe_mul(t_27_21_3, t7); //2^27 - 2^21 - 1
 // }
+
+impl Add for Fe {
+    fn add(self, other: Self) -> Self {
+        fe_add(self, other)
+    }
+}
+
+impl Subtract for Fe {
+    fn subtract(self, other: Self) -> Self {
+        fe_sub(self, other)
+    }
+}
+
+impl Multiply for Fe {
+    fn multiply(self, other: Self) -> Self {
+        fe_mul(self, other)
+    }
+}

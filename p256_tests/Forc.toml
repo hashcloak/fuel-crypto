@@ -6,3 +6,4 @@ name = "p256_tests"
 
 [dependencies]
 p256 = { path = "../p256" }
+utils = { path = "../utils" }
