@@ -1,8 +1,8 @@
 [project]
 authors = ["HashCloak"]
-entry = "lib.sw"
+entry = "main.sw"
 license = "Apache-2.0"
-name = "p256"
+name = "p256_tests"
 
 [dependencies]
-utils = { path = "../utils" }
+p256 = { path = "../p256" }

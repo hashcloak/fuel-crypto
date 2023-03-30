@@ -1,6 +1,6 @@
 [package]
-name = "p256"
-description = "NIST P-256 (secp256r1) elliptic curve"
+name = "p256_tests"
+description = "A cargo-generate template for Rust + Sway integration testing."
 version = "0.1.0"
 edition = "2021"
 authors = ["HashCloak"]

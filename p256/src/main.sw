@@ -76,7 +76,6 @@ fn test_fe_sub() {
   assert_eq_fe(calculated_res, res);
 }
 
-
 fn test_fe_mul() {
 
 // // CASE 1
@@ -99,8 +98,8 @@ fn test_fe_mul() {
 
   assert_eq_fe(result2, fe_from_montgomery(output2));
 
-// CASE 3
-  // a^2 mod p = 91143378226388765898840842358943187661731998203015190852474237661807653956037
+// // CASE 3
+//   // a^2 mod p = 91143378226388765898840842358943187661731998203015190852474237661807653956037
   let result3: Fe = Fe{ls: [2309392440375388613, 1135074464031845990, 12738695718013625742, 14519977860574561767]};
   
   let mont_form = fe_to_montgomery(a2);
