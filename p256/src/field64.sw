@@ -1,11 +1,19 @@
 library field64;
 
-use utils::{integer_utils::adc, integer_utils::sbb, integer_utils::mac}; 
+use utils::{
+  integer_utils::{adc, sbb, mac},
+  choice::Choice
+}; 
 use core::ops::{Add, Subtract, Multiply};
+
+/// An element in the finite field modulo p = 2^{224}(2^{32} − 1) + 2^{192} + 2^{96} − 1.
+///
+/// The internal representation is in little-endian order. Elements are always in
+/// Montgomery form; i.e., FieldElement(a) = aR mod p, with R = 2^256.
 
 // Little endian
 // ls[0] + ls[1] * 2^64 + ls[2] * 2^128 + ls[3] * 2^192
-pub struct Fe { 
+pub struct FieldElement { 
   ls: [u64; 4] 
 }
 
@@ -16,7 +24,7 @@ const modulus: [u64; 4] = [18446744073709551615, 4294967295, 0, 1844674406941458
 // R^2 = 2^512 mod p = 134799733323198995502561713907086292154532538166959272814710328655875
 const R_2: [u64; 4] = [3, 18446744056529682431, 18446744073709551614, 21474836477];
 
-fn sub_inner(l: [u64; 5], r: [u64; 5]) -> Fe {
+fn sub_inner(l: [u64; 5], r: [u64; 5]) -> FieldElement {
     let (w0, borrow0) = sbb(l[0], r[0], 0);
     let (w1, borrow1) = sbb(l[1], r[1], borrow0);
     let (w2, borrow2) = sbb(l[2], r[2], borrow1);
@@ -31,10 +39,10 @@ fn sub_inner(l: [u64; 5], r: [u64; 5]) -> Fe {
     let (w2, carry2) = adc(w2, modulus[2] & borrow4, carry1);
     let (w3, _) = adc(w3, modulus[3] & borrow4, carry2);
   
-    Fe { ls: [w0, w1, w2, w3] }
+    FieldElement { ls: [w0, w1, w2, w3] }
 }
 
-pub fn fe_add(a: Fe, b: Fe) -> Fe {
+pub fn fe_add(a: FieldElement, b: FieldElement) -> FieldElement {
     let (w0, carry0) = adc(a.ls[0], b.ls[0], 0);
     let (w1, carry1) = adc(a.ls[1], b.ls[1], carry0);
     let (w2, carry2) = adc(a.ls[2], b.ls[2], carry1);
@@ -48,11 +56,11 @@ pub fn fe_add(a: Fe, b: Fe) -> Fe {
 }
 
 // Returns `a - b mod p`.
-pub fn fe_sub(a: Fe, b: Fe) -> Fe {
+pub fn fe_sub(a: FieldElement, b: FieldElement) -> FieldElement {
     sub_inner([a.ls[0], a.ls[1], a.ls[2], a.ls[3], 0], [b.ls[0], b.ls[1], b.ls[2], b.ls[3], 0])
 }
 
-fn montgomery_reduce(r: [u64; 8]) -> Fe {
+fn montgomery_reduce(r: [u64; 8]) -> FieldElement {
 
     let r0 = r[0];
     let r1 = r[1];
@@ -91,7 +99,7 @@ fn montgomery_reduce(r: [u64; 8]) -> Fe {
 }
 
 /// Returns `a * b mod p`.
-pub fn fe_mul(a: Fe, b: Fe) -> Fe {
+pub fn fe_mul(a: FieldElement, b: FieldElement) -> FieldElement {
     let (w0, carry) = mac(0, a.ls[0], b.ls[0], 0);
     let (w1, carry) = mac(0, a.ls[0], b.ls[1], carry);
     let (w2, carry) = mac(0, a.ls[0], b.ls[2], carry);
@@ -116,82 +124,88 @@ pub fn fe_mul(a: Fe, b: Fe) -> Fe {
 }
 
 // Translate a field element out of the Montgomery domain.
-pub fn fe_from_montgomery(w: Fe) -> Fe {
+pub fn fe_from_montgomery(w: FieldElement) -> FieldElement {
     montgomery_reduce([w.ls[0], w.ls[1], w.ls[2], w.ls[3], 0, 0, 0, 0])
 }
 
 // Translate a field element into the Montgomery domain.
-pub fn fe_to_montgomery(w: Fe) -> Fe {
-    fe_mul(w, Fe{ls: R_2})
+pub fn fe_to_montgomery(w: FieldElement) -> FieldElement {
+    fe_mul(w, FieldElement{ls: R_2})
 }
 
 // Returns `-w mod p`
-pub fn fe_neg(w: Fe) -> Fe {
-    fe_sub(Fe{ls: [0,0,0,0]}, w)
+pub fn fe_neg(w: FieldElement) -> FieldElement {
+    fe_sub(FieldElement{ls: [0,0,0,0]}, w)
 }
 
-pub fn fe_square(w: Fe) -> Fe {
+pub fn fe_square(w: FieldElement) -> FieldElement {
     fe_mul(w, w)
 }
 
 // p = 2^256 - 2^224 + 2^192 + 2^96 - 1 
 // Returns b such that b * a ≡ 1 mod p
-// from fermat's theorem, b ≡ a^(p-2) mod p
-// pub fn fe_inverse(w: Fe) -> Fe {    
+// from FieldElementrmat's theorem, b ≡ a^(p-2) mod p
+// pub fn FieldElement_inverse(w: FieldElement) -> FieldElement {    
 
-//     let t_2 = fe_square(w); // 2
-//     let t_3 = fe_mul(t_2, w) // 3
-//     let t_6 = fe_square(t_3); // 6
-//     let t_7 = fe_mul(t_6, w); // 7
+//     let t_2 = FieldElement_square(w); // 2
+//     let t_3 = FieldElement_mul(t_2, w) // 3
+//     let t_6 = FieldElement_square(t_3); // 6
+//     let t_7 = FieldElement_mul(t_6, w); // 7
 //     let t_56 = t_7;
 //     let mut i = 0;
 //     while i < 3 {
-//         t_57 = fe_square(t_56); // 7*8 = 56
+//         t_57 = FieldElement_square(t_56); // 7*8 = 56
 //         i = i+1;
 //     }
 
-//     let t_63 = fe_mul(t_57, t_7); // 63 = 2^6 - 1
+//     let t_63 = FieldElement_mul(t_57, t_7); // 63 = 2^6 - 1
 
 //     let t_12_6 = t_63;
 //     i = 0;
 //     while i < 6 {
-//         t_12_6 = fe_square(t_12_6); // (2^6 - 1) * 2^6 = 2^12 - 2^6
+//         t_12_6 = FieldElement_square(t_12_6); // (2^6 - 1) * 2^6 = 2^12 - 2^6
 //         i = i + 1;
 //     }
 
-//     let t_18_13_6 = fe_mul(t_12_6, t_63); // 2^18 - 2^13 + 2^6
+//     let t_18_13_6 = FieldElement_mul(t_12_6, t_63); // 2^18 - 2^13 + 2^6
 
 //     let t_21_16_9 = t_18_13_6;
 //     i = 0;
 //     while i < 3 {
-//         t_21_16_9 = fe_square(t_); // 2^21 - 2^16 + 2^9
+//         t_21_16_9 = FieldElement_square(t_); // 2^21 - 2^16 + 2^9
 //         i = i+1;
 //     }
-//     let t_24_18_1 = fe_mul(t_21_16_9, t_7); // 2^24 - 2^18 - 1
+//     let t_24_18_1 = FieldElement_mul(t_21_16_9, t_7); // 2^24 - 2^18 - 1
 
 //     let t_27_21_3 = t_24_18_1;
 //     i = 0;
 //     while i < 3 {
-//         t_27_21_3 = fe_square(t_27_21_3); // 2^27 - 2^21 - 2^3
+//         t_27_21_3 = FieldElement_square(t_27_21_3); // 2^27 - 2^21 - 2^3
 //     }
 
-//     let t_27_21_0 = fe_mul(t_27_21_3, t7); //2^27 - 2^21 - 1
+//     let t_27_21_0 = FieldElement_mul(t_27_21_3, t7); //2^27 - 2^21 - 1
 // }
 
-impl Add for Fe {
+impl Add for FieldElement {
     fn add(self, other: Self) -> Self {
         fe_add(self, other)
     }
 }
 
-impl Subtract for Fe {
+impl Subtract for FieldElement {
     fn subtract(self, other: Self) -> Self {
         fe_sub(self, other)
     }
 }
 
-impl Multiply for Fe {
+impl Multiply for FieldElement {
     fn multiply(self, other: Self) -> Self {
         fe_mul(self, other)
+    }
+}
+
+impl FieldElement {
+    pub fn is_zero(self) -> Choice {
+      Choice::from_bool(self.ls[0] == 0 && self.ls[1] == 0 && self.ls[2] == 0 && self.ls[3] == 0)
     }
 }

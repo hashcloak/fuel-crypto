@@ -39,8 +39,8 @@ async fn get_contract_instance() -> (MyContract, ContractId) {
 #[tokio::test] #[ignore]
 async fn test_fe_mul_1() {
     let (_instance, _id) = get_contract_instance().await;
-    let a: Fe = Fe{ls: [1,1,1,1]};
-    let b: Fe = Fe{ls: [1,0,0,0]};
+    let a: FieldElement = FieldElement{ls: [1,1,1,1]};
+    let b: FieldElement = FieldElement{ls: [1,0,0,0]};
     
     let a_montgomery_form = _instance
       .methods()
@@ -62,7 +62,7 @@ async fn test_fe_mul_1() {
       .fe_from_montgomery(result.value)
       .call().await.unwrap();
     
-    let expected: Fe = Fe{ls: [1,1,1,1]};
+    let expected: FieldElement = FieldElement{ls: [1,1,1,1]};
 
     assert_eq!(expected, result_converted.value);
 }
@@ -70,8 +70,8 @@ async fn test_fe_mul_1() {
 #[tokio::test] #[ignore]
 async fn test_fe_mul_2() {
     let (_instance, _id) = get_contract_instance().await;
-    let a: Fe = Fe{ls: [13282407956253574712, 7557322358563246340, 14991082624209354397, 6631139461101160670]};
-    let b: Fe = Fe{ls: [10719928016004921607, 13845646450878251009, 13142370077570254774, 17984324540840297179]};
+    let a: FieldElement = FieldElement{ls: [13282407956253574712, 7557322358563246340, 14991082624209354397, 6631139461101160670]};
+    let b: FieldElement = FieldElement{ls: [10719928016004921607, 13845646450878251009, 13142370077570254774, 17984324540840297179]};
     
     let a_montgomery_form = _instance
       .methods()
@@ -93,7 +93,7 @@ async fn test_fe_mul_2() {
       .fe_from_montgomery(result.value)
       .call().await.unwrap();
     
-    let expected: Fe = Fe{ls: [3855380404042364083, 4501942987140393524, 18012298605561464384, 6330810359896140563]};
+    let expected: FieldElement = FieldElement{ls: [3855380404042364083, 4501942987140393524, 18012298605561464384, 6330810359896140563]};
 
     assert_eq!(expected, result_converted.value);
 }
@@ -101,8 +101,8 @@ async fn test_fe_mul_2() {
 #[tokio::test] #[ignore]
 async fn test_fe_mul_3() {
     let (_instance, _id) = get_contract_instance().await;
-    let a1: Fe = Fe{ls: [13282407956253574712, 7557322358563246340, 14991082624209354397, 6631139461101160670]};
-    let a2: Fe = Fe{ls: [13282407956253574712, 7557322358563246340, 14991082624209354397, 6631139461101160670]};
+    let a1: FieldElement = FieldElement{ls: [13282407956253574712, 7557322358563246340, 14991082624209354397, 6631139461101160670]};
+    let a2: FieldElement = FieldElement{ls: [13282407956253574712, 7557322358563246340, 14991082624209354397, 6631139461101160670]};
 
     
     let a1_montgomery_form = _instance
@@ -125,17 +125,17 @@ async fn test_fe_mul_3() {
       .fe_from_montgomery(result.value)
       .call().await.unwrap();
     
-    let expected: Fe = Fe{ls: [2309392440375388613, 1135074464031845990, 12738695718013625742, 14519977860574561767]};
+    let expected: FieldElement = FieldElement{ls: [2309392440375388613, 1135074464031845990, 12738695718013625742, 14519977860574561767]};
 
     assert_eq!(expected, result_converted.value);
 }
 
 #[tokio::test]
 async fn test_sqrt() {
-  // Random nr 59139082389495374972926751946201499749231456944901481987554600995611674860084
-  // 8293668300693101108, 9881061877981018291, 9534524411267565544, 9421399378650073936
-  let (_instance, _id) = get_contract_instance().await;
-    let r: Fe = Fe{ls: [8293668300693101108, 9881061877981018291, 9534524411267565544, 9421399378650073936]};
+    // Random nr 59139082389495374972926751946201499749231456944901481987554600995611674860084
+    // 8293668300693101108, 9881061877981018291, 9534524411267565544, 9421399378650073936
+    let (_instance, _id) = get_contract_instance().await;
+    let r: FieldElement = FieldElement{ls: [8293668300693101108, 9881061877981018291, 9534524411267565544, 9421399378650073936]};
 
     let r_form = _instance
       .methods()
@@ -165,4 +165,34 @@ async fn test_sqrt() {
     59139082389495374972926751946201499749231456944901481987554600995611674860084
     so, correct
     */
+}
+
+#[tokio::test]
+async fn test_invert() {
+    let (_instance, _id) = get_contract_instance().await;
+    // root of unity 115792089210356248762697446949407573530086143415290314195533631308867097853950
+    // [18446744073709551614, 4294967295, 0, 18446744069414584321]
+    let root_of_unity = FieldElement { ls: [18446744073709551614, 4294967295, 0, 18446744069414584321]};
+
+    let montgomery_form = _instance
+      .methods()
+      .fe_to_montgomery(root_of_unity)
+      .call().await.unwrap();
+
+    let inv_montgomery_form = _instance
+      .methods()
+      .invert(montgomery_form.value)
+      .tx_params(TxParameters::new(None, Some(100_000_000), None))
+      .call().await.unwrap();
+
+    let inv = _instance
+      .methods()
+      .fe_from_montgomery(inv_montgomery_form.value.value)
+      .call().await.unwrap();
+
+// Result is also 115792089210356248762697446949407573530086143415290314195533631308867097853950
+    assert_eq!(inv.value.ls[0], 18446744073709551614);
+    assert_eq!(inv.value.ls[1], 4294967295);
+    assert_eq!(inv.value.ls[2], 0);
+    assert_eq!(inv.value.ls[3], 18446744069414584321);
 }
