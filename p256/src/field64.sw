@@ -52,7 +52,7 @@ pub fn fe_sub(a: Fe, b: Fe) -> Fe {
 }
 
 fn montgomery_reduce(r: [u64; 8]) -> Fe {
-    
+
     let r0 = r[0];
     let r1 = r[1];
     let r2 = r[2];
@@ -114,10 +114,65 @@ pub fn fe_mul(a: Fe, b: Fe) -> Fe {
     montgomery_reduce([w0, w1, w2, w3, w4, w5, w6, w7])
 }
 
+// Translate a field element out of the Montgomery domain.
 pub fn fe_from_montgomery(w: Fe) -> Fe {
     montgomery_reduce([w.ls[0], w.ls[1], w.ls[2], w.ls[3], 0, 0, 0, 0])
 }
 
+// Translate a field element into the Montgomery domain.
 pub fn fe_to_montgomery(w: Fe) -> Fe {
     fe_mul(w, Fe{ls: R_2})
 }
+
+// Returns `-w mod p`
+pub fn fe_neg(w: Fe) -> Fe {
+    fe_sub(Fe{ls: [0,0,0,0]}, w)
+}
+
+pub fn fe_square(w: Fe) -> Fe {
+    fe_mul(w, w)
+}
+
+// p = 2^256 - 2^224 + 2^192 + 2^96 - 1 
+// Returns b such that b * a ≡ 1 mod p
+// from fermat's theorem, b ≡ a^(p-2) mod p
+// pub fn fe_inverse(w: Fe) -> Fe {    
+
+//     let t_2 = fe_square(w); // 2
+//     let t_3 = fe_mul(t_2, w) // 3
+//     let t_6 = fe_square(t_3); // 6
+//     let t_7 = fe_mul(t_6, w); // 7
+//     let t_56 = t_7;
+//     let mut i = 0;
+//     while i < 3 {
+//         t_57 = fe_square(t_56); // 7*8 = 56
+//         i = i+1;
+//     }
+
+//     let t_63 = fe_mul(t_57, t_7); // 63 = 2^6 - 1
+
+//     let t_12_6 = t_63;
+//     i = 0;
+//     while i < 6 {
+//         t_12_6 = fe_square(t_12_6); // (2^6 - 1) * 2^6 = 2^12 - 2^6
+//         i = i + 1;
+//     }
+
+//     let t_18_13_6 = fe_mul(t_12_6, t_63); // 2^18 - 2^13 + 2^6
+
+//     let t_21_16_9 = t_18_13_6;
+//     i = 0;
+//     while i < 3 {
+//         t_21_16_9 = fe_square(t_); // 2^21 - 2^16 + 2^9
+//         i = i+1;
+//     }
+//     let t_24_18_1 = fe_mul(t_21_16_9, t_7); // 2^24 - 2^18 - 1
+
+//     let t_27_21_3 = t_24_18_1;
+//     i = 0;
+//     while i < 3 {
+//         t_27_21_3 = fe_square(t_27_21_3); // 2^27 - 2^21 - 2^3
+//     }
+
+//     let t_27_21_0 = fe_mul(t_27_21_3, t7); //2^27 - 2^21 - 1
+// }

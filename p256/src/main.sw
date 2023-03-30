@@ -7,8 +7,8 @@ use field64::*;
 use std::u256::U256;
 
 fn main() {
-  test_fe_add();
-  test_fe_sub();
+  // test_fe_add();
+  // test_fe_sub();
   test_fe_mul();
 }
 
@@ -78,6 +78,8 @@ fn test_fe_sub() {
 
 
 fn test_fe_mul() {
+
+  // running all three multiplication result into "Error: Response errors; TransactionScriptLength"
   let a = Fe{ ls: [1,1,1,1] };
   let b = Fe{ ls: [1,0,0,0] };
 
@@ -89,10 +91,18 @@ fn test_fe_mul() {
   // 112889434785065900135211481371037383646282385554418514861667765615237067913479
   let b: Fe = Fe{ls: [10719928016004921607, 13845646450878251009, 13142370077570254774, 17984324540840297179]};
   
-  let result: Fe = Fe{ls: [3855380404042364083, 4501942987140393524, 18012298605561464384, 6330810359896140563]};
+  // // ab mod p = 39739140696508040939604612980977978388884518491399357619602059688157849482419
+  // let result: Fe = Fe{ls: [3855380404042364083, 4501942987140393524, 18012298605561464384, 6330810359896140563]};
 
 
-  let output = fe_mul(fe_to_montgomery(a),fe_to_montgomery(b));
-  // log_fe(fe_from_montgomery(output));
+  // let output = fe_mul(fe_to_montgomery(a),fe_to_montgomery(b));
+
+  // assert_eq_fe(result, fe_from_montgomery(output));
+
+  // a^2 mod p = 91143378226388765898840842358943187661731998203015190852474237661807653956037
+  let result: Fe = Fe{ls: [2309392440375388613, 1135074464031845990, 12738695718013625742, 14519977860574561767]};
+  
+  let mont_form = fe_to_montgomery(a);
+  let output = fe_mul(mont_form,mont_form);
   assert_eq_fe(result, fe_from_montgomery(output));
 }
