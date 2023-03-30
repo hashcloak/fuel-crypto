@@ -11,10 +11,7 @@ pub fn adc(a: u64, b: u64, carry: u64) -> (u64, u64) {
 // If x >= y: x-y, else max::U128 - (y-x)
 pub fn subtract_wrap(x: U128, y: U128) -> U128 {
     if y > x {
-        U128::max() - (y - x - U128 {
-            lower: 1,
-            upper: 0,
-        })
+        (U128::max() - (y - x)) + U128::from((0,1))
     } else {
         x - y
     }

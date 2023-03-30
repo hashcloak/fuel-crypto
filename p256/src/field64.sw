@@ -2,44 +2,40 @@ library field64;
 
 use utils::{integer_utils::adc, integer_utils::sbb, integer_utils::mac}; 
 
+// Little endian
+// ls[0] + ls[1] * 2^64 + ls[2] * 2^128 + ls[3] * 2^192
 pub struct Fe { 
   ls: [u64; 4] 
 }
 
 // 115792089210356248762697446949407573530086143415290314195533631308867097853951
-// 18446744069414584321 * 2ˆ192+ 4294967295 * 2ˆ64 +  18446744073709551615
-const modulus: [u64; 4] = [
-  0xffffffff00000001, // 18446744069414584321
-  0x0000000000000000, // 0
-  0x00000000ffffffff, // 4294967295
-  0xffffffffffffffff // 18446744073709551615
-];
+// 18446744073709551615 + 4294967295 * 2ˆ64 + 18446744069414584321 * 2ˆ192
+const modulus: [u64; 4] = [18446744073709551615, 4294967295, 0, 18446744069414584321];
 
 fn sub_inner(l: [u64; 5], r: [u64; 5]) -> Fe {
-    let (w0, borrow) = sbb(l[0], r[0], 0);
-    let (w1, borrow) = sbb(l[1], r[1], borrow);
-    let (w2, borrow) = sbb(l[2], r[2], borrow);
-    let (w3, borrow) = sbb(l[3], r[3], borrow);
-    let (_, borrow) = sbb(l[4], r[4], borrow);
+    let (w0, borrow0) = sbb(l[0], r[0], 0);
+    let (w1, borrow1) = sbb(l[1], r[1], borrow0);
+    let (w2, borrow2) = sbb(l[2], r[2], borrow1);
+    let (w3, borrow3) = sbb(l[3], r[3], borrow2);
+    let (_, borrow4) = sbb(l[4], r[4], borrow3);
 
     // If underflow occurred on the final limb, borrow = 0xfff...fff, otherwise
     // borrow = 0x000...000. Thus, we use it as a mask to conditionally add the
     // modulus.
-    let (w0, carry) = adc(w0, modulus[0] & borrow, 0);
-    let (w1, carry) = adc(w1, modulus[1] & borrow, carry);
-    let (w2, carry) = adc(w2, modulus[2] & borrow, carry);
-    let (w3, _) = adc(w3, modulus[3] & borrow, carry);
-
+    let (w0, carry0) = adc(w0, modulus[0] & borrow4, 0);
+    let (w1, carry1) = adc(w1, modulus[1] & borrow4, carry0);
+    let (w2, carry2) = adc(w2, modulus[2] & borrow4, carry1);
+    let (w3, _) = adc(w3, modulus[3] & borrow4, carry2);
+  
     Fe { ls: [w0, w1, w2, w3] }
 }
 
 pub fn fe_add(a: Fe, b: Fe) -> Fe {
-    // Bit 256 of p is set, so addition can result in five words.
-    let (w0, carry) = adc(a.ls[0], b.ls[0], 0);
-    let (w1, carry) = adc(a.ls[1], b.ls[1], carry);
-    let (w2, carry) = adc(a.ls[2], b.ls[2], carry);
-    let (w3, w4) = adc(a.ls[3], b.ls[3], carry);
-
+    let (w0, carry0) = adc(a.ls[0], b.ls[0], 0);
+    let (w1, carry1) = adc(a.ls[1], b.ls[1], carry0);
+    let (w2, carry2) = adc(a.ls[2], b.ls[2], carry1);
+    let (w3, w4) = adc(a.ls[3], b.ls[3], carry2);
+    
     // Attempt to subtract the modulus, to ensure the result is in the field.
     sub_inner(
         [w0, w1, w2, w3, w4],
@@ -47,7 +43,7 @@ pub fn fe_add(a: Fe, b: Fe) -> Fe {
     )
 }
 
-/// Returns `a - b mod p`.
+// Returns `a - b mod p`.
 pub fn fe_sub(a: Fe, b: Fe) -> Fe {
     sub_inner([a.ls[0], a.ls[1], a.ls[2], a.ls[3], 0], [b.ls[0], b.ls[1], b.ls[2], b.ls[3], 0])
 }
