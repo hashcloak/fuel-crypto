@@ -79,30 +79,31 @@ fn test_fe_sub() {
 
 fn test_fe_mul() {
 
-  // running all three multiplication result into "Error: Response errors; TransactionScriptLength"
-  let a = Fe{ ls: [1,1,1,1] };
-  let b = Fe{ ls: [1,0,0,0] };
+// // CASE 1
+//   // running all three multiplication result into "Error: Response errors; TransactionScriptLength"
+//   let a1 = Fe{ ls: [1,1,1,1] };
+//   let b1 = Fe{ ls: [1,0,0,0] };
 
-  let output = fe_mul(fe_to_montgomery(a),fe_to_montgomery(b));
-  assert_eq_fe(fe_from_montgomery(output), a);
+//   let output1 = fe_mul(fe_to_montgomery(a1),fe_to_montgomery(b1));
+//   assert_eq_fe(fe_from_montgomery(output1), a1);
 
+// CASE 2
   // 41624337018869194729192205381537838788846303834619688597471765238035829032504
-  let a: Fe = Fe{ls: [13282407956253574712, 7557322358563246340, 14991082624209354397, 6631139461101160670]};
+  let a2: Fe = Fe{ls: [13282407956253574712, 7557322358563246340, 14991082624209354397, 6631139461101160670]};
   // 112889434785065900135211481371037383646282385554418514861667765615237067913479
-  let b: Fe = Fe{ls: [10719928016004921607, 13845646450878251009, 13142370077570254774, 17984324540840297179]};
+  let b2: Fe = Fe{ls: [10719928016004921607, 13845646450878251009, 13142370077570254774, 17984324540840297179]};
   
-  // // ab mod p = 39739140696508040939604612980977978388884518491399357619602059688157849482419
-  // let result: Fe = Fe{ls: [3855380404042364083, 4501942987140393524, 18012298605561464384, 6330810359896140563]};
+  // // a2*b2 mod p = 39739140696508040939604612980977978388884518491399357619602059688157849482419
+  let result2: Fe = Fe{ls: [3855380404042364083, 4501942987140393524, 18012298605561464384, 6330810359896140563]};
+  let output2 = fe_mul(fe_to_montgomery(a2),fe_to_montgomery(b2));
 
+  assert_eq_fe(result2, fe_from_montgomery(output2));
 
-  // let output = fe_mul(fe_to_montgomery(a),fe_to_montgomery(b));
-
-  // assert_eq_fe(result, fe_from_montgomery(output));
-
+// CASE 3
   // a^2 mod p = 91143378226388765898840842358943187661731998203015190852474237661807653956037
-  let result: Fe = Fe{ls: [2309392440375388613, 1135074464031845990, 12738695718013625742, 14519977860574561767]};
+  let result3: Fe = Fe{ls: [2309392440375388613, 1135074464031845990, 12738695718013625742, 14519977860574561767]};
   
-  let mont_form = fe_to_montgomery(a);
-  let output = fe_mul(mont_form,mont_form);
-  assert_eq_fe(result, fe_from_montgomery(output));
+  let mont_form = fe_to_montgomery(a2);
+  let output3 = fe_mul(mont_form,mont_form);
+  assert_eq_fe(result3, fe_from_montgomery(output3));
 }
