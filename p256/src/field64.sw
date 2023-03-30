@@ -12,6 +12,9 @@ pub struct Fe {
 // 18446744073709551615 + 4294967295 * 2ˆ64 + 18446744069414584321 * 2ˆ192
 const modulus: [u64; 4] = [18446744073709551615, 4294967295, 0, 18446744069414584321];
 
+// R^2 = 2^512 mod p = 134799733323198995502561713907086292154532538166959272814710328655875
+const R_2: [u64; 4] = [3, 18446744056529682431, 18446744073709551614, 21474836477];
+
 fn sub_inner(l: [u64; 5], r: [u64; 5]) -> Fe {
     let (w0, borrow0) = sbb(l[0], r[0], 0);
     let (w1, borrow1) = sbb(l[1], r[1], borrow0);
@@ -49,7 +52,7 @@ pub fn fe_sub(a: Fe, b: Fe) -> Fe {
 }
 
 fn montgomery_reduce(r: [u64; 8]) -> Fe {
-    //r0=r1=r2=r3=1 and r4=r5=r6=r7=0
+    
     let r0 = r[0];
     let r1 = r[1];
     let r2 = r[2];
@@ -60,57 +63,24 @@ fn montgomery_reduce(r: [u64; 8]) -> Fe {
     let r7 = r[7];
 
     let (r1, carry) = mac(r1, r0, modulus[1], r0);
-    // log(r1);//2
-    // log(carry);//0
-
     let (r2, carry) = adc(r2, 0, carry);
-    // log(r2);//1
-    // log(carry);//0
     let (r3, carry) = mac(r3, r0, modulus[3], carry);
-    // log(modulus[3]);
-    // log(r0);
-    // log(r3);//0
-    // log(carry);//1
     let (r4, carry2) = adc(r4, 0, carry);
-    // log(r4);//1
-    // log(carry2);//0
+
     let (r2, carry) = mac(r2, r1, modulus[1], r1);
-    // log(r2);//3
-    // log(carry);//0
     let (r3, carry) = adc(r3, 0, carry);
-    // log(r3);//0
-    // log(carry);//0
     let (r4, carry) = mac(r4, r1, modulus[3], carry);
-    // log(r4);//18446744073709551615
-    // log(carry);//1
     let (r5, carry2) = adc(r5, carry2, carry);
-    // log(r5);//1
-    // log(carry2);//0
 
     let (r3, carry) = mac(r3, r2, modulus[1], r2);
-    // log(r3);//3
-    // log(carry);//0
     let (r4, carry) = adc(r4, 0, carry);
-    // log(r4);//18446744073709551615
-    // log(carry);//0
     let (r5, carry) = mac(r5, r2, modulus[3], carry);
-    // log(r5);//18446744073709551614
-    // log(carry);//2
     let (r6, carry2) = adc(r6, carry2, carry);
-    // log(r6);//2
-    // log(carry2);//0
+
     let (r4, carry) = mac(r4, r3, modulus[1], r3);
-    // log(r4);//2
-    // log(carry);//1
     let (r5, carry) = adc(r5, 0, carry);
-    // log(r5);//18446744073709551615
-    // log(carry);//0
     let (r6, carry) = mac(r6, r3, modulus[3], carry);
-    // log(r6);//18446744073709551615
-    // log(carry);//2
     let (r7, r8) = adc(r7, carry2, carry);
-    // log(r7);//2
-    // log(r8);//0
 
     // Result may be within MODULUS of the correct value
     sub_inner(
@@ -122,59 +92,32 @@ fn montgomery_reduce(r: [u64; 8]) -> Fe {
 /// Returns `a * b mod p`.
 pub fn fe_mul(a: Fe, b: Fe) -> Fe {
     let (w0, carry) = mac(0, a.ls[0], b.ls[0], 0);
-    // log(w0);
-    // log(carry);
-
     let (w1, carry) = mac(0, a.ls[0], b.ls[1], carry);
-    // log(w1);
-    // log(carry);
     let (w2, carry) = mac(0, a.ls[0], b.ls[2], carry);
-    // log(w2);
-    // log(carry);
     let (w3, w4) = mac(0, a.ls[0], b.ls[3], carry);
-    // log(w3);
-    // log(carry);
 
     let (w1, carry) = mac(w1, a.ls[1], b.ls[0], 0);
-    // log(w1);
-    // log(carry);
     let (w2, carry) = mac(w2, a.ls[1], b.ls[1], carry);
-    // log(w2);
-    // log(carry);
     let (w3, carry) = mac(w3, a.ls[1], b.ls[2], carry);
-    // log(w3);
-    // log(carry);
     let (w4, w5) = mac(w4, a.ls[1], b.ls[3], carry);
-    // log(w4);
-    // log(carry);
-
 
     let (w2, carry) = mac(w2, a.ls[2], b.ls[0], 0);
-    // log(w2);
-    // log(carry);
     let (w3, carry) = mac(w3, a.ls[2], b.ls[1], carry);
-    // log(w3);
-    // log(carry);
     let (w4, carry) = mac(w4, a.ls[2], b.ls[2], carry);
-    // log(w4);
-    // log(carry);
     let (w5, w6) = mac(w5, a.ls[2], b.ls[3], carry);
-    // log(w5);
-    // log(carry); 
-
 
     let (w3, carry) = mac(w3, a.ls[3], b.ls[0], 0);
-    // log(w3);
-    // log(carry);
     let (w4, carry) = mac(w4, a.ls[3], b.ls[1], carry);
-    // log(w4);
-    // log(carry);
     let (w5, carry) = mac(w5, a.ls[3], b.ls[2], carry);
-    // log(w5);
-    // log(carry);
     let (w6, w7) = mac(w6, a.ls[3], b.ls[3], carry);
-    // log(w6);
-    // log(carry);
 
     montgomery_reduce([w0, w1, w2, w3, w4, w5, w6, w7])
+}
+
+pub fn fe_from_montgomery(w: Fe) -> Fe {
+    montgomery_reduce([w.ls[0], w.ls[1], w.ls[2], w.ls[3], 0, 0, 0, 0])
+}
+
+pub fn fe_to_montgomery(w: Fe) -> Fe {
+    fe_mul(w, Fe{ls: R_2})
 }
