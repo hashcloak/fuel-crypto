@@ -142,49 +142,6 @@ pub fn fe_square(w: FieldElement) -> FieldElement {
     fe_mul(w, w)
 }
 
-// p = 2^256 - 2^224 + 2^192 + 2^96 - 1 
-// Returns b such that b * a ≡ 1 mod p
-// from FieldElementrmat's theorem, b ≡ a^(p-2) mod p
-// pub fn FieldElement_inverse(w: FieldElement) -> FieldElement {    
-
-//     let t_2 = FieldElement_square(w); // 2
-//     let t_3 = FieldElement_mul(t_2, w) // 3
-//     let t_6 = FieldElement_square(t_3); // 6
-//     let t_7 = FieldElement_mul(t_6, w); // 7
-//     let t_56 = t_7;
-//     let mut i = 0;
-//     while i < 3 {
-//         t_57 = FieldElement_square(t_56); // 7*8 = 56
-//         i = i+1;
-//     }
-
-//     let t_63 = FieldElement_mul(t_57, t_7); // 63 = 2^6 - 1
-
-//     let t_12_6 = t_63;
-//     i = 0;
-//     while i < 6 {
-//         t_12_6 = FieldElement_square(t_12_6); // (2^6 - 1) * 2^6 = 2^12 - 2^6
-//         i = i + 1;
-//     }
-
-//     let t_18_13_6 = FieldElement_mul(t_12_6, t_63); // 2^18 - 2^13 + 2^6
-
-//     let t_21_16_9 = t_18_13_6;
-//     i = 0;
-//     while i < 3 {
-//         t_21_16_9 = FieldElement_square(t_); // 2^21 - 2^16 + 2^9
-//         i = i+1;
-//     }
-//     let t_24_18_1 = FieldElement_mul(t_21_16_9, t_7); // 2^24 - 2^18 - 1
-
-//     let t_27_21_3 = t_24_18_1;
-//     i = 0;
-//     while i < 3 {
-//         t_27_21_3 = FieldElement_square(t_27_21_3); // 2^27 - 2^21 - 2^3
-//     }
-
-//     let t_27_21_0 = FieldElement_mul(t_27_21_3, t7); //2^27 - 2^21 - 1
-// }
 
 impl Add for FieldElement {
     fn add(self, other: Self) -> Self {

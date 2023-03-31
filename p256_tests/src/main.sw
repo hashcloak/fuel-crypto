@@ -3,8 +3,15 @@ contract;
 use p256::{
   field64::FieldElement, 
   field64::{fe_mul, fe_to_montgomery, fe_from_montgomery},
-  field::*
+  field::*,
 };
+
+use p256::{
+  scalar64::Scalar,
+  scalar64::*,
+  scalar::*
+  };
+
 use utils::choice::CtOption;
 
 abi MyContract {
@@ -16,6 +23,13 @@ abi MyContract {
   //field.sw
     fn sqrt(w: FieldElement) -> CtOption<FieldElement>;
     fn invert(w: FieldElement) -> CtOption<FieldElement>;
+    fn pow_vartime(w: FieldElement, exp: Vec<u64>) -> FieldElement;
+
+  //scalar64
+    fn scalar_add(a: Scalar, b: Scalar) -> Scalar;
+    fn scalar_sub(a: Scalar, b: Scalar) -> Scalar;
+    fn scalar_mul(a: Scalar, b: Scalar) -> Scalar;
+
 }
 
 impl MyContract for Contract {
@@ -38,4 +52,21 @@ impl MyContract for Contract {
     fn invert(w: FieldElement) -> CtOption<FieldElement> {
       w.invert()
     }
+
+    fn pow_vartime(w: FieldElement, exp: Vec<u64>) -> FieldElement {
+      w.pow_vartime(exp)
+    }
+
+    fn scalar_add(a: Scalar, b: Scalar) -> Scalar {
+        scalar_add(a,b)
+    }
+
+    fn scalar_sub(a: Scalar, b: Scalar) -> Scalar {
+        scalar_sub(a,b)
+    }
+
+    fn scalar_mul(a: Scalar, b: Scalar) -> Scalar {
+        scalar_mul(a,b)
+    }
+    
 }

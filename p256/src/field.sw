@@ -35,6 +35,25 @@ impl FieldElement {
 
 impl FieldElement {
 
+  // Zero element
+  fn zero() -> Self {
+    FieldElement{ls: [0,0,0,0]}
+  }
+
+  // Multiplicative identity.
+  fn one() -> Self {
+    FieldElement{ls:[1,0,0,0]}
+  }
+
+  fn is_odd(self) -> Choice {
+    Choice::from(self.ls[0] & 1)
+  }
+
+  fn square(self) -> Self {
+    self * self
+  }
+
+
   /// Returns the multiplicative inverse of self.
   ///
   /// Does not check that self is non-zero.
@@ -73,4 +92,34 @@ impl FieldElement {
   pub fn invert(self) -> CtOption<Self> {
       CtOption::new(self.invert_unchecked(), !self.is_zero())
   }
+
+  pub fn is_even(self) -> Choice {
+        !self.is_odd()
+    }
+
+  pub fn pow_vartime(self, exp: Vec<u64>) -> Self {
+        let mut res = Self::one();
+        let mut i = exp.len();
+
+        while i > 0 {
+            i -= 1;
+
+            let mut j = 64;
+            while j > 0 {
+                j -= 1;
+                res = res.square();
+                let mut exp_i: u64 = 0;
+                match(exp.get(i)) {
+                  Option::Some(x) => exp_i = x,
+                  Option::None => exp_i = 0,
+                }
+
+                if ((exp_i >> j) & 1) == 1 {
+                    res = res * self;
+                }
+            }
+        }
+
+        res
+    }
 }
