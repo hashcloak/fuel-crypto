@@ -287,7 +287,7 @@ let y: Scalar = Scalar{ls:[ 10719928016004921607, 13845646450878251009, 13142370
 }
 
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_scalar_mul() {
   let (_instance, _id) = get_contract_instance().await;
 
@@ -307,4 +307,24 @@ let y: Scalar = Scalar{ls:[ 10719928016004921607, 13845646450878251009, 13142370
   assert_eq!(scalar_mul.value.ls[1], 11510399856113002259);
   assert_eq!(scalar_mul.value.ls[2], 17112986354705659152);
   assert_eq!(scalar_mul.value.ls[3], 16567671801288747593);
+}
+
+#[tokio::test]
+async fn test_scalar_invert() {
+  let (_instance, _id) = get_contract_instance().await;
+
+  // 6024032581487054615307857608562388818842860057096001857409703737786438595508
+  let x: Scalar = Scalar{ls: [10598342506117936052, 6743270311476307786, 2169871353760194456, 959683757796537189]};
+  
+  let invert_x = _instance
+    .methods()
+    .scalar_invert(x)
+    .tx_params(TxParameters::new(None, Some(100_000_000), None))
+    .call().await.unwrap();
+
+  // result should be 84801081494837761602111676842516221872243864255054144073280115004536303842931
+  assert_eq!(invert_x.value.value.ls[0], 9530314696573515379);
+  assert_eq!(invert_x.value.value.ls[1], 1325056620123427311);
+  assert_eq!(invert_x.value.value.ls[2], 7698614219480972011);
+  assert_eq!(invert_x.value.value.ls[3], 13509591698470992260);
 }

@@ -4,7 +4,7 @@ dep field64;
 
 use field64::{FieldElement, fe_square, fe_mul};
 use utils::{
-  choice::*
+  choice::* //This wildcard import is needed because of importing ConstantTimeEq for u64 since it's a trait for a primitive type
   // choice::{CtOption, Choice, ConstantTimeEq}
 };
 
@@ -53,10 +53,7 @@ impl FieldElement {
     self * self
   }
 
-
-  /// Returns the multiplicative inverse of self.
-  ///
-  /// Does not check that self is non-zero.
+  // returns multiplicative inverse, does not check for input being zero
   pub fn invert_unchecked(self) -> Self {
     let t111 = self.multiply(fe_square(self.multiply(fe_square(self))));
     let t111111 = t111.multiply(t111.sqn(3));
@@ -69,7 +66,8 @@ impl FieldElement {
         .multiply(self)
   }
 
-  /// Returns the square root of self mod p, or `None` if no square root exists.
+  // returns square root of self mod p in the form CtOption(value: square_root, is_some: true)
+  // If there is no such element, the result is CtOption(value: xxx, is_some: false)
   pub fn sqrt(self) -> CtOption<Self> {
     let t111 = self * fe_square(self);
     let t1111 = t111 * t111.sqn(2);
@@ -88,7 +86,8 @@ impl FieldElement {
 }
 
 impl FieldElement {
-  /// Returns the multiplicative inverse of self, if self is non-zero.
+  // returns multiplicative inverse of self mod p in the form CtOption(value: inverse, is_some: true)
+  // If the input is zero, the result is CtOption(value: xxx, is_some: false)
   pub fn invert(self) -> CtOption<Self> {
       CtOption::new(self.invert_unchecked(), !self.is_zero())
   }

@@ -6,13 +6,9 @@ use utils::{
 }; 
 use core::ops::{Add, Subtract, Multiply};
 
-/// An element in the finite field modulo p = 2^{224}(2^{32} − 1) + 2^{192} + 2^{96} − 1.
-///
-/// The internal representation is in little-endian order. Elements are always in
-/// Montgomery form; i.e., FieldElement(a) = aR mod p, with R = 2^256.
-
 // Little endian
 // ls[0] + ls[1] * 2^64 + ls[2] * 2^128 + ls[3] * 2^192
+// FieldElements should be in Montgomery form i.e., FieldElement(a) = aR mod p, with R = 2^256
 pub struct FieldElement { 
   ls: [u64; 4] 
 }
@@ -31,9 +27,9 @@ fn sub_inner(l: [u64; 5], r: [u64; 5]) -> FieldElement {
     let (w3, borrow3) = sbb(l[3], r[3], borrow2);
     let (_, borrow4) = sbb(l[4], r[4], borrow3);
 
-    // If underflow occurred on the final limb, borrow = 0xfff...fff, otherwise
-    // borrow = 0x000...000. Thus, we use it as a mask to conditionally add the
-    // modulus.
+    // If l[4] < r[4] then borrow = 11...11, otherwise borrow 00...00
+    // If there was a borrow, 1x modulus has to bed added
+    // borrow4 is used as a mask
     let (w0, carry0) = adc(w0, modulus[0] & borrow4, 0);
     let (w1, carry1) = adc(w1, modulus[1] & borrow4, carry0);
     let (w2, carry2) = adc(w2, modulus[2] & borrow4, carry1);
@@ -48,7 +44,7 @@ pub fn fe_add(a: FieldElement, b: FieldElement) -> FieldElement {
     let (w2, carry2) = adc(a.ls[2], b.ls[2], carry1);
     let (w3, w4) = adc(a.ls[3], b.ls[3], carry2);
     
-    // Attempt to subtract the modulus, to ensure the result is in the field.
+    // To make sure result is within field, try to subtract modulus
     sub_inner(
         [w0, w1, w2, w3, w4],
         [modulus[0], modulus[1], modulus[2], modulus[3], 0],
@@ -91,7 +87,6 @@ fn montgomery_reduce(r: [u64; 8]) -> FieldElement {
     let (r6, carry) = mac(r6, r3, modulus[3], carry);
     let (r7, r8) = adc(r7, carry2, carry);
 
-    // Result may be within MODULUS of the correct value
     sub_inner(
         [r4, r5, r6, r7, r8],
         [modulus[0], modulus[1], modulus[2], modulus[3], 0],
@@ -141,7 +136,6 @@ pub fn fe_neg(w: FieldElement) -> FieldElement {
 pub fn fe_square(w: FieldElement) -> FieldElement {
     fe_mul(w, w)
 }
-
 
 impl Add for FieldElement {
     fn add(self, other: Self) -> Self {
