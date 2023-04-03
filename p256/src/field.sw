@@ -121,3 +121,16 @@ impl FieldElement {
   }
 
 }
+
+
+impl ConditionallySelectable for FieldElement {
+  // Select a if choice == 1 or select b if choice == 0, in constant time.
+  fn conditional_select(a: FieldElement, b: FieldElement, choice: Choice) -> FieldElement {
+      FieldElement{ ls: [
+          u64::conditional_select(a.ls[0], b.ls[0], choice),
+          u64::conditional_select(a.ls[1], b.ls[1], choice),
+          u64::conditional_select(a.ls[2], b.ls[2], choice),
+          u64::conditional_select(a.ls[3], b.ls[3], choice),
+      ]}
+  }
+}
