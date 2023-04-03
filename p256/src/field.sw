@@ -2,7 +2,7 @@ library field;
 
 dep field64;
 
-use field64::{FieldElement, fe_square, fe_mul};
+use field64::{FieldElement, fe_square, fe_mul, fe_to_montgomery, fe_from_montgomery};
 use utils::{
   choice::* //This wildcard import is needed because of importing ConstantTimeEq for u64 since it's a trait for a primitive type
   // choice::{CtOption, Choice, ConstantTimeEq}
@@ -96,29 +96,28 @@ impl FieldElement {
         !self.is_odd()
     }
 
-  pub fn pow_vartime(self, exp: Vec<u64>) -> Self {
-        let mut res = Self::one();
-        let mut i = exp.len();
+  pub fn pow_vartime(self, exp: [u64; 4]) -> Self {
+    let mut res = Self::one();
 
-        while i > 0 {
-            i -= 1;
+    let mut i = 4;
+    while i > 0 {
+      i -= 1;
 
-            let mut j = 64;
-            while j > 0 {
-                j -= 1;
-                res = res.square();
-                let mut exp_i: u64 = 0;
-                match(exp.get(i)) {
-                  Option::Some(x) => exp_i = x,
-                  Option::None => exp_i = 0,
-                }
+      let mut j = 64;
+      while j > 0 {
+        j -= 1;
+        // res = fe_to_montgomery(res);
+        res = res.square();
+        // res = fe_from_montgomery(res);
 
-                if ((exp_i >> j) & 1) == 1 {
-                    res = res * self;
-                }
-            }
+        if ((exp[i] >> j) & 1) == 1 {
+          // res = fe_to_montgomery(res);
+          res = res.multiply(self);
+          // res = fe_from_montgomery(res);
         }
-
-        res
+      }
     }
+    res
+  }
+
 }

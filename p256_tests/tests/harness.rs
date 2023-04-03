@@ -197,27 +197,34 @@ async fn test_invert() {
     assert_eq!(inv.value.ls[3], 18446744069414584321);
 }
 
+// To run the test, uncomment the fe_to_montgomery and fe_from_montgomery lines in pow_vartime
+#[tokio::test] #[ignore]
+async fn test_pow_vartime() {
+    let (_instance, _id) = get_contract_instance().await;
 
-// thread 'test_pow_vartime' panicked at 'called `Result::unwrap()` on an `Err` value: ProviderError("gas_limit(1000000) is lower than the estimated gas_used(1381987)")', tests/harness.rs:212:21
-// note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-// #[tokio::test]
-// async fn test_pow_vartime() {
-//     let (_instance, _id) = get_contract_instance().await;
-//     let mut exp: Vec<u64> = Vec::new();
-//     exp.push(4);
-//     // 59139082389495374972926751946201499749231456944901481987554600995611674860084
-//     let a: FieldElement = FieldElement{ls:[8293668300693101108, 9881061877981018291, 9534524411267565544, 9421399378650073936]};
-//     let pow_vartime = _instance
-//       .methods()
-//       .pow_vartime(a, exp)
-//       .call().await.unwrap();
+    // 59139082389495374972926751946201499749231456944901481987554600995611674860084
+    let a: FieldElement = FieldElement{ls:[8293668300693101108, 9881061877981018291, 9534524411267565544, 9421399378650073936]};
 
-//     //  113097665246986401796390346304073247450823990228174533995721746947810710753685
+    let montgomery_form = _instance
+      .methods()
+      .fe_to_montgomery(a.clone())
+      .call().await.unwrap();
+
+    let pow_vartime = _instance
+      .methods()
+      .pow_vartime(montgomery_form.value.clone(), [4,0,0,0])
+      .tx_params(TxParameters::new(None, Some(100_000_000), None))
+      .call().await.unwrap();
+
+    //  113097665246986401796390346304073247450823990228174533995721746947810710753685
     
-//     let expected: FieldElement = FieldElement{ls: [18077862325614776725, 13343880950817753919, 13722074626277446175, 18017497567293989711]};
+    let expected: FieldElement = FieldElement{ls: [18077862325614776725, 13343880950817753919, 13722074626277446175, 18017497567293989711]};
 
-//     assert_eq!(expected.ls[0], pow_vartime.value.ls[0]);
-// }
+    assert_eq!(expected.ls[0], pow_vartime.value.ls[0]);
+    assert_eq!(expected.ls[1], pow_vartime.value.ls[1]);
+    assert_eq!(expected.ls[2], pow_vartime.value.ls[2]);
+    assert_eq!(expected.ls[3], pow_vartime.value.ls[3]);
+}
 
 
 #[tokio::test] #[ignore]
@@ -309,7 +316,7 @@ let y: Scalar = Scalar{ls:[ 10719928016004921607, 13845646450878251009, 13142370
   assert_eq!(scalar_mul.value.ls[3], 16567671801288747593);
 }
 
-#[tokio::test]
+#[tokio::test] #[ignore]
 async fn test_scalar_invert() {
   let (_instance, _id) = get_contract_instance().await;
 

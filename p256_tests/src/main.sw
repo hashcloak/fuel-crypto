@@ -22,7 +22,7 @@ abi MyContract {
   //field.sw
     fn sqrt(w: FieldElement) -> CtOption<FieldElement>;
     fn invert(w: FieldElement) -> CtOption<FieldElement>;
-    fn pow_vartime(w: FieldElement, exp: Vec<u64>) -> FieldElement;
+    fn pow_vartime(w: FieldElement, exp: [u64;4]) -> FieldElement;
 
   //scalar64
     fn scalar_add(a: Scalar, b: Scalar) -> Scalar;
@@ -53,7 +53,7 @@ impl MyContract for Contract {
       w.invert()
     }
 
-    fn pow_vartime(w: FieldElement, exp: Vec<u64>) -> FieldElement {
+    fn pow_vartime(w: FieldElement, exp: [u64;4]) -> FieldElement {
       w.pow_vartime(exp)
     }
 
