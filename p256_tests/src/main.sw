@@ -1,25 +1,21 @@
 contract;
 
 use p256::{
-  field64::FieldElement, 
-  field64::{fe_mul, fe_to_montgomery, fe_from_montgomery},
-  field::*
-};
-
-use p256::{
+  field::FieldElement,
   scalar64::Scalar,
-  scalar::*
+  scalar::*,
+  affine::AffinePoint,
+  projective::ProjectivePoint,
+  point_arithmetic::{double, add, add_mixed}
 };
 
 use utils::choice::CtOption;
 
 abi MyContract {
-  // field64.sq
+  // field
     fn fe_mul(a: FieldElement, b: FieldElement) -> FieldElement;
     fn fe_to_montgomery(w: FieldElement) -> FieldElement;
     fn fe_from_montgomery(w: FieldElement) -> FieldElement;
-
-  //field.sw
     fn sqrt(w: FieldElement) -> CtOption<FieldElement>;
     fn invert(w: FieldElement) -> CtOption<FieldElement>;
     fn pow_vartime(w: FieldElement, exp: [u64;4]) -> FieldElement;
@@ -30,6 +26,11 @@ abi MyContract {
     fn scalar_mul(a: Scalar, b: Scalar) -> Scalar;
     fn scalar_invert(a: Scalar) -> CtOption<Scalar>;
 
+  // point arithmetic
+    fn affine_to_proj(p: AffinePoint) -> ProjectivePoint;
+    fn proj_double(p: ProjectivePoint) -> ProjectivePoint;
+    fn proj_add(p1: ProjectivePoint, p2: ProjectivePoint) -> ProjectivePoint;
+    fn proj_aff_add(p1_proj: ProjectivePoint, p2_aff: AffinePoint) -> ProjectivePoint;
 }
 
 impl MyContract for Contract {
@@ -38,11 +39,11 @@ impl MyContract for Contract {
     }
 
     fn fe_to_montgomery(w: FieldElement) -> FieldElement {
-      fe_to_montgomery(w)
+      w.fe_to_montgomery()
     }
 
     fn fe_from_montgomery(w: FieldElement) -> FieldElement {
-      fe_from_montgomery(w)
+      w.fe_from_montgomery()
     }
 
     fn sqrt(w: FieldElement) -> CtOption<FieldElement> {
@@ -71,6 +72,22 @@ impl MyContract for Contract {
 
     fn scalar_invert(a: Scalar) -> CtOption<Scalar> {
         a.scalar_invert()
+    }
+
+    fn affine_to_proj(p: AffinePoint) -> ProjectivePoint {
+      ProjectivePoint::from(p)
+    }
+
+    fn proj_double(p: ProjectivePoint) -> ProjectivePoint {
+      double(p)
+    }
+
+    fn proj_add(p1: ProjectivePoint, p2: ProjectivePoint) -> ProjectivePoint {
+      add(p1, p2)
+    }
+
+    fn proj_aff_add(p1_proj: ProjectivePoint, p2_aff: AffinePoint) -> ProjectivePoint {
+      add_mixed(p1_proj, p2_aff)
     }
     
 }

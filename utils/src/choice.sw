@@ -166,6 +166,14 @@ impl BitwiseOr for Choice {
     }
 }
 
+impl BitwiseXor for Choice {
+    // Returns the choice for the binary 'xor' of the inner values of self and other
+    // Note that we still can't use the `^` operator for this binary_xor, but have to use the function name
+    fn binary_xor(self, other: Self) -> Self {
+        Choice::from(self.c ^ other.c)
+    }
+}
+
 // Optional value intended to be in constant time
 pub struct CtOption<T> {
     value: T,
