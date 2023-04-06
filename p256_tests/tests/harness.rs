@@ -224,8 +224,8 @@ async fn test_pow_vartime() {
     assert_eq!(expected.ls[3], pow_vartime.value.ls[3]);
 }
 
-/*
-#[tokio::test] 
+
+#[tokio::test] #[ignore]
 async fn test_scalar_add_1() {
     let (_instance, _id) = get_contract_instance().await;
 
@@ -247,7 +247,7 @@ async fn test_scalar_add_1() {
     assert_eq!(scalar_add.value.ls[3], 5484740071188655816);
 }
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_scalar_add_2() {
   let (_instance, _id) = get_contract_instance().await;
 
@@ -269,7 +269,7 @@ let y2: Scalar = Scalar{ls:[ 10719928016004921607, 13845646450878251009, 1314237
   assert_eq!(scalar_add.value.ls[3], 6168719932526873529);
 }
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_scalar_sub() {
   let (_instance, _id) = get_contract_instance().await;
 
@@ -291,7 +291,7 @@ let y: Scalar = Scalar{ls:[ 10719928016004921607, 13845646450878251009, 13142370
   assert_eq!(scalar_sub.value.ls[3], 7093558989675447812);
 }
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_scalar_mul() {
   let (_instance, _id) = get_contract_instance().await;
 
@@ -313,7 +313,7 @@ let y: Scalar = Scalar{ls:[ 10719928016004921607, 13845646450878251009, 13142370
   assert_eq!(scalar_mul.value.ls[3], 16567671801288747593);
 }
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_scalar_invert() {
 
   let (_instance, _id) = get_contract_instance().await;
@@ -334,7 +334,6 @@ async fn test_scalar_invert() {
   assert_eq!(invert_x.value.value.ls[3], 13509591698470992260);
 }
 
-*/
 
 #[tokio::test]
 async fn test_proj_double_P() {
@@ -433,8 +432,8 @@ printed in fn double
     .call().await.unwrap();
 
 // This prints all logs in fn double (point_arithmetic.sw)
-  // let log_double = double_g.get_logs().unwrap();
-  // println!("{:#?}", log_double);
+  let log_double = double_g.get_logs().unwrap();
+  println!("{:#?}", log_double);
 
   let affine_result = _instance
     .methods()
