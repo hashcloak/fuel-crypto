@@ -6,7 +6,7 @@ abigen!(Contract(
     abi = "out/debug/p256_tests-abi.json"
 ));
 
-async fn get_contract_instance() -> (MyContract, ContractId) {
+async fn get_contract_instance() -> (MyContract<WalletUnlocked>, ContractId) {
     // Launch a local network and deploy the contract
     let mut wallets = launch_custom_provider_and_get_wallets(
         WalletsConfig::new(
@@ -23,10 +23,7 @@ async fn get_contract_instance() -> (MyContract, ContractId) {
     let id = Contract::deploy(
         "./out/debug/p256_tests.bin",
         &wallet,
-        TxParameters::default(),
-        StorageConfiguration::with_storage_path(Some(
-            "./out/debug/p256_tests-storage_slots.json".to_string(),
-        )),
+        DeployConfiguration::default(),
     )
     .await
     .unwrap();
@@ -36,7 +33,8 @@ async fn get_contract_instance() -> (MyContract, ContractId) {
     (instance, id.into())
 }
 
-#[tokio::test] #[ignore]
+
+#[tokio::test]#[ignore]
 async fn test_fe_mul_1() {
     let (_instance, _id) = get_contract_instance().await;
     let a: FieldElement = FieldElement{ls: [1,1,1,1]};
@@ -67,7 +65,7 @@ async fn test_fe_mul_1() {
     assert_eq!(expected, result_converted.value);
 }
 
-#[tokio::test] #[ignore]
+#[tokio::test]#[ignore]
 async fn test_fe_mul_2() {
     let (_instance, _id) = get_contract_instance().await;
     let a: FieldElement = FieldElement{ls: [13282407956253574712, 7557322358563246340, 14991082624209354397, 6631139461101160670]};
@@ -98,7 +96,7 @@ async fn test_fe_mul_2() {
     assert_eq!(expected, result_converted.value);
 }
 
-#[tokio::test] #[ignore]
+#[tokio::test]#[ignore]
 async fn test_fe_mul_3() {
     let (_instance, _id) = get_contract_instance().await;
     let a1: FieldElement = FieldElement{ls: [13282407956253574712, 7557322358563246340, 14991082624209354397, 6631139461101160670]};
@@ -130,7 +128,7 @@ async fn test_fe_mul_3() {
     assert_eq!(expected, result_converted.value);
 }
 
-#[tokio::test] #[ignore]
+#[tokio::test]#[ignore]
 async fn test_sqrt() {
     // Random nr 59139082389495374972926751946201499749231456944901481987554600995611674860084
     // 8293668300693101108, 9881061877981018291, 9534524411267565544, 9421399378650073936
@@ -145,7 +143,7 @@ async fn test_sqrt() {
     let sqrt_r = _instance
       .methods()
       .sqrt(r_form.value)
-      .tx_params(TxParameters::new(None, Some(100_000_000), None))
+      .tx_params(TxParameters::default().set_gas_limit(100_000_000))
       .call().await.unwrap();
 
     let result_converted = _instance
@@ -167,7 +165,7 @@ async fn test_sqrt() {
     */
 }
 
-#[tokio::test] #[ignore]
+#[tokio::test]#[ignore]
 async fn test_invert() {
     let (_instance, _id) = get_contract_instance().await;
     // root of unity 115792089210356248762697446949407573530086143415290314195533631308867097853950
@@ -182,7 +180,7 @@ async fn test_invert() {
     let inv_montgomery_form = _instance
       .methods()
       .invert(montgomery_form.value)
-      .tx_params(TxParameters::new(None, Some(100_000_000), None))
+      .tx_params(TxParameters::default().set_gas_limit(100_000_000))
       .call().await.unwrap();
 
     let inv = _instance
@@ -198,7 +196,7 @@ async fn test_invert() {
 }
 
 // To run the test, uncomment the fe_to_montgomery and fe_from_montgomery lines in pow_vartime
-#[tokio::test] #[ignore]
+#[tokio::test]#[ignore]
 async fn test_pow_vartime() {
     let (_instance, _id) = get_contract_instance().await;
 
@@ -213,7 +211,7 @@ async fn test_pow_vartime() {
     let pow_vartime = _instance
       .methods()
       .pow_vartime(montgomery_form.value.clone(), [4,0,0,0])
-      .tx_params(TxParameters::new(None, Some(100_000_000), None))
+      .tx_params(TxParameters::default().set_gas_limit(100_000_000))
       .call().await.unwrap();
 
     //  113097665246986401796390346304073247450823990228174533995721746947810710753685
@@ -226,8 +224,8 @@ async fn test_pow_vartime() {
     assert_eq!(expected.ls[3], pow_vartime.value.ls[3]);
 }
 
-
-#[tokio::test] #[ignore]
+/*
+#[tokio::test] 
 async fn test_scalar_add_1() {
     let (_instance, _id) = get_contract_instance().await;
 
@@ -249,7 +247,7 @@ async fn test_scalar_add_1() {
     assert_eq!(scalar_add.value.ls[3], 5484740071188655816);
 }
 
-#[tokio::test] #[ignore]
+#[tokio::test]
 async fn test_scalar_add_2() {
   let (_instance, _id) = get_contract_instance().await;
 
@@ -271,7 +269,7 @@ let y2: Scalar = Scalar{ls:[ 10719928016004921607, 13845646450878251009, 1314237
   assert_eq!(scalar_add.value.ls[3], 6168719932526873529);
 }
 
-#[tokio::test] #[ignore]
+#[tokio::test]
 async fn test_scalar_sub() {
   let (_instance, _id) = get_contract_instance().await;
 
@@ -293,7 +291,7 @@ let y: Scalar = Scalar{ls:[ 10719928016004921607, 13845646450878251009, 13142370
   assert_eq!(scalar_sub.value.ls[3], 7093558989675447812);
 }
 
-#[tokio::test]#[ignore]
+#[tokio::test]
 async fn test_scalar_mul() {
   let (_instance, _id) = get_contract_instance().await;
 
@@ -315,7 +313,7 @@ let y: Scalar = Scalar{ls:[ 10719928016004921607, 13845646450878251009, 13142370
   assert_eq!(scalar_mul.value.ls[3], 16567671801288747593);
 }
 
-#[tokio::test] #[ignore]
+#[tokio::test]
 async fn test_scalar_invert() {
 
   let (_instance, _id) = get_contract_instance().await;
@@ -326,7 +324,7 @@ async fn test_scalar_invert() {
   let invert_x = _instance
     .methods()
     .scalar_invert(x)
-    .tx_params(TxParameters::new(None, Some(100_000_000), None))
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000))
     .call().await.unwrap();
 
   // result should be 84801081494837761602111676842516221872243864255054144073280115004536303842931
@@ -336,261 +334,271 @@ async fn test_scalar_invert() {
   assert_eq!(invert_x.value.value.ls[3], 13509591698470992260);
 }
 
-// TODO complete test
+*/
+
 #[tokio::test]
-async fn test_proj_double() {
-  let (_instance, _id) = get_contract_instance().await;
-
-  let affine_point = AffinePoint {
-    x: FieldElement{ ls: [12666785159035633708, 8920888101277371171, 11689429229050541387, 4283474778233828756]},
-    y: FieldElement{ ls: [1189565538687329478, 1239862490461304627, 12605683394765277296, 17291001030956535886]},
-    infinity: 0u8
-  };
-
-  let proj_point = _instance
-    .methods()
-    .affine_to_proj(affine_point)
-    .call().await.unwrap();
-
-  let double_point = _instance
-    .methods()
-    .proj_double(proj_point.value)
-    .tx_params(TxParameters::new(None, Some(100_000_000), None))
-    .call().await.unwrap();
-
-  println!("double {:#?}", double_point.value);
+async fn test_proj_double_P() {
   /*
-    x and y same as `add` function, but z is different. 
+  EXPECTED from http://point-at-infinity.org/ecc/nisttv
+  k = 1
+x = 6B17D1F2E12C4247F8BCE6E563A440F277037D812DEB33A0F4A13945D898C296
+y = 4FE342E2FE1A7F9B8EE7EB4A7C0F9E162BCE33576B315ECECBB6406837BF51F5
 
-double ProjectivePoint {
-    x: FieldElement {
-        ls: [
-            15115213604804018773,
-            14825271215604679363,
-            18209176626028401976,
-            2443548026568239069,
-        ],
-    },
-    y: FieldElement {
-        ls: [
-            6149620218881675608,
-            12704572705094897425,
-            1013366523324741893,
-            10585157331569153230,
-        ],
-    },
-    z: FieldElement {
-        ls: [
-            18077235689792183344,
-            3618401707264396090,
-            4918924327568324049,
-            16756078894964822082,
-        ],
-    },
-}
-  */
-}
+k = 2
+x = 7CF27B188D034F7E8A52380304B51AC3C08969E277F21B35A60B48FC47669978
+ [9003393950442278782, 9967090510939364035, 13873736548487404341, 11964737083406719352]
 
-// TODO complete test
-#[tokio::test]
-async fn test_proj_add() {
-  let (_instance, _id) = get_contract_instance().await;
 
-  let affine_point_1 = AffinePoint {
-    x: FieldElement{ ls: [12666785159035633708, 8920888101277371171, 11689429229050541387, 4283474778233828756]},
-    y: FieldElement{ ls: [1189565538687329478, 1239862490461304627, 12605683394765277296, 17291001030956535886]},
-    infinity: 0u8
-  };
-  let affine_point_2 = AffinePoint {
-    x: FieldElement{ ls: [12666785159035633708, 8920888101277371171, 11689429229050541387, 4283474778233828756]},
-    y: FieldElement{ ls: [1189565538687329478, 1239862490461304627, 12605683394765277296, 17291001030956535886]},
-    infinity: 0u8
-  };
+y = 07775510DB8ED040293D9AC69F7430DBBA7DADE63CE982299E04B79D227873D1
+[537992211385471040, 2971701507003789531, 13438088067519447593, 11386427643415524305]
 
-  let proj_point_1 = _instance
-    .methods()
-    .affine_to_proj(affine_point_1)
-    .call().await.unwrap();
-
-  let proj_point_2 = _instance
-    .methods()
-    .affine_to_proj(affine_point_2)
-    .call().await.unwrap();
-
-  let double_point = _instance
-    .methods()
-    .proj_add(proj_point_1.value, proj_point_2.value)
-    .tx_params(TxParameters::new(None, Some(100_000_000), None))
-    .call().await.unwrap();
-
-  println!("proj add{:#?}", double_point.value);
-  /*
-  x and y same as `double` function, but z is different. 
-
-proj addProjectivePoint {
-    x: FieldElement {
-        ls: [
-            15115213604804018773,
-            14825271215604679363,
-            18209176626028401976,
-            2443548026568239069,
-        ],
-    },
-    y: FieldElement {
-        ls: [
-            6149620218881675608,
-            12704572705094897425,
-            1013366523324741893,
-            10585157331569153230,
-        ],
-    },
-    z: FieldElement {
-        ls: [
-            16379209700525303278,
-            4196642070481431767,
-            7469762217227053229,
-            6707428827071881437,
-        ],
-    },
-}
-  */
-}
-
-// TODO complete test
-#[tokio::test]
-async fn test_mixed_add() {
-  let (_instance, _id) = get_contract_instance().await;
-
-  let affine_point = AffinePoint {
-    x: FieldElement{ ls: [12666785159035633708, 8920888101277371171, 11689429229050541387, 4283474778233828756]},
-    y: FieldElement{ ls: [1189565538687329478, 1239862490461304627, 12605683394765277296, 17291001030956535886]},
-    infinity: 0u8
-  };
-  let affine_point_again = AffinePoint {
-    x: FieldElement{ ls: [12666785159035633708, 8920888101277371171, 11689429229050541387, 4283474778233828756]},
-    y: FieldElement{ ls: [1189565538687329478, 1239862490461304627, 12605683394765277296, 17291001030956535886]},
-    infinity: 0u8
-  };
-
-  let proj_point = _instance
-    .methods()
-    .affine_to_proj(affine_point)
-    .call().await.unwrap();
-
-  let double_point = _instance
-    .methods()
-    .proj_aff_add(proj_point.value, affine_point_again)
-    .tx_params(TxParameters::new(None, Some(100_000_000), None))
-    .call().await.unwrap();
-
-  println!("mixed add {:#?}", double_point.value);
-  /*
-  completely different results than the other 2
-mixed add ProjectivePoint {
-    x: FieldElement {
-        ls: [
-            1510801726910155195,
-            17090838458901703056,
-            6084968679010519560,
-            16405862338188255101,
-        ],
-    },
-    y: FieldElement {
-        ls: [
-            11836891411032767592,
-            3753498121545811263,
-            9306923703222062998,
-            1487259256437579147,
-        ],
-    },
-    z: FieldElement {
-        ls: [
-            4860301594197100376,
-            18441998756991201717,
-            18162882596332682578,
-            4226598687877098654,
-        ],
-    },
-}
-   */
-}
-
-/**
- * 
-Using GP Pari to test
+  Using GP Pari to test. Confirms 2G above.
 
 p = 2^256 - 2^224 + 2^192 + 2^96 - 1;
 a = -3;
 b = 41058363725152142129326129780047268409114441015993725554835256314039467401291;
 E = ellinit([a, b], p);
-U = [Mod(26887806963936644023076993916022178528598206976581727837826133769693683662892, 115792089210356248762697446949407573530086143415290314195533631308867097853951), Mod(108537372577990157610025549686808388768592354808226327274614912068426601145542, 115792089210356248762697446949407573530086143415290314195533631308867097853951)];
+U = [Mod(48439561293906451759052585252797914202762949526041747995844080717082404635286, 115792089210356248762697446949407573530086143415290314195533631308867097853951), Mod(36134250956749795798585127919587881956611106672985015071877198253568414405109, 115792089210356248762697446949407573530086143415290314195533631308867097853951)];
 V = elladd(E, U, U);
 print(V);
 
-random(E) (how random point U was generated)
+[Mod(56515219790691171413109057904011688695424810155802929973526481321309856242040, 115792089210356248762697446949407573530086143415290314195533631308867097853951), 
+[9003393950442278782, 9967090510939364035, 13873736548487404341, 11964737083406719352]
 
-[Mod(26887806963936644023076993916022178528598206976581727837826133769693683662892, 115792089210356248762697446949407573530086143415290314195533631308867097853951), 
-[4283474778233828756, 11689429229050541387, 8920888101277371171, 12666785159035633708]
-FieldElement{ ls: [12666785159035633708, 8920888101277371171, 11689429229050541387, 4283474778233828756]}
+Mod(3377031843712258259223711451491452598088675519751548567112458094635497583569, 115792089210356248762697446949407573530086143415290314195533631308867097853951)]
+[537992211385471040, 2971701507003789531, 13438088067519447593, 11386427643415524305]
 
-Mod(108537372577990157610025549686808388768592354808226327274614912068426601145542, 115792089210356248762697446949407573530086143415290314195533631308867097853951)]
-[17291001030956535886, 12605683394765277296, 1239862490461304627, 1189565538687329478]
-FieldElement{ ls: [1189565538687329478, 1239862490461304627, 12605683394765277296, 17291001030956535886]}
+  */
 
-elladd result
+/*
+printed in fn double
+[
+    "FieldElement { ls: [18099821236414877728, 5092245993689235377, 7041010286886820137, 7284524506192033442] }",
+    "FieldElement { ls: [7214726750803115408, 4252855811016884965, 10487075823600809682, 5289816126658556724] }",
+    "FieldElement { ls: [12884901888, 8589934590, 18446744060824649730, 18446744065119617027] }",
+    "FieldElement { ls: [7166778605029299033, 18155693884340548730, 1703741392458136724, 10205427827588253002] }",
+    "FieldElement { ls: [4568643859538882287, 4322823196193874234, 17967445894621907278, 13748229301322843188] }",
+    "FieldElement { ls: [11976420801272279623, 13850645975253386349, 9421061668449225141, 8193831690629627622] }",
+    "FieldElement { ls: [17482518330107287254, 4658449774046088520, 9816440931638123809, 6134751002474298546] }",
+    "FieldElement { ls: [8178952494405379769, 18041150114975315356, 670634891962685872, 17601809193598842499] }",
+    "FieldElement { ls: [6250501007200851046, 8911305585062973486, 1856772681529381875, 11424567129132855271] }",
+    "FieldElement { ls: [1452546935957033606, 1238469699646880663, 16485496329063198609, 10095750817030792521] }",
+    "FieldElement { ls: [5693741130416990544, 16710687439042473880, 17117259295456214390, 2407560174300564014] }",
+    "FieldElement { ls: [38654705666, 17179869178, 18446744035054845958, 18446744056529682441] }",
+    "FieldElement { ls: [4352398218899180863, 12878295711091990713, 7193519790225008994, 18375841270726419469] }",
+    "FieldElement { ls: [13057194656697542591, 1741398977266934315, 3133815296965475368, 18234035673350089766] }",
+    "FieldElement { ls: [17405975523170824286, 15276737963887836955, 2676286825605614453, 3406829462046417885] }",
+*/
 
-[Mod(74981475963429018701923941327168229552755005516444169298501561579389145521924, 115792089210356248762697446949407573530086143415290314195533631308867097853951), 
- (reverse order) [11945238284211116874, 5617380685649542436, 11264790011350711105, 8189955845634072324]
-
-Mod(71214888696418130043612352873464034692680087082336694427205823938179702081608, 115792089210356248762697446949407573530086143415290314195533631308867097853951)]
- (reverse order) [11345186313446163181, 4471073799328713103, 7167355551294680272, 3629897320574371912]
-
- This is completely different than the double, add, and mixadd results....
- * */ 
-
- #[tokio::test]#[ignore = "already tested"]
-async fn test_affine_to_proj() {
+  // [7716867327612699207, 17923454489921339634, 8575836109218198432, 17627433388654248598]
   let (_instance, _id) = get_contract_instance().await;
 
-  let random_affine_point = AffinePoint {
-    x: FieldElement{ ls: [12666785159035633708, 8920888101277371171, 11689429229050541387, 4283474778233828756]},
-    y: FieldElement{ ls: [1189565538687329478, 1239862490461304627, 12605683394765277296, 17291001030956535886]},
-    infinity: 0u8
+  let generator = AffinePoint {
+    x: FieldElement{ls: [17627433388654248598, 8575836109218198432, 17923454489921339634, 7716867327612699207]},
+    y: FieldElement{ls: [14678990851816772085, 3156516839386865358, 10297457778147434006, 5756518291402817435]},
+    infinity: 0,
   };
 
-  let proj_point = _instance
+  let g_proj = _instance
     .methods()
-    .affine_to_proj(random_affine_point)
+    .affine_to_proj(generator)
     .call().await.unwrap();
 
-  println!("mixed add {:#?}", proj_point.value);
-  /*
-  correct 
-  mixed add ProjectivePoint {
-    x: FieldElement {
+// convert x, y and z to montgomery form
+  let x_converted = _instance
+    .methods()
+    .fe_to_montgomery(g_proj.value.clone().x)
+    .call().await.unwrap();
+
+  let y_converted = _instance
+    .methods()
+    .fe_to_montgomery(g_proj.value.clone().y)
+    .call().await.unwrap();
+
+  let z_converted = _instance
+    .methods()
+    .fe_to_montgomery(g_proj.value.clone().z)
+    .call().await.unwrap();
+
+  let generator_converted = ProjectivePoint {
+    x: x_converted.value,
+    y: y_converted.value,
+    z: z_converted.value
+  };
+
+  let double_g = _instance
+    .methods()
+    .proj_double(generator_converted)
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000))
+    .call().await.unwrap();
+
+// This prints all logs in fn double (point_arithmetic.sw)
+  // let log_double = double_g.get_logs().unwrap();
+  // println!("{:#?}", log_double);
+
+  let affine_result = _instance
+    .methods()
+    .proj_to_affine(double_g.value)
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000))
+    .call().await.unwrap();
+
+  let x_converted = _instance
+    .methods()
+    .fe_from_montgomery(affine_result.value.clone().x)
+    .call().await.unwrap();
+
+  let y_converted = _instance
+    .methods()
+    .fe_from_montgomery(affine_result.value.clone().y)
+    .call().await.unwrap();
+
+  println!("proj double x{:#?}", x_converted);
+  println!("proj double y{:#?}", y_converted);
+/*
+
+proj double xFuelCallResponse {
+    value: FieldElement {
         ls: [
-            12666785159035633708,
-            8920888101277371171,
-            11689429229050541387,
-            4283474778233828756,
+            1041009870486039829,
+            7586539782181911359,
+            5014257758766121731,
+            9511758770215838239,
         ],
     },
-    y: FieldElement {
+
+
+proj double yFuelCallResponse {
+    value: FieldElement {
         ls: [
-            1189565538687329478,
-            1239862490461304627,
-            12605683394765277296,
-            17291001030956535886,
+            9974546761783701891,
+            3034566683288325207,
+            13539152682327028406,
+            16909859332478720903,
         ],
     },
-    z: FieldElement {
-        ls: [
-            1,
-            0,
-            0,
-            0,
-        ],
-    },
+*/
 }
-   */
+
+
+#[tokio::test]#[ignore]
+async fn test_proj_add_P() {
+  /* (this is the same as the double test, just here for easier comparison)
+  EXPECTED from http://point-at-infinity.org/ecc/nisttv
+  k = 1
+x = 6B17D1F2E12C4247F8BCE6E563A440F277037D812DEB33A0F4A13945D898C296
+y = 4FE342E2FE1A7F9B8EE7EB4A7C0F9E162BCE33576B315ECECBB6406837BF51F5
+
+k = 2
+x = 7CF27B188D034F7E8A52380304B51AC3C08969E277F21B35A60B48FC47669978
+ [9003393950442278782, 9967090510939364035, 13873736548487404341, 11964737083406719352]
+
+
+y = 07775510DB8ED040293D9AC69F7430DBBA7DADE63CE982299E04B79D227873D1
+[537992211385471040, 2971701507003789531, 13438088067519447593, 11386427643415524305]
+
+  Using GP Pari to test. Confirms 2G above.
+
+p = 2^256 - 2^224 + 2^192 + 2^96 - 1;
+a = -3;
+b = 41058363725152142129326129780047268409114441015993725554835256314039467401291;
+E = ellinit([a, b], p);
+U = [Mod(48439561293906451759052585252797914202762949526041747995844080717082404635286, 115792089210356248762697446949407573530086143415290314195533631308867097853951), Mod(36134250956749795798585127919587881956611106672985015071877198253568414405109, 115792089210356248762697446949407573530086143415290314195533631308867097853951)];
+V = elladd(E, U, U);
+print(V);
+
+[Mod(56515219790691171413109057904011688695424810155802929973526481321309856242040, 115792089210356248762697446949407573530086143415290314195533631308867097853951), 
+[9003393950442278782, 9967090510939364035, 13873736548487404341, 11964737083406719352]
+
+Mod(3377031843712258259223711451491452598088675519751548567112458094635497583569, 115792089210356248762697446949407573530086143415290314195533631308867097853951)]
+[537992211385471040, 2971701507003789531, 13438088067519447593, 11386427643415524305]
+
+  */
+
+  // [7716867327612699207, 17923454489921339634, 8575836109218198432, 17627433388654248598]
+  let (_instance, _id) = get_contract_instance().await;
+
+  let generator = AffinePoint {
+    x: FieldElement{ls: [17627433388654248598, 8575836109218198432, 17923454489921339634, 7716867327612699207]},
+    y: FieldElement{ls: [14678990851816772085, 3156516839386865358, 10297457778147434006, 5756518291402817435]},
+    infinity: 0,
+  };
+
+  let g_proj = _instance
+    .methods()
+    .affine_to_proj(generator)
+    .call().await.unwrap();
+
+// convert x, y and z to montgomery form
+  let x_converted = _instance
+    .methods()
+    .fe_to_montgomery(g_proj.value.clone().x)
+    .call().await.unwrap();
+
+  let y_converted = _instance
+    .methods()
+    .fe_to_montgomery(g_proj.value.clone().y)
+    .call().await.unwrap();
+
+  let z_converted = _instance
+    .methods()
+    .fe_to_montgomery(g_proj.value.clone().z)
+    .call().await.unwrap();
+
+  let generator_converted = ProjectivePoint {
+    x: x_converted.value,
+    y: y_converted.value,
+    z: z_converted.value
+  };
+
+  let g_add_g = _instance
+    .methods()
+    .proj_add(generator_converted.clone(), generator_converted.clone())
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000))
+    .call().await.unwrap();
+
+// This prints all logs in fn add (point_arithmetic.sw)
+  let log_g_add_g = g_add_g.get_logs().unwrap();
+  println!("{:#?}", log_g_add_g);
+
+  let affine_result = _instance
+    .methods()
+    .proj_to_affine(g_add_g.value)
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000))
+    .call().await.unwrap();
+
+  let x_converted = _instance
+    .methods()
+    .fe_from_montgomery(affine_result.value.clone().x)
+    .call().await.unwrap();
+
+  let y_converted = _instance
+    .methods()
+    .fe_from_montgomery(affine_result.value.clone().y)
+    .call().await.unwrap();
+
+  println!("g add g x{:#?}", x_converted);
+  println!("g add g y{:#?}", y_converted);
+/*
+
+g add g xFuelCallResponse {
+    value: FieldElement {
+        ls: [
+            13414369097469890704,
+            9541241602842068969,
+            18424207313872341752,
+            11681539436332508528,
+        ],
+    },
+
+g add g yFuelCallResponse {
+    value: FieldElement {
+        ls: [
+            1470025092409025755,
+            15565308325270801120,
+            4239002935273656715,
+            1808729045065017054,
+        ],
+    },
+
+*/
 }
