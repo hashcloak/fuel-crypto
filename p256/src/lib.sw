@@ -1,8 +1,9 @@
-library p256;
+library;
 
-dep field;
-dep scalar64;
-dep scalar;
-dep affine;
-dep projective;
-dep point_arithmetic;
+mod field;
+mod scalar64;
+mod scalar;
+mod affine;
+mod projective;
+mod hash2curve;
+mod point_arithmetic;

@@ -1,4 +1,4 @@
-library utils;
+library;
 
-dep integer_utils;
-dep choice;
+mod integer_utils;
+mod choice;

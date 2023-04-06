@@ -1,4 +1,4 @@
-library choice;
+library;
 
 /*
 Copyright (c) 2016-2017 Isis Agora Lovecruft, Henry de Valence. All rights reserved.

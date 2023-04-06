@@ -1,14 +1,9 @@
-library point_arithmetic;
+library;
 
-dep field;
-dep hash2curve;
-dep projective;
-dep affine;
-
-use field::FieldElement;
-use hash2curve::{EQUATION_B, EQUATION_A};
-use projective::ProjectivePoint;
-use affine::AffinePoint;
+use ::field::FieldElement;
+use ::hash2curve::{EQUATION_B, EQUATION_A};
+use ::projective::ProjectivePoint;
+use ::affine::AffinePoint;
 use std::logging::log;
 
 // const R_2: [u64; 4] = [3, 18446744056529682431, 18446744073709551614, 21474836477];

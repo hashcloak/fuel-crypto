@@ -1,5 +1,4 @@
-library scalar64;
-
+library;
 
 use utils::{
   integer_utils::{adc, sbb, mac},

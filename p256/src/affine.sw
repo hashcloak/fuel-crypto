@@ -1,8 +1,6 @@
-library affine;
+library;
 
-dep field;
-
-use field::FieldElement;
+use ::field::FieldElement;
 use utils::{choice::*};
 
 // Point on a Weierstrass curve in affine coordinates.
