@@ -202,8 +202,7 @@ impl FieldElement {
       let mut x = self;
       let mut i = 0;
       while i < n {
-        let new_x = x.square();
-        x = new_x;
+        x = x.square();
         i += 1;
       }
       x
@@ -218,15 +217,16 @@ impl FieldElement {
 
   // returns multiplicative inverse, does not check for input being zero
   pub fn invert_unchecked(self) -> Self {
-    let t111 = self * (self * self.square()).square();
-    let t111111 = t111 * t111.sqn(3);
-    let x15 = t111111.sqn(6) * t111111.sqn(3) * t111;
-    let x16 = x15.square() * self; 
-    let i53 = (x16.sqn(16) * x16).sqn(15);
-    let x47 = x15 * i53;
-    x47.multiply(i53.sqn(17).multiply(self).sqn(143).multiply(x47).sqn(47))
-        .sqn(2)
-        .multiply(self)
+
+    let t111 = self.multiply(self.multiply(self.square()).square());
+        let t111111 = t111.multiply(t111.sqn(3));
+        let x15 = t111111.sqn(6).multiply(t111111).sqn(3).multiply(t111);
+        let x16 = x15.square().multiply(self);
+        let i53 = x16.sqn(16).multiply(x16).sqn(15);
+        let x47 = x15.multiply(i53);
+        x47.multiply(i53.sqn(17).multiply(self).sqn(143).multiply(x47).sqn(47))
+            .sqn(2)
+            .multiply(self)
   }
 
   // returns square root of self mod p in the form CtOption(value: square_root, is_some: true)
@@ -268,7 +268,9 @@ impl FieldElement {
   }
 
   pub fn pow_vartime(self, exp: [u64; 4]) -> Self {
-    let mut res = Self::one();
+    // all the input for field functions are assumed to be in montgomery form.
+    // hence, converting multiplicative identity into montgomery form
+    let mut res = Self::one().fe_to_montgomery(); 
 
     let mut i = 4;
     while i > 0 {
@@ -277,14 +279,10 @@ impl FieldElement {
       let mut j = 64;
       while j > 0 {
         j -= 1;
-        // res = fe_to_montgomery(res);
-        res = res.square();
-        // res = fe_from_montgomery(res);
 
+        res = res.square();
         if ((exp[i] >> j) & 1) == 1 {
-          // res = fe_to_montgomery(res);
           res = res.multiply(self);
-          // res = fe_from_montgomery(res);
         }
       }
     }

@@ -166,7 +166,7 @@ async fn test_sqrt() {
 }
 
 #[tokio::test]#[ignore]
-async fn test_invert() {
+async fn test_invert_1() {
     let (_instance, _id) = get_contract_instance().await;
     // root of unity 115792089210356248762697446949407573530086143415290314195533631308867097853950
     // [18446744073709551614, 4294967295, 0, 18446744069414584321]
@@ -214,14 +214,19 @@ async fn test_pow_vartime() {
       .tx_params(TxParameters::default().set_gas_limit(100_000_000))
       .call().await.unwrap();
 
+    let res_montgomery_form = _instance
+      .methods()
+      .fe_from_montgomery(pow_vartime.value)
+      .call().await.unwrap();
+
     //  113097665246986401796390346304073247450823990228174533995721746947810710753685
     
     let expected: FieldElement = FieldElement{ls: [18077862325614776725, 13343880950817753919, 13722074626277446175, 18017497567293989711]};
 
-    assert_eq!(expected.ls[0], pow_vartime.value.ls[0]);
-    assert_eq!(expected.ls[1], pow_vartime.value.ls[1]);
-    assert_eq!(expected.ls[2], pow_vartime.value.ls[2]);
-    assert_eq!(expected.ls[3], pow_vartime.value.ls[3]);
+    assert_eq!(expected.ls[0], res_montgomery_form.value.ls[0]);
+    assert_eq!(expected.ls[1], res_montgomery_form.value.ls[1]);
+    assert_eq!(expected.ls[2], res_montgomery_form.value.ls[2]);
+    assert_eq!(expected.ls[3], res_montgomery_form.value.ls[3]);
 }
 
 
@@ -336,60 +341,18 @@ async fn test_scalar_invert() {
 
 
 #[tokio::test]
-async fn test_proj_double_P() {
+async fn test_proj_double_1() {
   /*
   EXPECTED from http://point-at-infinity.org/ecc/nisttv
   k = 1
-x = 6B17D1F2E12C4247F8BCE6E563A440F277037D812DEB33A0F4A13945D898C296
-y = 4FE342E2FE1A7F9B8EE7EB4A7C0F9E162BCE33576B315ECECBB6406837BF51F5
+  x = 6B17D1F2E12C4247F8BCE6E563A440F277037D812DEB33A0F4A13945D898C296
+  y = 4FE342E2FE1A7F9B8EE7EB4A7C0F9E162BCE33576B315ECECBB6406837BF51F5
 
-k = 2
-x = 7CF27B188D034F7E8A52380304B51AC3C08969E277F21B35A60B48FC47669978
- [9003393950442278782, 9967090510939364035, 13873736548487404341, 11964737083406719352]
-
-
-y = 07775510DB8ED040293D9AC69F7430DBBA7DADE63CE982299E04B79D227873D1
-[537992211385471040, 2971701507003789531, 13438088067519447593, 11386427643415524305]
-
-  Using GP Pari to test. Confirms 2G above.
-
-p = 2^256 - 2^224 + 2^192 + 2^96 - 1;
-a = -3;
-b = 41058363725152142129326129780047268409114441015993725554835256314039467401291;
-E = ellinit([a, b], p);
-U = [Mod(48439561293906451759052585252797914202762949526041747995844080717082404635286, 115792089210356248762697446949407573530086143415290314195533631308867097853951), Mod(36134250956749795798585127919587881956611106672985015071877198253568414405109, 115792089210356248762697446949407573530086143415290314195533631308867097853951)];
-V = elladd(E, U, U);
-print(V);
-
-[Mod(56515219790691171413109057904011688695424810155802929973526481321309856242040, 115792089210356248762697446949407573530086143415290314195533631308867097853951), 
-[9003393950442278782, 9967090510939364035, 13873736548487404341, 11964737083406719352]
-
-Mod(3377031843712258259223711451491452598088675519751548567112458094635497583569, 115792089210356248762697446949407573530086143415290314195533631308867097853951)]
-[537992211385471040, 2971701507003789531, 13438088067519447593, 11386427643415524305]
-
+  k = 2
+  x = 7CF27B188D034F7E8A52380304B51AC3C08969E277F21B35A60B48FC47669978 = [9003393950442278782, 9967090510939364035, 13873736548487404341, 11964737083406719352]
+  y = 07775510DB8ED040293D9AC69F7430DBBA7DADE63CE982299E04B79D227873D1 = [537992211385471040, 2971701507003789531, 13438088067519447593, 11386427643415524305]
   */
 
-/*
-printed in fn double
-[
-    "FieldElement { ls: [18099821236414877728, 5092245993689235377, 7041010286886820137, 7284524506192033442] }",
-    "FieldElement { ls: [7214726750803115408, 4252855811016884965, 10487075823600809682, 5289816126658556724] }",
-    "FieldElement { ls: [12884901888, 8589934590, 18446744060824649730, 18446744065119617027] }",
-    "FieldElement { ls: [7166778605029299033, 18155693884340548730, 1703741392458136724, 10205427827588253002] }",
-    "FieldElement { ls: [4568643859538882287, 4322823196193874234, 17967445894621907278, 13748229301322843188] }",
-    "FieldElement { ls: [11976420801272279623, 13850645975253386349, 9421061668449225141, 8193831690629627622] }",
-    "FieldElement { ls: [17482518330107287254, 4658449774046088520, 9816440931638123809, 6134751002474298546] }",
-    "FieldElement { ls: [8178952494405379769, 18041150114975315356, 670634891962685872, 17601809193598842499] }",
-    "FieldElement { ls: [6250501007200851046, 8911305585062973486, 1856772681529381875, 11424567129132855271] }",
-    "FieldElement { ls: [1452546935957033606, 1238469699646880663, 16485496329063198609, 10095750817030792521] }",
-    "FieldElement { ls: [5693741130416990544, 16710687439042473880, 17117259295456214390, 2407560174300564014] }",
-    "FieldElement { ls: [38654705666, 17179869178, 18446744035054845958, 18446744056529682441] }",
-    "FieldElement { ls: [4352398218899180863, 12878295711091990713, 7193519790225008994, 18375841270726419469] }",
-    "FieldElement { ls: [13057194656697542591, 1741398977266934315, 3133815296965475368, 18234035673350089766] }",
-    "FieldElement { ls: [17405975523170824286, 15276737963887836955, 2676286825605614453, 3406829462046417885] }",
-*/
-
-  // [7716867327612699207, 17923454489921339634, 8575836109218198432, 17627433388654248598]
   let (_instance, _id) = get_contract_instance().await;
 
   let generator = AffinePoint {
@@ -432,8 +395,8 @@ printed in fn double
     .call().await.unwrap();
 
 // This prints all logs in fn double (point_arithmetic.sw)
-  let log_double = double_g.get_logs().unwrap();
-  println!("{:#?}", log_double);
+  // let log_double = double_g.get_logs().unwrap();
+  // println!("{:#?}", log_double);
 
   let affine_result = _instance
     .methods()
@@ -451,69 +414,242 @@ printed in fn double
     .fe_from_montgomery(affine_result.value.clone().y)
     .call().await.unwrap();
 
-  println!("proj double x{:#?}", x_converted);
-  println!("proj double y{:#?}", y_converted);
-/*
+  // println!("proj double x{:#?}", x_converted);
+  // println!("proj double y{:#?}", y_converted);
 
-proj double xFuelCallResponse {
-    value: FieldElement {
-        ls: [
-            1041009870486039829,
-            7586539782181911359,
-            5014257758766121731,
-            9511758770215838239,
-        ],
-    },
-
-
-proj double yFuelCallResponse {
-    value: FieldElement {
-        ls: [
-            9974546761783701891,
-            3034566683288325207,
-            13539152682327028406,
-            16909859332478720903,
-        ],
-    },
-*/
+  // k = 2
+  // x = 7CF27B188D034F7E8A52380304B51AC3C08969E277F21B35A60B48FC47669978 = (reverse)[9003393950442278782, 9967090510939364035, 13873736548487404341, 11964737083406719352]
+  // y = 07775510DB8ED040293D9AC69F7430DBBA7DADE63CE982299E04B79D227873D1 = (reverse)[537992211385471040, 2971701507003789531, 13438088067519447593, 11386427643415524305]
+  assert_eq!(x_converted.value.ls[0], 11964737083406719352);
+  assert_eq!(x_converted.value.ls[1], 13873736548487404341);
+  assert_eq!(x_converted.value.ls[2], 9967090510939364035);
+  assert_eq!(x_converted.value.ls[3], 9003393950442278782);
+  assert_eq!(y_converted.value.ls[0], 11386427643415524305);
+  assert_eq!(y_converted.value.ls[1], 13438088067519447593);
+  assert_eq!(y_converted.value.ls[2], 2971701507003789531);
+  assert_eq!(y_converted.value.ls[3], 537992211385471040);
 }
 
 
-#[tokio::test]#[ignore]
-async fn test_proj_add_P() {
-  /* (this is the same as the double test, just here for easier comparison)
+#[tokio::test]
+async fn test_proj_double_2() {
+  /*
   EXPECTED from http://point-at-infinity.org/ecc/nisttv
-  k = 1
-x = 6B17D1F2E12C4247F8BCE6E563A440F277037D812DEB33A0F4A13945D898C296
-y = 4FE342E2FE1A7F9B8EE7EB4A7C0F9E162BCE33576B315ECECBB6406837BF51F5
+  k = 3
+  x = 5ECBE4D1A6330A44C8F7EF951D4BF165E6C6B721EFADA985FB41661BC6E7FD6C = (reverse) [6830804848925149764, 14481306550553801061, 16629180030495074693, 18104864246493347180]
+  y = 8734640C4998FF7E374B06CE1A64A2ECD82AB036384FB83D9A79B127A27D5032 = (reverse) [9742521897846374270, 3984285777615168236, 15576456008133752893, 11131122737810853938]
 
-k = 2
-x = 7CF27B188D034F7E8A52380304B51AC3C08969E277F21B35A60B48FC47669978
- [9003393950442278782, 9967090510939364035, 13873736548487404341, 11964737083406719352]
-
-
-y = 07775510DB8ED040293D9AC69F7430DBBA7DADE63CE982299E04B79D227873D1
-[537992211385471040, 2971701507003789531, 13438088067519447593, 11386427643415524305]
-
-  Using GP Pari to test. Confirms 2G above.
-
-p = 2^256 - 2^224 + 2^192 + 2^96 - 1;
-a = -3;
-b = 41058363725152142129326129780047268409114441015993725554835256314039467401291;
-E = ellinit([a, b], p);
-U = [Mod(48439561293906451759052585252797914202762949526041747995844080717082404635286, 115792089210356248762697446949407573530086143415290314195533631308867097853951), Mod(36134250956749795798585127919587881956611106672985015071877198253568414405109, 115792089210356248762697446949407573530086143415290314195533631308867097853951)];
-V = elladd(E, U, U);
-print(V);
-
-[Mod(56515219790691171413109057904011688695424810155802929973526481321309856242040, 115792089210356248762697446949407573530086143415290314195533631308867097853951), 
-[9003393950442278782, 9967090510939364035, 13873736548487404341, 11964737083406719352]
-
-Mod(3377031843712258259223711451491452598088675519751548567112458094635497583569, 115792089210356248762697446949407573530086143415290314195533631308867097853951)]
-[537992211385471040, 2971701507003789531, 13438088067519447593, 11386427643415524305]
-
+  k = 6
+  x = B01A172A76A4602C92D3242CB897DDE3024C740DEBB215B4C6B0AAE93C2291A9 = (reverse) [12689480371216343084, 10579839724117548515, 165634889443579316, 14317131134123807145]
+  y = E85C10743237DAD56FEC0E2DFBA703791C00F7701C7E16BDFD7C48538FC77FE2 = (reverse) [16743275605901433557, 8064836623372059513, 2017884693948405437, 18265553712439590882]
   */
 
-  // [7716867327612699207, 17923454489921339634, 8575836109218198432, 17627433388654248598]
+  let (_instance, _id) = get_contract_instance().await;
+
+  let generator_3 = AffinePoint {
+    x: FieldElement{ls: [18104864246493347180, 16629180030495074693, 14481306550553801061, 6830804848925149764]},
+    y: FieldElement{ls: [11131122737810853938, 15576456008133752893, 3984285777615168236, 9742521897846374270]},
+    infinity: 0,
+  };
+
+  let g_proj = _instance
+    .methods()
+    .affine_to_proj(generator_3)
+    .call().await.unwrap();
+
+// convert x, y and z to montgomery form
+  let x_converted = _instance
+    .methods()
+    .fe_to_montgomery(g_proj.value.clone().x)
+    .call().await.unwrap();
+
+  let y_converted = _instance
+    .methods()
+    .fe_to_montgomery(g_proj.value.clone().y)
+    .call().await.unwrap();
+
+  let z_converted = _instance
+    .methods()
+    .fe_to_montgomery(g_proj.value.clone().z)
+    .call().await.unwrap();
+
+  let generator_converted = ProjectivePoint {
+    x: x_converted.value,
+    y: y_converted.value,
+    z: z_converted.value
+  };
+
+  let double_g = _instance
+    .methods()
+    .proj_double(generator_converted)
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000))
+    .call().await.unwrap();
+
+  let affine_result = _instance
+    .methods()
+    .proj_to_affine(double_g.value)
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000))
+    .call().await.unwrap();
+
+  let x_converted = _instance
+    .methods()
+    .fe_from_montgomery(affine_result.value.clone().x)
+    .call().await.unwrap();
+
+  let y_converted = _instance
+    .methods()
+    .fe_from_montgomery(affine_result.value.clone().y)
+    .call().await.unwrap();
+
+  assert_eq!(x_converted.value.ls[0], 14317131134123807145);
+  assert_eq!(x_converted.value.ls[1], 165634889443579316);
+  assert_eq!(x_converted.value.ls[2], 10579839724117548515);
+  assert_eq!(x_converted.value.ls[3], 12689480371216343084);
+  assert_eq!(y_converted.value.ls[0], 18265553712439590882);
+  assert_eq!(y_converted.value.ls[1], 2017884693948405437);
+  assert_eq!(y_converted.value.ls[2], 8064836623372059513);
+  assert_eq!(y_converted.value.ls[3], 16743275605901433557);
+}
+
+#[tokio::test]
+async fn test_proj_add() {
+  /* (this is the same as the double test, just here for easier comparison)
+  EXPECTED from http://point-at-infinity.org/ecc/nisttv
+  k = 2
+  x = 7CF27B188D034F7E8A52380304B51AC3C08969E277F21B35A60B48FC47669978 = (reverse) [9003393950442278782, 9967090510939364035, 13873736548487404341, 11964737083406719352]
+  y = 07775510DB8ED040293D9AC69F7430DBBA7DADE63CE982299E04B79D227873D1 = (reverse) [537992211385471040, 2971701507003789531, 13438088067519447593, 11386427643415524305]
+
+  k = 3
+  x = 5ECBE4D1A6330A44C8F7EF951D4BF165E6C6B721EFADA985FB41661BC6E7FD6C = (reverse) [6830804848925149764, 14481306550553801061, 16629180030495074693, 18104864246493347180]
+  y = 8734640C4998FF7E374B06CE1A64A2ECD82AB036384FB83D9A79B127A27D5032 = (reverse) [9742521897846374270, 3984285777615168236, 15576456008133752893, 11131122737810853938]
+
+  k = 5
+  x = 51590B7A515140D2D784C85608668FDFEF8C82FD1F5BE52421554A0DC3D033ED = (reverse) [5861729009977606354, 15529757686913994719, 17261315495468721444, 2401907399252259821]
+  y = E0C17DA8904A727D8AE1BF36BF8A79260D012F00D4D80888D1D0BB44FDA16DA4 = (reverse) [16195363897929790077, 10007490088856615206, 937081878087207048, 15118789854070140324]
+
+  */
+  let (_instance, _id) = get_contract_instance().await;
+
+  let generator_2 = AffinePoint {
+    x: FieldElement{ls: [11964737083406719352, 13873736548487404341, 9967090510939364035, 9003393950442278782]},
+    y: FieldElement{ls: [11386427643415524305, 13438088067519447593, 2971701507003789531, 537992211385471040]},
+    infinity: 0,
+  };
+
+  let generator_3 = AffinePoint {
+    x: FieldElement{ls: [18104864246493347180, 16629180030495074693, 14481306550553801061, 6830804848925149764]},
+    y: FieldElement{ls: [11131122737810853938, 15576456008133752893, 3984285777615168236, 9742521897846374270]},
+    infinity: 0,
+  };
+
+  let g_proj_2 = _instance
+    .methods()
+    .affine_to_proj(generator_2)
+    .call().await.unwrap();
+
+// convert x, y and z to montgomery form
+  let x_converted_2 = _instance
+    .methods()
+    .fe_to_montgomery(g_proj_2.value.clone().x)
+    .call().await.unwrap();
+
+  let y_converted_2 = _instance
+    .methods()
+    .fe_to_montgomery(g_proj_2.value.clone().y)
+    .call().await.unwrap();
+
+  let z_converted_2 = _instance
+    .methods()
+    .fe_to_montgomery(g_proj_2.value.clone().z)
+    .call().await.unwrap();
+
+  let generator_converted_2 = ProjectivePoint {
+    x: x_converted_2.value,
+    y: y_converted_2.value,
+    z: z_converted_2.value
+  };
+
+
+  let g_proj_3 = _instance
+    .methods()
+    .affine_to_proj(generator_3)
+    .call().await.unwrap();
+
+// convert x, y and z to montgomery form
+  let x_converted_3 = _instance
+    .methods()
+    .fe_to_montgomery(g_proj_3.value.clone().x)
+    .call().await.unwrap();
+
+  let y_converted_3 = _instance
+    .methods()
+    .fe_to_montgomery(g_proj_3.value.clone().y)
+    .call().await.unwrap();
+
+  let z_converted_3 = _instance
+    .methods()
+    .fe_to_montgomery(g_proj_3.value.clone().z)
+    .call().await.unwrap();
+
+  let generator_converted_3 = ProjectivePoint {
+    x: x_converted_3.value,
+    y: y_converted_3.value,
+    z: z_converted_3.value
+  };
+
+  let g_2_add_g_3 = _instance
+    .methods()
+    .proj_add(generator_converted_2.clone(), generator_converted_3.clone())
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000))
+    .call().await.unwrap();
+
+// This prints all logs in fn add (point_arithmetic.sw)
+  // let log_g_add_g = g_add_g.get_logs().unwrap();
+  // println!("{:#?}", log_g_add_g);
+
+  let affine_result = _instance
+    .methods()
+    .proj_to_affine(g_2_add_g_3.value)
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000))
+    .call().await.unwrap();
+
+  let x_converted = _instance
+    .methods()
+    .fe_from_montgomery(affine_result.value.clone().x)
+    .call().await.unwrap();
+
+  let y_converted = _instance
+    .methods()
+    .fe_from_montgomery(affine_result.value.clone().y)
+    .call().await.unwrap();
+
+  assert_eq!(x_converted.value.ls[0], 2401907399252259821);
+  assert_eq!(x_converted.value.ls[1], 17261315495468721444);
+  assert_eq!(x_converted.value.ls[2], 15529757686913994719);
+  assert_eq!(x_converted.value.ls[3], 5861729009977606354);
+  assert_eq!(y_converted.value.ls[0], 15118789854070140324);
+  assert_eq!(y_converted.value.ls[1], 937081878087207048);
+  assert_eq!(y_converted.value.ls[2], 10007490088856615206);
+  assert_eq!(y_converted.value.ls[3], 16195363897929790077);
+
+}
+
+
+
+#[tokio::test]
+async fn test_proj_double_add_equality() {
+  /*
+  EXPECTED from http://point-at-infinity.org/ecc/nisttv
+
+  k = 1
+  x = 6B17D1F2E12C4247F8BCE6E563A440F277037D812DEB33A0F4A13945D898C296
+  y = 4FE342E2FE1A7F9B8EE7EB4A7C0F9E162BCE33576B315ECECBB6406837BF51F5
+
+  k = 2
+  x = 7CF27B188D034F7E8A52380304B51AC3C08969E277F21B35A60B48FC47669978 = [9003393950442278782, 9967090510939364035, 13873736548487404341, 11964737083406719352]
+  y = 07775510DB8ED040293D9AC69F7430DBBA7DADE63CE982299E04B79D227873D1 = [537992211385471040, 2971701507003789531, 13438088067519447593, 11386427643415524305]
+  */
+
   let (_instance, _id) = get_contract_instance().await;
 
   let generator = AffinePoint {
@@ -549,55 +685,125 @@ Mod(3377031843712258259223711451491452598088675519751548567112458094635497583569
     z: z_converted.value
   };
 
-  let g_add_g = _instance
+  let double_g = _instance
     .methods()
-    .proj_add(generator_converted.clone(), generator_converted.clone())
+    .proj_double(generator_converted.clone())
     .tx_params(TxParameters::default().set_gas_limit(100_000_000))
     .call().await.unwrap();
 
-// This prints all logs in fn add (point_arithmetic.sw)
-  let log_g_add_g = g_add_g.get_logs().unwrap();
-  println!("{:#?}", log_g_add_g);
+  // This prints all logs in fn double (point_arithmetic.sw)
+  // let log_double = double_g.get_logs().unwrap();
 
-  let affine_result = _instance
+  let affine_result_double = _instance
     .methods()
-    .proj_to_affine(g_add_g.value)
+    .proj_to_affine(double_g.value)
     .tx_params(TxParameters::default().set_gas_limit(100_000_000))
     .call().await.unwrap();
 
   let x_converted = _instance
     .methods()
-    .fe_from_montgomery(affine_result.value.clone().x)
+    .fe_from_montgomery(affine_result_double.value.clone().x)
     .call().await.unwrap();
 
   let y_converted = _instance
     .methods()
-    .fe_from_montgomery(affine_result.value.clone().y)
+    .fe_from_montgomery(affine_result_double.value.clone().y)
     .call().await.unwrap();
 
-  println!("g add g x{:#?}", x_converted);
-  println!("g add g y{:#?}", y_converted);
-/*
+  
+  let add_g = _instance
+    .methods()
+    .proj_add(generator_converted.clone(), generator_converted.clone())
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000))
+    .call().await.unwrap();
 
-g add g xFuelCallResponse {
-    value: FieldElement {
-        ls: [
-            13414369097469890704,
-            9541241602842068969,
-            18424207313872341752,
-            11681539436332508528,
-        ],
-    },
 
-g add g yFuelCallResponse {
-    value: FieldElement {
-        ls: [
-            1470025092409025755,
-            15565308325270801120,
-            4239002935273656715,
-            1808729045065017054,
-        ],
-    },
+  let affine_result_add = _instance
+    .methods()
+    .proj_to_affine(add_g.value)
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000))
+    .call().await.unwrap();
+  
+  let x_converted_add = _instance
+    .methods()
+    .fe_from_montgomery(affine_result_add.value.clone().x)
+    .call().await.unwrap();
 
-*/
+  let y_converted_add = _instance
+    .methods()
+    .fe_from_montgomery(affine_result_add.value.clone().y)
+    .call().await.unwrap();
+
+  assert_eq!(x_converted.value.ls[0], x_converted_add.value.ls[0]);
+  assert_eq!(x_converted.value.ls[1], x_converted_add.value.ls[1]);
+  assert_eq!(x_converted.value.ls[2], x_converted_add.value.ls[2]);
+  assert_eq!(x_converted.value.ls[3], x_converted_add.value.ls[3]);
+  assert_eq!(y_converted.value.ls[0], y_converted_add.value.ls[0]);
+  assert_eq!(y_converted.value.ls[1], y_converted_add.value.ls[1]);
+  assert_eq!(y_converted.value.ls[2], y_converted_add.value.ls[2]);
+  assert_eq!(y_converted.value.ls[3], y_converted_add.value.ls[3]);
+
+}
+
+
+
+#[tokio::test]#[ignore]
+async fn test_invert_2() {
+    let (_instance, _id) = get_contract_instance().await;
+    // z = 91124962024886858784529270100042892326259481668464472788705119272298270350337
+
+    let z = FieldElement { ls: [1993877568177495041, 10345888787846536528, 7746511691117935375, 14517043990409914413]};
+
+    let montgomery_form = _instance
+      .methods()
+      .fe_to_montgomery(z)
+      .call().await.unwrap();
+
+    let inv_montgomery_form = _instance
+      .methods()
+      .invert(montgomery_form.value)
+      .tx_params(TxParameters::default().set_gas_limit(100_000_000))
+      .call().await.unwrap();
+
+    let inv = _instance
+      .methods()
+      .fe_from_montgomery(inv_montgomery_form.value.value)
+      .call().await.unwrap();
+
+// z^(-1) = 55173594307801430653488059849270067497062709750303379613668917872479280424320
+    assert_eq!(inv.value.ls[0], 4299806231468303744);
+    assert_eq!(inv.value.ls[1], 8024480717984164326);
+    assert_eq!(inv.value.ls[2], 11501998322799236989);
+    assert_eq!(inv.value.ls[3], 8789660679986197156);
+}
+
+
+#[tokio::test]#[ignore]
+async fn test_invert_3() {
+    let (_instance, _id) = get_contract_instance().await;
+    // x = 22655705336418459534985897682282060659277249245397833902983697318739469358813
+
+    let x = FieldElement { ls: [10634854829044225757, 351552716085025155, 10645315080955407736, 3609262091244858135]};
+
+    let montgomery_form = _instance
+      .methods()
+      .fe_to_montgomery(x)
+      .call().await.unwrap();
+
+    let inv_montgomery_form = _instance
+      .methods()
+      .invert(montgomery_form.value)
+      .tx_params(TxParameters::default().set_gas_limit(100_000_000))
+      .call().await.unwrap();
+
+    let inv = _instance
+      .methods()
+      .fe_from_montgomery(inv_montgomery_form.value.value)
+      .call().await.unwrap();
+
+// z^(-1) = 88647100750625721153149943186404157918844683715528760041837114016635683486024
+    assert_eq!(inv.value.ls[0], 12758252840858302792);
+    assert_eq!(inv.value.ls[1], 2862372623786672612);
+    assert_eq!(inv.value.ls[2], 7477786404377448950);
+    assert_eq!(inv.value.ls[3], 14122297915116537490);
 }
