@@ -1,10 +1,7 @@
-library hash2curve;
+library;
 
-dep field;
-dep projective;
-
-use field::FieldElement;
-use projective::ProjectivePoint;
+use ::field::FieldElement;
+use ::projective::ProjectivePoint;
 
 // a = -3 mod p
 pub const EQUATION_A: FieldElement = FieldElement{ ls:[

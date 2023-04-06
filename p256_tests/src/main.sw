@@ -28,6 +28,7 @@ abi MyContract {
 
   // point arithmetic
     fn affine_to_proj(p: AffinePoint) -> ProjectivePoint;
+    fn proj_to_affine(p: ProjectivePoint) -> AffinePoint;
     fn proj_double(p: ProjectivePoint) -> ProjectivePoint;
     fn proj_add(p1: ProjectivePoint, p2: ProjectivePoint) -> ProjectivePoint;
     fn proj_aff_add(p1_proj: ProjectivePoint, p2_aff: AffinePoint) -> ProjectivePoint;
@@ -76,6 +77,10 @@ impl MyContract for Contract {
 
     fn affine_to_proj(p: AffinePoint) -> ProjectivePoint {
       ProjectivePoint::from(p)
+    }
+
+    fn proj_to_affine(p: ProjectivePoint) -> AffinePoint {
+      p.into()
     }
 
     fn proj_double(p: ProjectivePoint) -> ProjectivePoint {

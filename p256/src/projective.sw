@@ -1,12 +1,9 @@
-library projective;
+library;
 
-dep affine;
-dep field;
-
-use affine::AffinePoint;
-use field::FieldElement;
-use std::convert::From;
-use utils::choice::{ConditionallySelectable, Choice, CtOption};
+use ::affine::AffinePoint;
+use ::field::FieldElement;
+use ::std::convert::From;
+use ::utils::choice::{ConditionallySelectable, Choice, CtOption};
 
 pub struct ProjectivePoint {
     x: FieldElement,

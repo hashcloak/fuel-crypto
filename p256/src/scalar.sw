@@ -1,8 +1,6 @@
-library scalar;
+library;
 
-dep scalar64;
-
-use scalar64::{Scalar, barrett_reduce, scalar_add, scalar_sub, scalar_mul};
+use ::scalar64::{Scalar, barrett_reduce, scalar_add, scalar_sub, scalar_mul};
 use utils::choice::*; //This wildcard import is needed because of importing ConstantTimeEq for u64 since it's a trait for a primitive type
 use core::ops::{Add, Subtract, Multiply};
 
