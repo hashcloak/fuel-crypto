@@ -5,8 +5,7 @@ use p256::{
   scalar64::Scalar,
   scalar::*,
   affine::AffinePoint,
-  projective::ProjectivePoint,
-  point_arithmetic::{double, add, add_mixed}
+  projective::{ProjectivePoint}
 };
 
 use utils::choice::CtOption;
@@ -84,15 +83,15 @@ impl MyContract for Contract {
     }
 
     fn proj_double(p: ProjectivePoint) -> ProjectivePoint {
-      double(p)
+      p.double()
     }
 
     fn proj_add(p1: ProjectivePoint, p2: ProjectivePoint) -> ProjectivePoint {
-      add(p1, p2)
+      p1.add(p2)
     }
 
     fn proj_aff_add(p1_proj: ProjectivePoint, p2_aff: AffinePoint) -> ProjectivePoint {
-      add_mixed(p1_proj, p2_aff)
+      p1_proj.add_mixed(p2_aff)
     }
     
 }

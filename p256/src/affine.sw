@@ -46,4 +46,11 @@ impl AffinePoint {
         Choice::from(self.infinity)
     }
 
+    pub fn neg(self) -> Self {
+      AffinePoint{
+        x: self.x,
+        y: FieldElement::negate(self.y),
+        infinity: self.infinity,
+      }
+    }
 }

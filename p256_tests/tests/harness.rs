@@ -807,3 +807,113 @@ async fn test_invert_3() {
     assert_eq!(inv.value.ls[2], 7477786404377448950);
     assert_eq!(inv.value.ls[3], 14122297915116537490);
 }
+
+#[tokio::test]
+async fn test_proj_affine_add() {
+
+  /*
+  EXPECTED from http://point-at-infinity.org/ecc/nisttv
+  k = 2
+  x = 7CF27B188D034F7E8A52380304B51AC3C08969E277F21B35A60B48FC47669978 = (reverse) [9003393950442278782, 9967090510939364035, 13873736548487404341, 11964737083406719352]
+  y = 07775510DB8ED040293D9AC69F7430DBBA7DADE63CE982299E04B79D227873D1 = (reverse) [537992211385471040, 2971701507003789531, 13438088067519447593, 11386427643415524305]
+  
+  k = 5
+  x = 51590B7A515140D2D784C85608668FDFEF8C82FD1F5BE52421554A0DC3D033ED = (reverse)[5861729009977606354, 15529757686913994719, 17261315495468721444, 2401907399252259821]
+  y = E0C17DA8904A727D8AE1BF36BF8A79260D012F00D4D80888D1D0BB44FDA16DA4 = (reverse)[16195363897929790077, 10007490088856615206, 937081878087207048, 15118789854070140324]
+
+  k = 7
+  x = 8E533B6FA0BF7B4625BB30667C01FB607EF9F8B8A80FEF5B300628703187B2A3 = (reverse)[10255606127077063494, 2718820016773528416, 9149617589957160795, 3460497826013229731]
+  y = 73EB1DBDE03318366D069F83A6F5900053C73633CB041B21C55E1A86C1F400B4 = (reverse)[8352802635236186166, 7856141987785052160, 6036853421590715169, 14221833839364538548]
+  */
+
+    let (_instance, _id) = get_contract_instance().await;
+    // x = 22655705336418459534985897682282060659277249245397833902983697318739469358813
+
+    let g_2 = AffinePoint {
+      x: FieldElement{ls: [11964737083406719352, 13873736548487404341, 9967090510939364035, 9003393950442278782]},
+      y: FieldElement{ls: [11386427643415524305, 13438088067519447593, 2971701507003789531, 537992211385471040]},
+      infinity: 0,
+    };
+  
+    let g_5 = AffinePoint {
+      x: FieldElement{ls: [2401907399252259821, 17261315495468721444, 15529757686913994719, 5861729009977606354]},
+      y: FieldElement{ls: [15118789854070140324, 937081878087207048, 10007490088856615206, 16195363897929790077]},
+      infinity: 0,
+    };
+  
+    let g_proj_2 = _instance
+      .methods()
+      .affine_to_proj(g_2)
+      .call().await.unwrap();
+  
+  // convert x, y and z to montgomery form
+    let x_converted_g_2 = _instance
+      .methods()
+      .fe_to_montgomery(g_proj_2.value.clone().x)
+      .call().await.unwrap();
+  
+    let y_converted_g_2 = _instance
+      .methods()
+      .fe_to_montgomery(g_proj_2.value.clone().y)
+      .call().await.unwrap();
+  
+    let z_converted_g_2 = _instance
+      .methods()
+      .fe_to_montgomery(g_proj_2.value.clone().z)
+      .call().await.unwrap();
+  
+    let g_2_converted_projective = ProjectivePoint {
+      x: x_converted_g_2.value,
+      y: y_converted_g_2.value,
+      z: z_converted_g_2.value
+    };
+  
+  let x_converted_g_5 = _instance
+    .methods()
+    .fe_to_montgomery(g_5.x)
+    .call().await.unwrap();
+
+  let y_converted_g_5 = _instance
+    .methods()
+    .fe_to_montgomery(g_5.y)
+    .call().await.unwrap();
+
+  let g_5_converted_affine = AffinePoint{x: x_converted_g_5.value, y: y_converted_g_5.value, infinity: 0};
+  
+  
+  let g_2_mix_add_g_5 = _instance
+    .methods()
+    .proj_aff_add(g_2_converted_projective, g_5_converted_affine)
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000))
+    .call().await.unwrap();
+
+  let affine_result = _instance
+    .methods()
+    .proj_to_affine(g_2_mix_add_g_5.value)
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000))
+    .call().await.unwrap();
+
+  let x_converted = _instance
+    .methods()
+    .fe_from_montgomery(affine_result.value.clone().x)
+    .call().await.unwrap();
+
+  let y_converted = _instance
+    .methods()
+    .fe_from_montgomery(affine_result.value.clone().y)
+    .call().await.unwrap();
+    /* 
+    k = 7
+    x = 8E533B6FA0BF7B4625BB30667C01FB607EF9F8B8A80FEF5B300628703187B2A3 = (reverse)[10255606127077063494, 2718820016773528416, 9149617589957160795, 3460497826013229731]
+    y = 73EB1DBDE03318366D069F83A6F5900053C73633CB041B21C55E1A86C1F400B4 = (reverse)[8352802635236186166, 7856141987785052160, 6036853421590715169, 14221833839364538548]
+    */   
+    assert_eq!(x_converted.value.ls[0], 3460497826013229731);
+    assert_eq!(x_converted.value.ls[1], 9149617589957160795);
+    assert_eq!(x_converted.value.ls[2], 2718820016773528416);
+    assert_eq!(x_converted.value.ls[3], 10255606127077063494);
+
+    assert_eq!(y_converted.value.ls[0], 14221833839364538548);
+    assert_eq!(y_converted.value.ls[1], 6036853421590715169);
+    assert_eq!(y_converted.value.ls[2], 7856141987785052160);
+    assert_eq!(y_converted.value.ls[3], 8352802635236186166);
+}
