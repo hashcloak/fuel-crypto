@@ -207,6 +207,10 @@ impl FieldElement {
       }
       x
   }
+
+  pub fn one_montgomery_form() -> Self {
+    FieldElement{ls: [1, 18446744069414584320, 18446744073709551615, 4294967294]}
+  }
 }
 
 impl FieldElement {
@@ -269,8 +273,8 @@ impl FieldElement {
 
   pub fn pow_vartime(self, exp: [u64; 4]) -> Self {
     // all the input for field functions are assumed to be in montgomery form.
-    // hence, converting multiplicative identity into montgomery form
-    let mut res = Self::one().fe_to_montgomery(); 
+    // hence, also taking the multiplicative identity in montgomery form
+    let mut res = Self::one_montgomery_form();
 
     let mut i = 4;
     while i > 0 {
