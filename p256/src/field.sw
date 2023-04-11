@@ -54,7 +54,7 @@ impl FieldElement {
     FieldElement{ls: [w,0,0,0]}
   }
 
-  fn is_odd(self) -> Choice {
+  pub fn is_odd(self) -> Choice {
     Choice::from(self.ls[0] & 1)
   }
 

@@ -3,6 +3,25 @@ library;
 use ::field::FieldElement;
 use utils::{choice::*};
 
+
+// a = -3 mod p
+pub const EQUATION_A: FieldElement = FieldElement{ ls:[
+  18446744073709551612,
+  4294967295,
+  0,
+  18446744069414584321
+]}
+
+// [6540974713487397863, 12964664127075681980, 7285987128567378166, 4309448131093880907]
+// const EQUATION_B: FieldElement =
+// FieldElement::from_hex("5ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604b");
+pub const EQUATION_B = FieldElement { ls: [
+  4309448131093880907,
+  7285987128567378166,
+  12964664127075681980,
+  6540974713487397863
+]};
+
 // Point on a Weierstrass curve in affine coordinates.
 pub struct AffinePoint {
 
@@ -53,4 +72,15 @@ impl AffinePoint {
         infinity: self.infinity,
       }
     }
+}
+
+impl AffinePoint {
+  pub fn decompress(x: FieldElement, y_is_odd: Choice) -> CtOption<Self> {
+    let alpha = x * x * x +  EQUATION_A + EQUATION_B;
+    let beta = alpha.sqrt();
+    let t1: u64 = FieldElement::is_odd(beta.value).c;
+    let t2: u64 = y_is_odd.c;
+    let y = FieldElement::conditional_select(FieldElement::negate(beta.value), beta.value,  t1.ct_eq(t2));
+    CtOption{value: AffinePoint{x: x,y: y, infinity: 0},is_some: beta.is_some} 
+  }
 }

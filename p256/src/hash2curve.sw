@@ -2,7 +2,8 @@ library;
 
 use ::field::FieldElement;
 use ::projective::ProjectivePoint;
-
+use utils::choice::Choice;
+use ::affine::AffinePoint;
 // a = -3 mod p
 pub const EQUATION_A: FieldElement = FieldElement{ ls:[
   18446744073709551612,
@@ -28,44 +29,48 @@ pub struct OsswuMapParams<F> {
     map_b: F,
     z: F,
 }
-/*
-commented out because don't know yet how to test this...
+
 
 const PARAMS: OsswuMapParams<FieldElement> = OsswuMapParams {
     // See section 8.7 in
     // <https://datatracker.ietf.org/doc/draft-irtf-cfrg-hash-to-curve/>
     c1: [
-        0xffff_ffff_bfff_ff0b,
-        0xffff_ffff_ffff_ffff,
-        0xffff_ffff_ffff_ffff,
-        0x3fff_ffff_ffff_ffff,
+        0xffffffffffffffff,
+        0x000000003fffffff,
+        0x4000000000000000,
+        0x3fffffffc0000000,
     ],
-    // 0x25e9711ae8c0dadc 0x46fdbcb72aadd8f4 0x250b65073012ec80 0xbc6ecb9c12973975
-    c2: FieldElement::from_bytes_unchecked([
-        0x25, 0xe9, 0x71, 0x1a, 0xe8, 0xc0, 0xda, 0xdc, 0x46, 0xfd, 0xbc, 0xb7, 0x2a, 0xad,
-        0xd8, 0xf4, 0x25, 0x0b, 0x65, 0x07, 0x30, 0x12, 0xec, 0x80, 0xbc, 0x6e, 0xcb, 0x9c,
-        0x12, 0x97, 0x39, 0x75,
-    ]),
-    // 0x3f8731abdd661adc 0xa08a5558f0f5d272 0xe953d363cb6f0e5d 0x405447c01a444533
-    map_a: FieldElement::from_bytes_unchecked([
-        0x3f, 0x87, 0x31, 0xab, 0xdd, 0x66, 0x1a, 0xdc, 0xa0, 0x8a, 0x55, 0x58, 0xf0, 0xf5,
-        0xd2, 0x72, 0xe9, 0x53, 0xd3, 0x63, 0xcb, 0x6f, 0x0e, 0x5d, 0x40, 0x54, 0x47, 0xc0,
-        0x1a, 0x44, 0x45, 0x33,
-    ]),
-    // 0x00000000000006eb
-    map_b: FieldElement::from_bytes_unchecked([
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x06, 0xeb,
-    ]),
-    // 0xffffffffffffffff 0xffffffffffffffff 0xffffffffffffffff 0xfffffffefffffc24
-    z: FieldElement::from_bytes_unchecked([
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe,
-        0xff, 0xff, 0xfc, 0x24,
-    ]),
+    // a3323851ba997e271ac5d59c3298bf50b2806c63966a1a6653e43951f64fdbe7, 2^64)
+    c2: FieldElement{ls:[
+        6045019624025611239, 
+        12862399710751234662, 
+        1929182882238611280, 
+        11759523500691914279
+      ]},
+    // fffffffc00000004000000000000000000000003fffffffffffffffffffffffc
+    map_a: FieldElement{ls: [
+        18446744073709551612, 
+        17179869183, 
+        0, 
+        18446744056529682436,
+    ]},
+    // dc30061d04874834e5a220abf7212ed6acf005cd78843090d89cdf6229c4bddf
+    map_b: FieldElement{ls: [
+        15608596021259845087, 
+        12461466548982526096,
+        16546823903870267094, 
+        15866188208926050356,
+    ]},
+    // fffffff50000000b00000000000000000000000afffffffffffffffffffffff5
+    z: FieldElement{ls: [
+        18446744073709551605, 
+        47244640255, 
+        0,
+        18446744026464911371,
+    ]},
 };
 
+// TODO: Testing not done
 impl FieldElement {
   pub fn osswu(self) -> (Self, Self) {
     // took out all "normalize" references. Should check if that's ok
@@ -78,7 +83,7 @@ impl FieldElement {
 
     let tv = Self::PARAMS.z * Self::PARAMS.map_a;
     // reference impl: xd.conditional_assign(&tv, xd.is_zero());
-    xd = conditional_select(tv, xd, xd.is_zero());
+    xd = Self::conditional_select(tv, xd, xd.is_zero());
 
     tv2 = xd.square(); //xd^2
     let gxd = tv2 * xd; // xd^3
@@ -104,35 +109,30 @@ impl FieldElement {
     // if e2 , x = x1, else x = x2
     let mut x = Self::conditional_select(x2n, x1n, e2);
     // xn / xd
-    x = x * xd.invert().unwrap();
+    x = x * xd.invert().value;
 
     // if e2, y = y1, else y = y2
     let mut y = Self::conditional_select(y2, y1, e2);
 
     // reference: y.conditional_assign(&-y, self.sgn0() ^ y.sgn0());
-    /*
-    impl Sgn0 for FieldElement {
-    fn sgn0(&self) -> Choice {
-        self.normalize().is_odd()
-    }
-}
-    */
-    y = conditional_select(y.negate(), y, self.is_odd().bitwise_xor(y.is_odd()));
+    
+    y = Self::conditional_select(y.negate(), y, self.is_odd() ^ (y.is_odd()));
     (x, y)
   }
 }
 
+// TODO: Testing not done
 impl FieldElement {
   fn map_to_curve(self) -> ProjectivePoint {
       let (qx, qy) = self.osswu();
 
-    // TODO what are a and b
-      let alpha = qx * qx * qx + (EQUATION_A * qx) + EQUATION_B;
-      let beta = alpha.sqrt();
-
-      let y = conditional_select(beta.negate(), beta, beta.is_odd().ct_eq(qy.is_odd()));
-            // TODO(tarcieri): assert that `qy` is correct? less circuitous conversion?
-      ProjectivePoint { x, y, infinity: 0 }
+    // TODO(tarcieri): assert that `qy` is correct? less circuitous conversion?
+        ProjectivePoint::from(AffinePoint::decompress(qx, qy.is_odd()).value)
   }
 }
-*/
+
+impl  FieldElement {
+    fn sgn0(self) -> Choice {
+        FieldElement::is_odd(self)
+    }
+}

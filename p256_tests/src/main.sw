@@ -2,7 +2,6 @@ contract;
 
 use p256::{
   field::FieldElement,
-  scalar64::Scalar,
   scalar::*,
   affine::AffinePoint,
   projective::{ProjectivePoint}
@@ -31,6 +30,7 @@ abi MyContract {
     fn proj_double(p: ProjectivePoint) -> ProjectivePoint;
     fn proj_add(p1: ProjectivePoint, p2: ProjectivePoint) -> ProjectivePoint;
     fn proj_aff_add(p1_proj: ProjectivePoint, p2_aff: AffinePoint) -> ProjectivePoint;
+    fn proj_mul(p: ProjectivePoint, k: Scalar) -> ProjectivePoint;
 }
 
 impl MyContract for Contract {
@@ -92,6 +92,10 @@ impl MyContract for Contract {
 
     fn proj_aff_add(p1_proj: ProjectivePoint, p2_aff: AffinePoint) -> ProjectivePoint {
       p1_proj.add_mixed(p2_aff)
+    }
+
+    fn proj_mul(p: ProjectivePoint, k: Scalar) -> ProjectivePoint {
+      p.mul(k)
     }
     
 }
