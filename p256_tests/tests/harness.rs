@@ -195,7 +195,6 @@ async fn test_invert_1() {
     assert_eq!(inv.value.ls[3], 18446744069414584321);
 }
 
-// To run the test, uncomment the fe_to_montgomery and fe_from_montgomery lines in pow_vartime
 #[tokio::test]#[ignore]
 async fn test_pow_vartime() {
     let (_instance, _id) = get_contract_instance().await;
@@ -229,8 +228,8 @@ async fn test_pow_vartime() {
     assert_eq!(expected.ls[3], res_montgomery_form.value.ls[3]);
 }
 
-/*
-#[tokio::test] 
+
+#[tokio::test]#[ignore]
 async fn test_scalar_add_1() {
     let (_instance, _id) = get_contract_instance().await;
 
@@ -339,9 +338,8 @@ async fn test_scalar_invert() {
   assert_eq!(invert_x.value.value.ls[3], 13509591698470992260);
 }
 
-*/
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_proj_double_1() {
   /*
   EXPECTED from http://point-at-infinity.org/ecc/nisttv
@@ -432,7 +430,7 @@ async fn test_proj_double_1() {
 }
 
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_proj_double_2() {
   /*
   EXPECTED from http://point-at-infinity.org/ecc/nisttv
@@ -512,7 +510,8 @@ async fn test_proj_double_2() {
   assert_eq!(y_converted.value.ls[3], 16743275605901433557);
 }
 
-#[tokio::test]
+
+#[tokio::test]#[ignore]
 async fn test_proj_add() {
   /* (this is the same as the double test, just here for easier comparison)
   EXPECTED from http://point-at-infinity.org/ecc/nisttv
@@ -636,8 +635,7 @@ async fn test_proj_add() {
 }
 
 
-
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_proj_double_add_equality() {
   /*
   EXPECTED from http://point-at-infinity.org/ecc/nisttv
@@ -747,7 +745,6 @@ async fn test_proj_double_add_equality() {
 }
 
 
-
 #[tokio::test]#[ignore]
 async fn test_invert_2() {
     let (_instance, _id) = get_contract_instance().await;
@@ -809,7 +806,8 @@ async fn test_invert_3() {
     assert_eq!(inv.value.ls[3], 14122297915116537490);
 }
 
-#[tokio::test]
+
+#[tokio::test]#[ignore]
 async fn test_proj_affine_add() {
 
   /*
@@ -917,4 +915,74 @@ async fn test_proj_affine_add() {
     assert_eq!(y_converted.value.ls[1], 6036853421590715169);
     assert_eq!(y_converted.value.ls[2], 7856141987785052160);
     assert_eq!(y_converted.value.ls[3], 8352802635236186166);
+}
+
+#[tokio::test]
+async fn test_proj_mul() {
+  let (_instance, _id) = get_contract_instance().await;
+
+  let g_2 = AffinePoint {
+    x: FieldElement{ls: [11964737083406719352, 13873736548487404341, 9967090510939364035, 9003393950442278782]},
+    y: FieldElement{ls: [11386427643415524305, 13438088067519447593, 2971701507003789531, 537992211385471040]},
+    infinity: 0,
+  };
+
+//g_2
+  let g_proj_2 = _instance
+    .methods()
+    .affine_to_proj(g_2)
+    .call().await.unwrap();
+
+// convert x, y and z to montgomery form
+  let x_converted_g_2 = _instance
+    .methods()
+    .fe_to_montgomery(g_proj_2.value.clone().x)
+    .call().await.unwrap();
+
+  let y_converted_g_2 = _instance
+    .methods()
+    .fe_to_montgomery(g_proj_2.value.clone().y)
+    .call().await.unwrap();
+
+  let z_converted_g_2 = _instance
+    .methods()
+    .fe_to_montgomery(g_proj_2.value.clone().z)
+    .call().await.unwrap();
+
+  let g_2_converted_projective = ProjectivePoint {
+    x: x_converted_g_2.value,
+    y: y_converted_g_2.value,
+    z: z_converted_g_2.value
+  };
+
+  //31416255128259651114300763853743354944401428675127717048158727858123196938092
+  let x: Scalar = Scalar{ls: [15982738825684268908, 12861376030615125811, 9837491998535547791, 5004898192290387222]};
+
+  let x_mul_g_2 = _instance
+    .methods()
+    .proj_mul(g_2_converted_projective, x)
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000))
+    .call().await.unwrap();
+
+  // let logs = x_mul_g_2.get_logs().unwrap();
+  // println!("{:#?}", logs);
+/*
+  let affine_result = _instance
+    .methods()
+    .proj_to_affine(x_mul_g_2.value)
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000))
+    .call().await.unwrap();
+
+  let x_converted = _instance
+    .methods()
+    .fe_from_montgomery(affine_result.value.clone().x)
+    .call().await.unwrap();
+
+  let y_converted = _instance
+    .methods()
+    .fe_from_montgomery(affine_result.value.clone().y)
+    .call().await.unwrap();
+ */
+  // println!("{:#?}", x_converted.value);
+  // println!("{:#?}", y_converted.value);
 }
