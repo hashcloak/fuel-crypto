@@ -2,8 +2,9 @@ library;
 
 use ::affine::AffinePoint;
 use ::field::FieldElement;
+use ::scalar::Scalar;
 use ::std::convert::From;
-use ::utils::choice::{ConditionallySelectable, Choice, CtOption};
+use ::utils::choice::*;//{ConditionallySelectable, Choice, CtOption}; because of ConditionallySelectable for u8
 use std::logging::log;
 
 pub struct ProjectivePoint {
@@ -39,6 +40,14 @@ impl ProjectivePoint {
     Self {
       x: FieldElement::zero(),
       y: FieldElement::one(),
+      z: FieldElement::zero()
+    }
+  }
+
+  fn identity_montgomery() -> Self {
+    Self {
+      x: FieldElement::zero(),
+      y: FieldElement::one_montgomery_form(),
       z: FieldElement::zero()
     }
   }
@@ -222,6 +231,16 @@ impl ProjectivePoint {
   }
 }
 
+impl u64 {
+  pub fn wrapping_sub(self, other: Self) -> Self {
+    if self >= other {
+      self - other
+    } else {
+      u64::max() - (other - self)
+    }
+  }
+}
+
 impl ProjectivePoint {
 
   pub fn double(self) -> Self {
@@ -235,5 +254,96 @@ impl ProjectivePoint {
   /// Returns `self - other`.
   fn sub_mixed(self, other: AffinePoint) -> Self {
       self.add_mixed(other.neg())
+  }
+}
+
+pub fn to_le_byte_array(w: Scalar) -> [u8;32] {
+  [
+    w.ls[0] & 0xff,
+    (w.ls[0] >> 8) & 0xff,
+    (w.ls[0] >> 16) & 0xff,
+    (w.ls[0] >> 24) & 0xff,
+    (w.ls[0] >> 32) & 0xff,
+    (w.ls[0] >> 40) & 0xff,
+    (w.ls[0] >> 48) & 0xff,
+    (w.ls[0] >> 56) & 0xff,
+
+    w.ls[1] & 0xff,
+    (w.ls[1] >> 8) & 0xff,
+    (w.ls[1] >> 16) & 0xff,
+    (w.ls[1] >> 24) & 0xff,
+    (w.ls[1] >> 32) & 0xff,
+    (w.ls[1] >> 40) & 0xff,
+    (w.ls[1] >> 48) & 0xff,
+    (w.ls[1] >> 56) & 0xff,
+
+    w.ls[2] & 0xff,
+    (w.ls[2] >> 8) & 0xff,
+    (w.ls[2] >> 16) & 0xff,
+    (w.ls[2] >> 24) & 0xff,
+    (w.ls[2] >> 32) & 0xff,
+    (w.ls[2] >> 40) & 0xff,
+    (w.ls[2] >> 48) & 0xff,
+    (w.ls[2] >> 56) & 0xff,
+
+    w.ls[3] & 0xff,
+    (w.ls[3] >> 8) & 0xff,
+    (w.ls[3] >> 16) & 0xff,
+    (w.ls[3] >> 24) & 0xff,
+    (w.ls[3] >> 32) & 0xff,
+    (w.ls[3] >> 40) & 0xff,
+    (w.ls[3] >> 48) & 0xff,
+    (w.ls[3] >> 56) & 0xff,
+    ]
+}
+
+impl ProjectivePoint {
+  pub fn mul(self, k: Scalar) -> Self {
+    let k_byte_array = to_le_byte_array(k);
+
+    let mut pc = [ProjectivePoint::identity_montgomery(); 16];
+    // pc[0] = Self::IDENTITY; redundant
+    pc[1] = self;
+
+    let mut i = 2;
+    while i < 16 {
+      if i % 2 == 0 {
+        pc[i] = pc[i/2].double();
+      } else {
+        pc[i] = pc[i-1].add(self);
+      }
+      i += 1;
+    }
+
+    let mut q: ProjectivePoint = ProjectivePoint::identity_montgomery();
+    let mut pos = 252; // UInt::BITS - 4
+
+    while true {
+      // current 4-bit chunk of k starting at bit position pos
+      let slot: u8 = (k_byte_array[pos >> 3] >> (pos & 7)) & 0xf;
+      let slot_u64: u64 = slot;
+
+      let mut t = ProjectivePoint::identity_montgomery();
+      let mut j = 1; 
+      while j < 16 {
+        t = ProjectivePoint::conditional_select(pc[j], t, Choice::from(((slot_u64 ^ j).wrapping_sub(1) >> 8) & 0x01));
+        j += 1;
+      }
+
+      q = q.add(t);
+      if pos == 0 {
+        break;
+      }
+
+      // TODO fix this
+      // q = q.double();
+      // q = q.double();
+      // q = q.double();
+      // q = q.double();
+      // can't do any doubling, gives the following error:
+      // Err(_) => panic!("Unable to offset into the data section more than 2^12 bits. Unsupported data section length.")
+      pos -= 4;
+    }
+    q
   }
 }
