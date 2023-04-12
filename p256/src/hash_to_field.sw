@@ -138,7 +138,7 @@ pub fn from_b256(input: b256) -> FieldElement {
 }
 
 // input data is a Vec because Sway doesn't support variable length array (yet)
-fn hash_to_field(data: Vec<u8>) -> [FieldElement; 2] {
+pub fn hash_to_field(data: Vec<u8>) -> [FieldElement; 2] {
   /*
   https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-5.3
 

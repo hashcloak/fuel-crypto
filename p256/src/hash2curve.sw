@@ -4,6 +4,7 @@ use ::field::FieldElement;
 use ::projective::ProjectivePoint;
 use utils::choice::Choice;
 use ::affine::AffinePoint;
+use ::hash_to_field::hash_to_field;
 // a = -3 mod p
 pub const EQUATION_A: FieldElement = FieldElement{ ls:[
   18446744073709551612,
@@ -135,4 +136,17 @@ impl  FieldElement {
     fn sgn0(self) -> Choice {
         FieldElement::is_odd(self)
     }
+}
+
+
+pub fn hash_to_curve (msg: Vec<u8>) -> ProjectivePoint{
+
+  let mut u = hash_to_field(msg);
+  let q0 = u[0].map_to_curve();
+  let q1 = u[1].map_to_curve();
+
+  // TODO: let p = q0.clear_cofactor() + q1.clear_cofactor(); do we need to implement cofactor?
+  let p = q0 + q1;
+  p
+
 }

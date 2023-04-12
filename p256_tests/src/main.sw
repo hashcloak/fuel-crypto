@@ -4,7 +4,8 @@ use p256::{
   field::FieldElement,
   scalar::*,
   affine::AffinePoint,
-  projective::{ProjectivePoint}
+  projective::{ProjectivePoint},
+  hash2curve::hash_to_curve
 };
 
 use utils::choice::CtOption;
@@ -31,6 +32,12 @@ abi MyContract {
     fn proj_add(p1: ProjectivePoint, p2: ProjectivePoint) -> ProjectivePoint;
     fn proj_aff_add(p1_proj: ProjectivePoint, p2_aff: AffinePoint) -> ProjectivePoint;
     fn proj_mul(p: ProjectivePoint, k: Scalar) -> ProjectivePoint;
+
+    // uncommenting this function for testing give error
+    // thread 'main' panicked at 'Unable to offset into the data section more than 2^12 bits. Unsupported data section length.', sway-core/src/asm_lang/allocated_ops.rs:608:19
+    // note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+    
+    // fn hash_to_curve(msg: Vec<u8>) -> ProjectivePoint;
 }
 
 impl MyContract for Contract {
@@ -98,4 +105,8 @@ impl MyContract for Contract {
       p.mul(k)
     }
     
+    // fn hash_to_curve(msg: Vec<u8>) -> ProjectivePoint {
+    //   hash_to_curve(msg)
+    // }
+
 }
