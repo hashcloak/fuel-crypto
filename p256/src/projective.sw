@@ -335,13 +335,7 @@ impl ProjectivePoint {
         break;
       }
 
-      // TODO fix this
-      // q = q.double();
-      // q = q.double();
-      // q = q.double();
-      // q = q.double();
-      // can't do any doubling, gives the following error:
-      // Err(_) => panic!("Unable to offset into the data section more than 2^12 bits. Unsupported data section length.")
+      q = q.double().double().double().double();
       pos -= 4;
     }
     q
