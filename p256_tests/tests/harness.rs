@@ -1,4 +1,7 @@
-use fuels::{prelude::*, tx::ContractId};
+use fuels::{prelude::*, 
+  tx::{ConsensusParameters, ContractId}
+};
+use fuel_core_chain_config::ChainConfig;
 
 // Load abi from json
 abigen!(Contract(
@@ -7,18 +10,31 @@ abigen!(Contract(
 ));
 
 async fn get_contract_instance() -> (MyContract<WalletUnlocked>, ContractId) {
-    // Launch a local network and deploy the contract
-    let mut wallets = launch_custom_provider_and_get_wallets(
-        WalletsConfig::new(
-            Some(1),             /* Single wallet */
-            Some(1),             /* Single coin (UTXO) */
-            Some(1_000_000_000), /* Amount per coin */
-        ),
-        None,
-        None,
-    )
-    .await;
-    let wallet = wallets.pop().unwrap();
+
+    let mut wallet = WalletUnlocked::new_random(None);
+    let num_assets = 1;
+    let coins_per_asset = 100;
+    let amount_per_coin = 100000;
+
+    let (coins, asset_ids) = setup_multiple_assets_coins(
+        wallet.address(),
+        num_assets,
+        coins_per_asset,
+        amount_per_coin,
+    );
+
+    // Custom gas limit
+    let consensus_parameters_config = ConsensusParameters::DEFAULT
+      .with_max_gas_per_tx(100_000_000_000).with_gas_per_byte(0);
+
+    let mut chain_config = ChainConfig::local_testnet();
+    // This is needed to allow for expensive operations
+    chain_config.block_gas_limit = 100_000_000_000;
+
+    let (client, addr) = setup_test_client(coins, vec![], None, Some(chain_config), Some(consensus_parameters_config)).await;
+
+    let provider = Provider::new(client);
+    wallet.set_provider(provider.clone());
 
     let id = Contract::deploy(
         "./out/debug/p256_tests.bin",
@@ -918,58 +934,55 @@ async fn test_proj_affine_add() {
 }
 
 #[tokio::test]
-async fn test_proj_mul() {
+async fn test_proj_mul_2g() {
+  // 2G should give the same output as addition formulas above
   let (_instance, _id) = get_contract_instance().await;
 
-  let g_2 = AffinePoint {
-    x: FieldElement{ls: [11964737083406719352, 13873736548487404341, 9967090510939364035, 9003393950442278782]},
-    y: FieldElement{ls: [11386427643415524305, 13438088067519447593, 2971701507003789531, 537992211385471040]},
+  let generator = AffinePoint {
+    x: FieldElement{ls: [17627433388654248598, 8575836109218198432, 17923454489921339634, 7716867327612699207]},
+    y: FieldElement{ls: [14678990851816772085, 3156516839386865358, 10297457778147434006, 5756518291402817435]},
     infinity: 0,
   };
 
-//g_2
-  let g_proj_2 = _instance
+  let g_proj = _instance
     .methods()
-    .affine_to_proj(g_2)
+    .affine_to_proj(generator)
     .call().await.unwrap();
 
 // convert x, y and z to montgomery form
-  let x_converted_g_2 = _instance
+  let x_converted_g = _instance
     .methods()
-    .fe_to_montgomery(g_proj_2.value.clone().x)
+    .fe_to_montgomery(g_proj.value.clone().x)
     .call().await.unwrap();
 
-  let y_converted_g_2 = _instance
+  let y_converted_g = _instance
     .methods()
-    .fe_to_montgomery(g_proj_2.value.clone().y)
+    .fe_to_montgomery(g_proj.value.clone().y)
     .call().await.unwrap();
 
-  let z_converted_g_2 = _instance
+  let z_converted_g = _instance
     .methods()
-    .fe_to_montgomery(g_proj_2.value.clone().z)
+    .fe_to_montgomery(g_proj.value.clone().z)
     .call().await.unwrap();
 
-  let g_2_converted_projective = ProjectivePoint {
-    x: x_converted_g_2.value,
-    y: y_converted_g_2.value,
-    z: z_converted_g_2.value
+  let g_converted_projective = ProjectivePoint {
+    x: x_converted_g.value,
+    y: y_converted_g.value,
+    z: z_converted_g.value
   };
 
-  //31416255128259651114300763853743354944401428675127717048158727858123196938092
-  let x: Scalar = Scalar{ls: [15982738825684268908, 12861376030615125811, 9837491998535547791, 5004898192290387222]};
+  //2
+  let x: Scalar = Scalar{ls: [2, 0, 0, 0]};
 
-  let x_mul_g_2 = _instance
+  let g_mul_2 = _instance
     .methods()
-    .proj_mul(g_2_converted_projective, x)
-    .tx_params(TxParameters::default().set_gas_limit(100_000_000))
+    .proj_mul(g_converted_projective, x)
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
     .call().await.unwrap();
 
-  // let logs = x_mul_g_2.get_logs().unwrap();
-  // println!("{:#?}", logs);
-/*
   let affine_result = _instance
     .methods()
-    .proj_to_affine(x_mul_g_2.value)
+    .proj_to_affine(g_mul_2.value)
     .tx_params(TxParameters::default().set_gas_limit(100_000_000))
     .call().await.unwrap();
 
@@ -982,7 +995,97 @@ async fn test_proj_mul() {
     .methods()
     .fe_from_montgomery(affine_result.value.clone().y)
     .call().await.unwrap();
- */
-  // println!("{:#?}", x_converted.value);
-  // println!("{:#?}", y_converted.value);
+ 
+  assert_eq!(x_converted.value.ls[0], 11964737083406719352);
+  assert_eq!(x_converted.value.ls[1], 13873736548487404341);
+  assert_eq!(x_converted.value.ls[2], 9967090510939364035);
+  assert_eq!(x_converted.value.ls[3], 9003393950442278782);
+  assert_eq!(y_converted.value.ls[0], 11386427643415524305);
+  assert_eq!(y_converted.value.ls[1], 13438088067519447593);
+  assert_eq!(y_converted.value.ls[2], 2971701507003789531);
+  assert_eq!(y_converted.value.ls[3], 537992211385471040);
+}
+
+#[tokio::test]
+async fn test_proj_mul_xg() {
+  let (_instance, _id) = get_contract_instance().await;
+
+/*
+xG with G the generator and x = 31416255128259651114300763853743354944401428675127717048158727858123196938092
+Calculate with PariGP
+
+p = 2^256 - 2^224 + 2^192 + 2^96 - 1;
+a = -3;
+b = 41058363725152142129326129780047268409114441015993725554835256314039467401291;
+E = ellinit([a, b], p);
+U = [Mod(48439561293906451759052585252797914202762949526041747995844080717082404635286, 115792089210356248762697446949407573530086143415290314195533631308867097853951), Mod(36134250956749795798585127919587881956611106672985015071877198253568414405109, 115792089210356248762697446949407573530086143415290314195533631308867097853951)];
+V = ellmul(E, U, 31416255128259651114300763853743354944401428675127717048158727858123196938092);
+print(V);
+*/
+  let generator = AffinePoint {
+    x: FieldElement{ls: [17627433388654248598, 8575836109218198432, 17923454489921339634, 7716867327612699207]},
+    y: FieldElement{ls: [14678990851816772085, 3156516839386865358, 10297457778147434006, 5756518291402817435]},
+    infinity: 0,
+  };
+
+  let g_proj = _instance
+    .methods()
+    .affine_to_proj(generator)
+    .call().await.unwrap();
+
+// convert x, y and z to montgomery form
+  let x_converted_g = _instance
+    .methods()
+    .fe_to_montgomery(g_proj.value.clone().x)
+    .call().await.unwrap();
+
+  let y_converted_g = _instance
+    .methods()
+    .fe_to_montgomery(g_proj.value.clone().y)
+    .call().await.unwrap();
+
+  let z_converted_g = _instance
+    .methods()
+    .fe_to_montgomery(g_proj.value.clone().z)
+    .call().await.unwrap();
+
+  let g_converted_projective = ProjectivePoint {
+    x: x_converted_g.value,
+    y: y_converted_g.value,
+    z: z_converted_g.value
+  };
+
+  //31416255128259651114300763853743354944401428675127717048158727858123196938092
+  let x: Scalar = Scalar{ls: [15982738825684268908, 12861376030615125811, 9837491998535547791, 5004898192290387222]};
+
+  let x_mul_g = _instance
+    .methods()
+    .proj_mul(g_converted_projective, x)
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
+    .call().await.unwrap();
+
+  let affine_result = _instance
+    .methods()
+    .proj_to_affine(x_mul_g.value)
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000))
+    .call().await.unwrap();
+
+  let x_converted = _instance
+    .methods()
+    .fe_from_montgomery(affine_result.value.clone().x)
+    .call().await.unwrap();
+
+  let y_converted = _instance
+    .methods()
+    .fe_from_montgomery(affine_result.value.clone().y)
+    .call().await.unwrap();
+
+  assert_eq!(x_converted.value.ls[0], 13567665731212626147);
+  assert_eq!(x_converted.value.ls[1], 5912556393462985994);
+  assert_eq!(x_converted.value.ls[2], 8580126093152460211);
+  assert_eq!(x_converted.value.ls[3], 7225374860094292523);
+  assert_eq!(y_converted.value.ls[0], 12585211474778133614);
+  assert_eq!(y_converted.value.ls[1], 8913053197310797155);
+  assert_eq!(y_converted.value.ls[2], 3465461371705416650);
+  assert_eq!(y_converted.value.ls[3], 8928676520536014294);
 }
