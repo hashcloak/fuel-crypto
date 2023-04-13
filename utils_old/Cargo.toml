@@ -1,7 +1,7 @@
 [project]
 name = "utils"
 version = "0.1.0"
-authors = ["Hashcloak"]
+authors = ["HashCloak"]
 edition = "2021"
 license = "Apache-2.0"
 
