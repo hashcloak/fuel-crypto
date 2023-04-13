@@ -2,8 +2,7 @@ contract;
 
 use p256::{
   field::FieldElement,
-  scalar64::Scalar,
-  scalar::*,
+  scalar::Scalar,
   affine::AffinePoint,
   projective::{ProjectivePoint}
 };

@@ -23,9 +23,7 @@ pub const EQUATION_A: FieldElement = FieldElement{ ls:[
   18446744069414584321
 ]}
 
-// [6540974713487397863, 12964664127075681980, 7285987128567378166, 4309448131093880907]
-// const EQUATION_B: FieldElement =
-// FieldElement::from_hex("5ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604b");
+// 0x5ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604b
 pub const EQUATION_B = FieldElement { ls: [
   4309448131093880907,
   7285987128567378166,
@@ -76,34 +74,27 @@ impl From<AffinePoint> for ProjectivePoint {
 
     fn into(self) -> AffinePoint {
       let zinv = self.z.invert();
-      // TODO add default when zinv None is: AffinePoint::IDENTITY
-      AffinePoint {
-        x: self.x * zinv.unwrap(),
-        y: self.y * zinv.unwrap(),
-        infinity: 0
+      if (zinv.is_some()) {
+        AffinePoint {
+          x: self.x * zinv.unwrap(),
+          y: self.y * zinv.unwrap(),
+          infinity: 0
+        }
+      } else {
+        AffinePoint::identity()
       }
     }
 }
 
-// These are specialised elliptic curve implementations for the case a = -3
+// These are specialised elliptic curve arithmetic implementations for the case a = -3
 pub fn point_double(point: ProjectivePoint) -> ProjectivePoint { 
-    // log(point.x);
-    // log(point.y);
-    // log(point.z);
-
     let xx = point.x.square(); // 1
     let yy = point.y.square(); // 2
     let zz = point.z.square(); // 3
     let xy2 = (point.x * point.y).double(); // 4, 5
     let xz2 = (point.x * point.z).double(); // 6, 7
 
-    // log(xx);
-    // log(yy);
-    // log(zz);
-    // log(xy2);
-    // log(xz2);
-
-    // since, field multiplication/square assumes the input to be in montgomery form
+    // since field multiplication/square assumes the input to be in montgomery form
     // Therefore, converting EQUATION_B into montgomery form
 
     let EQ_B = EQUATION_B.fe_to_montgomery();
@@ -114,32 +105,15 @@ pub fn point_double(point: ProjectivePoint) -> ProjectivePoint {
     let y_frag = yy_p_bzz3 * yy_m_bzz3; // 14
     let x_frag = yy_m_bzz3 * xy2; // 15
 
-    // log(bzz_part);
-    // log(bzz3_part);
-    // log(yy_m_bzz3);
-    // log(yy_p_bzz3);
-    // log(y_frag);
-    // log(x_frag);
-
     let zz3 = zz.double() + zz; // 16, 17
     let bxz2_part = (EQ_B * xz2) - (zz3 + xx); // 18, 19, 20
     let bxz6_part = bxz2_part.double() + bxz2_part; // 21, 22
     let xx3_m_zz3 = xx.double() + xx - zz3; // 23, 24, 25
 
-    // log(zz3);
-    // log(bxz2_part);
-    // log(bxz6_part);
-    // log(xx3_m_zz3);
-
     let y = y_frag + (xx3_m_zz3 * bxz6_part); // 26, 27
     let yz2 = (point.y * point.z).double(); // 28, 29
     let x = x_frag - (bxz6_part * yz2); // 30, 31
     let z = (yz2 * yy).double().double(); // 32, 33, 34
-
-    // log(yz2);
-    // log(x);
-    // log(y);
-    // log(z);
 
     ProjectivePoint { x, y, z }
 }
@@ -152,7 +126,7 @@ pub fn point_add(lhs: ProjectivePoint, rhs: ProjectivePoint) -> ProjectivePoint 
     let yz_pairs = ((lhs.y + lhs.z) * (rhs.y + rhs.z)) - (yy + zz); // 9, 10, 11, 12, 13
     let xz_pairs = ((lhs.x + lhs.z) * (rhs.x + rhs.z)) - (xx + zz); // 14, 15, 16, 17, 18
 
-    // since, field multiplication/square assumes the input to be in montgomery form
+    // since field multiplication/square assumes the input to be in montgomery form
     // Therefore, converting EQUATION_B into montgomery form
     
     let EQ_B = EQUATION_B.fe_to_montgomery();
@@ -165,11 +139,6 @@ pub fn point_add(lhs: ProjectivePoint, rhs: ProjectivePoint) -> ProjectivePoint 
     let bxz_part = (EQ_B * xz_pairs) - (zz3 + xx); // 25, 28, 29
     let bxz3_part = bxz_part.double() + bxz_part; // 30, 31
     let xx3_m_zz3 = xx.double() + xx - zz3; // 32, 33, 34
-
-    // log(xx);
-    // log(yy);
-    // log(zz);
-
 
     ProjectivePoint {
         x: (yy_p_bzz3 * xy_pairs) - (yz_pairs * bxz3_part), // 35, 39, 40
@@ -185,7 +154,7 @@ pub fn point_add_mixed(lhs: ProjectivePoint, rhs: AffinePoint) -> ProjectivePoin
     let yz_pairs = (rhs.y * lhs.z) + lhs.y; // 8, 9 (t4)
     let xz_pairs = (rhs.x * lhs.z) + lhs.x; // 10, 11 (y3)
 
-    // since, field multiplication/square assumes the input to be in montgomery form
+    // since field multiplication/square assumes the input to be in montgomery form
     // Therefore, converting EQUATION_B into montgomery form
     
     let EQ_B = EQUATION_B.fe_to_montgomery();
@@ -204,9 +173,8 @@ pub fn point_add_mixed(lhs: ProjectivePoint, rhs: AffinePoint) -> ProjectivePoin
         y: (yy_p_bzz3 * yy_m_bzz3) + (xx3_m_zz3 * bxz3_part), // 29, 30, 31
         z: (yy_m_bzz3 * yz_pairs) + (xy_pairs * xx3_m_zz3), // 34, 35, 36
     };
-    ret = ProjectivePoint::conditional_select(lhs, ret, rhs.is_identity());
-    // reference: ret.conditional_assign(lhs, rhs.is_identity());
-    ret
+
+    ProjectivePoint::conditional_select(lhs, ret, rhs.is_identity())
 }
 
 impl ProjectivePoint {
@@ -246,6 +214,7 @@ impl ProjectivePoint {
   pub fn double(self) -> Self {
     point_double(self)
   }
+  
   /// Returns `self - other`.
   pub fn sub(self, other: Self) -> Self {
       self.add(other.neg())
@@ -302,7 +271,6 @@ impl ProjectivePoint {
     let k_byte_array = to_le_byte_array(k);
 
     let mut pc = [ProjectivePoint::identity_montgomery(); 16];
-    // pc[0] = Self::IDENTITY; redundant
     pc[1] = self;
 
     let mut i = 2;
@@ -316,7 +284,7 @@ impl ProjectivePoint {
     }
 
     let mut q: ProjectivePoint = ProjectivePoint::identity_montgomery();
-    let mut pos = 252; // UInt::BITS - 4
+    let mut pos = 252;
 
     while true {
       // current 4-bit chunk of k starting at bit position pos
