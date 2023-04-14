@@ -5,4 +5,4 @@ license = "Apache-2.0"
 name = "bls12_381"
 
 [dependencies]
-utils = { path = "../utils" }#todo fix
+utils = { path = "../utils_old"}
