@@ -684,7 +684,7 @@ async fn test_proj_mul_2g() {
     .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
     .call().await.unwrap();
 
-  let (x_converted_x2g, y_converted_x2g) = proj_to_resulting_coordinates(&_methods, &x_mul_g.value).await;
+  let (x_converted_x2g, y_converted_x2g) = proj_to_resulting_coordinates(&_methods, &x_2_mul_g.value).await;
 
   assert_xy(x_converted_x2g, y_converted_x2g, 
     [8797506388050518575, 5381390155001572521, 14210276306527660856, 11433769691616765559],
