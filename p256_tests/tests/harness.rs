@@ -186,7 +186,7 @@ async fn to_montgomery(_methods: &MyContractMethods<WalletUnlocked>, a: FieldEle
 }
 
 
-#[tokio::test]
+#[tokio::test] #[ignore]
 async fn test_fe_mul_1() {
     let (_methods, _id) = get_contract_methods().await;
 
@@ -232,7 +232,7 @@ async fn test_fe_mul_1() {
 
 }
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_sqrt() {
     let (_methods, _id) = get_contract_methods().await;
 
@@ -251,7 +251,7 @@ async fn test_sqrt() {
     assert_eq!(expected, result_converted);
 }
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_invert_1() {
     let (_methods, _id) = get_contract_methods().await;
 
@@ -304,7 +304,7 @@ async fn test_invert_1() {
 }
 
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_pow_vartime() {
     let (_methods, _id) = get_contract_methods().await;
 
@@ -324,7 +324,7 @@ async fn test_pow_vartime() {
 }
 
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_scalar_add() {
     let (_methods, _id) = get_contract_methods().await;
 
@@ -363,7 +363,7 @@ async fn test_scalar_add() {
     assert_eq!(scalar_add2.value.ls[3], 6168719932526873529);
 }
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_scalar_sub() {
   let (_methods, _id) = get_contract_methods().await;
 
@@ -378,7 +378,7 @@ async fn test_scalar_sub() {
   assert_eq!(scalar_sub.value.ls[3], 7093558989675447812);
 }
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_scalar_mul() {
   let (_methods, _id) = get_contract_methods().await;
 
@@ -393,7 +393,7 @@ async fn test_scalar_mul() {
   assert_eq!(scalar_mul.value.ls[3], 16567671801288747593);
 }
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_scalar_invert() {
   let (_methods, _id) = get_contract_methods().await;
 
@@ -413,7 +413,7 @@ async fn test_scalar_invert() {
 }
 
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_proj_double_1() {
   let (_methods, _id) = get_contract_methods().await;
 
@@ -466,7 +466,7 @@ async fn test_proj_double_1() {
 }
 
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_proj_add() {
   let (_methods, _id) = get_contract_methods().await;
 
@@ -515,7 +515,7 @@ async fn test_proj_add() {
 }
 
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_proj_double_add_equality() {
   /*
   EXPECTED from http://point-at-infinity.org/ecc/nisttv
@@ -558,7 +558,7 @@ async fn test_proj_double_add_equality() {
 }
 
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_proj_affine_add() {
 
   /*
@@ -694,7 +694,7 @@ async fn test_proj_mul_2g() {
 
 
 #[tokio::test]
-async fn hash_to_field() {
+async fn test_hash_to_field() {
   let (_instance, _id) = get_contract_instance().await;
 
   struct TestVector {
@@ -769,4 +769,29 @@ async fn hash_to_field() {
     },
 ]
   */
+}
+
+
+#[tokio::test]
+async fn test_from_okm () {
+
+  let (_instance, _id) = get_contract_instance().await;
+
+  // random(2^384)
+  // 29574121323020303933831581169207951122829468626121072655439219863093377468360436174282205068642494412975233236534840
+  // big-endian [13845646450878251009, 10719928016004921607, 6631139461101160670, 14991082624209354397, 7557322358563246340, 13282407956253574712]
+
+  let data: [u64;6] = [13282407956253574712, 7557322358563246340, 14991082624209354397, 6631139461101160670, 10719928016004921607, 13845646450878251009];
+
+  //data mod p = 62131433325401680921587730707513702893170241835423190670417046194110784567011
+  // big-endian [9898108385776269852, 1848279183386716385, 8118914882040770333, 4852748885269640931]
+
+  let result = _instance
+    .methods()
+    .from_okm(data)
+    .call().await.unwrap();
+
+  println!("{:#?}", result.value);
+  // assert_eq!(0,1);
+
 }

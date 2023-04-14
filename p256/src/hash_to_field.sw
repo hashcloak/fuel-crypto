@@ -231,13 +231,16 @@ pub fn from_b256(input: [u64;6]) -> FieldElement {
 // 18831305209083045566509456472951307377184560236057732317183
 // [18446744069414584319, 18446744073709551614, 8589934592, 3]
 
-fn from_okm(data: [u64; 6]) -> FieldElement {
-  let F_2_192: FieldElement = FieldElement {ls: [18446744069414584319, 18446744073709551614, 8589934592, 3]};
+pub fn from_okm(data: [u64; 6]) -> FieldElement {
+  let mut F_2_192: FieldElement = FieldElement {ls: [18446744069414584319, 18446744073709551614, 8589934592, 3]};
+  F_2_192 = FieldElement::fe_to_montgomery(F_2_192);
   // 192 bits per field element
   // ls[0] + ls[1] * 2^64 + ls[2] * 2^128 + ls[3] * 2^192
-  let d0 = FieldElement { ls: [data[0], data[1], data[2], 0]}.fe_to_montgomery();
-  let d1 = FieldElement { ls: [data[3], data[4], data[5], 0]}.fe_to_montgomery();
-  d0 * F_2_192 + d1
+  let mut d0 = FieldElement { ls: [data[0], data[1], data[2], 0]}.fe_to_montgomery();
+  d0 = FieldElement::fe_to_montgomery(d0);
+  let mut d1 = FieldElement { ls: [data[3], data[4], data[5], 0]}.fe_to_montgomery();
+  d1 = FieldElement::fe_to_montgomery(d1);
+  FieldElement::fe_from_montgomery((d0 * F_2_192 + d1))
 }
 
 // input data is a Vec because Sway doesn't support variable length array (yet)

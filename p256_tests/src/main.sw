@@ -5,7 +5,7 @@ use p256::{
   scalar::*,
   affine::AffinePoint,
   projective::{ProjectivePoint},
-  hash_to_field::hash_to_field,
+  hash_to_field::{hash_to_field, from_okm},
   hash2curve::hash_to_curve
 };
 
@@ -37,6 +37,7 @@ abi MyContract {
     //hash2curve
     fn hash_to_field(data: Vec<u8>) -> [FieldElement; 2];
     fn hash_to_curve(msg: Vec<u8>) -> ProjectivePoint;
+    fn from_okm (data: [u64;6]) -> FieldElement;
 }
 
 impl MyContract for Contract {
@@ -111,5 +112,10 @@ impl MyContract for Contract {
     fn hash_to_curve(msg: Vec<u8>) -> ProjectivePoint {
       hash_to_curve(msg)
     }
+
+    fn from_okm (data: [u64;6]) -> FieldElement {
+      from_okm(data)
+    }
+
 
 }
