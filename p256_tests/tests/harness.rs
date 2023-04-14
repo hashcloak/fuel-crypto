@@ -20,47 +20,6 @@ const x_scalar: Scalar = Scalar{ls: [13282407956253574712, 7557322358563246340, 
 
 //112889434785065900135211481371037383646282385554418514861667765615237067913479
 const y_scalar: Scalar = Scalar{ls:[ 10719928016004921607, 13845646450878251009, 13142370077570254774, 17984324540840297179]};
-
-async fn get_contract_instance() -> (MyContract<WalletUnlocked>, ContractId) {
-
-    let mut wallet = WalletUnlocked::new_random(None);
-    let num_assets = 1;
-    let coins_per_asset = 100;
-    let amount_per_coin = 100000;
-
-    let (coins, asset_ids) = setup_multiple_assets_coins(
-        wallet.address(),
-        num_assets,
-        coins_per_asset,
-        amount_per_coin,
-    );
-
-    // Custom gas limit
-    let consensus_parameters_config = ConsensusParameters::DEFAULT
-      .with_max_gas_per_tx(100_000_000_000).with_gas_per_byte(0);
-
-    let mut chain_config = ChainConfig::local_testnet();
-    // This is needed to allow for expensive operations
-    chain_config.block_gas_limit = 100_000_000_000;
-
-    let (client, addr) = setup_test_client(coins, vec![], None, Some(chain_config), Some(consensus_parameters_config)).await;
-
-    let provider = Provider::new(client);
-    wallet.set_provider(provider.clone());
-
-    let id = Contract::deploy(
-        "./out/debug/p256_tests.bin",
-        &wallet,
-        DeployConfiguration::default(),
-    )
-    .await
-    .unwrap();
-
-    let instance = MyContract::new(id.clone(), wallet);
-
-    (instance, id.into())
-}
-
 async fn get_contract_methods() -> (MyContractMethods<WalletUnlocked>, ContractId) {
 
   let mut wallet = WalletUnlocked::new_random(None);
@@ -695,7 +654,7 @@ async fn test_proj_mul_2g() {
 
 #[tokio::test]
 async fn test_hash_to_field() {
-  let (_instance, _id) = get_contract_instance().await;
+  let (_methods, _id) = get_contract_methods().await;
 
   struct TestVector {
     msg: Vec<u8>,
@@ -735,8 +694,7 @@ async fn test_hash_to_field() {
     q1_y: FieldElement{ls: [1544422570455286894, 675186360566958849, 15367579092470052704, 6384524078822414334]} 
   };
 
-  let hash2field = _instance
-    .methods()
+  let hash2field = _methods
     .hash_to_field(vector1.msg)
     .call().await.unwrap();
 
@@ -775,7 +733,7 @@ async fn test_hash_to_field() {
 #[tokio::test]
 async fn test_from_okm () {
 
-  let (_instance, _id) = get_contract_instance().await;
+  let (_methods, _id) = get_contract_methods().await;
 
   // random(2^384)
   // 29574121323020303933831581169207951122829468626121072655439219863093377468360436174282205068642494412975233236534840
@@ -786,12 +744,68 @@ async fn test_from_okm () {
   //data mod p = 62131433325401680921587730707513702893170241835423190670417046194110784567011
   // big-endian [9898108385776269852, 1848279183386716385, 8118914882040770333, 4852748885269640931]
 
-  let result = _instance
-    .methods()
+  let result = _methods
     .from_okm(data)
     .call().await.unwrap();
 
   println!("{:#?}", result.value);
-  // assert_eq!(0,1);
 
+  let result_converted = _methods
+    .fe_to_montgomery(result.value.clone())
+    .call().await.unwrap();
+
+  println!("{:#?}", result_converted.value);
+
+  // correct value according to reference repo:
+  // 0xBC5BDAC732B6B32C0C76A01A486F2AAF0CE104CE7EE79FB2D9FAD9EE57DEF6E7
+  // equals: 85197108567622674053253976229903765397140825897163024844039591489851386427111
+  // digits [1696585306386912869, 18671264376322509483, 28134130252141285337, 15707106268107699943]
+
+
+}
+
+#[tokio::test]
+async fn test_one_from_okm () {
+
+  let (_methods, _id) = get_contract_methods().await;
+
+  let data: [u64;6] = [1, 0, 0, 0, 0, 0];
+  //result from refernce repo p256/src/arithmetic/hash2curve.rs
+  //0xBC5BDAC732B6B32C0C76A01A486F2AAF0CE104CE7EE79FB2D9FAD9EE57DEF6E7
+  //85197108567622674053253976229903765397140825897163024844039591489851386427111
+  //reverse [13572682451095302956, 898081210451831471, 928028283153915826, 15707106268107699943]
+
+  let result = _methods
+    .from_okm(data)
+    .call().await.unwrap();
+
+  println!("{:#?}", result.value.clone());
+  
+  let result_converted = _methods
+    .fe_to_montgomery(result.value.clone())
+    .call().await.unwrap();
+
+  println!("{:#?}", result_converted.value);
+
+  /*
+  printed result :(
+  FieldElement {
+      ls: [
+          18446744039349813239,
+          30064771065,
+          47244640267,
+          18446744056529682446,
+      ],
+  }
+  FieldElement {
+      ls: [
+          18446743876141055942,
+          279172874218,
+          193273528391,
+          18446743901910859837,
+      ],
+  }
+
+
+  */
 }
