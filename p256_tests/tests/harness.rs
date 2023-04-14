@@ -634,7 +634,7 @@ async fn test_proj_mul_2g() {
   let x: Scalar = Scalar{ls: [2, 0, 0, 0]};
 
   let g_mul_2 = _methods
-    .proj_mul(g_converted_projective, x)
+    .proj_mul(g_converted_projective.clone(), x)
     .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
     .call().await.unwrap();
 
@@ -660,13 +660,11 @@ async fn test_proj_mul_2g() {
   print(V);
   */
 
-  let g_converted_projective = affine_to_proj(&_methods, &g).await;
-
   //31416255128259651114300763853743354944401428675127717048158727858123196938092
   let x: Scalar = Scalar{ls: [15982738825684268908, 12861376030615125811, 9837491998535547791, 5004898192290387222]};
 
   let x_mul_g = _methods
-    .proj_mul(g_converted_projective, x)
+    .proj_mul(g_converted_projective.clone(), x)
     .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
     .call().await.unwrap();
 
@@ -676,84 +674,23 @@ async fn test_proj_mul_2g() {
     [13567665731212626147, 5912556393462985994, 8580126093152460211, 7225374860094292523],
     [12585211474778133614, 8913053197310797155, 3465461371705416650, 8928676520536014294]
   );
-}
 
-#[tokio::test] #[ignore]
-async fn test_proj_mul_xg_2() {
-  let (_instance, _id) = get_contract_instance().await;
-
-  // k = 29852220098221261079183923314599206100666902414330245206392788703677545185283
-  // x = 9EACE8F4B071E677C5350B02F2BB2B384AAE89D58AA72CA97A170572E0FB222F
-  // y = 1BBDAEC2430B09B93F7CB08678636CE12EAAFD58390699B5FD2F6E1188FC2A78
-
-  let generator = AffinePoint {
-    x: FieldElement{ls: [17627433388654248598, 8575836109218198432, 17923454489921339634, 7716867327612699207]},
-    y: FieldElement{ls: [14678990851816772085, 3156516839386865358, 10297457778147434006, 5756518291402817435]},
-    infinity: 0,
-  };
-
-  let g_proj = _instance
-    .methods()
-    .affine_to_proj(generator)
-    .call().await.unwrap();
-
-// convert x, y and z to montgomery form
-  let x_converted_g = _instance
-    .methods()
-    .fe_to_montgomery(g_proj.value.clone().x)
-    .call().await.unwrap();
-
-  let y_converted_g = _instance
-    .methods()
-    .fe_to_montgomery(g_proj.value.clone().y)
-    .call().await.unwrap();
-
-  let z_converted_g = _instance
-    .methods()
-    .fe_to_montgomery(g_proj.value.clone().z)
-    .call().await.unwrap();
-
-  let g_converted_projective = ProjectivePoint {
-    x: x_converted_g.value,
-    y: y_converted_g.value,
-    z: z_converted_g.value
-  };
-
+  // TEST 3
   //29852220098221261079183923314599206100666902414330245206392788703677545185283
   let x_2: Scalar = Scalar{ls: [18302637406848811011, 144097595956916351, 18158518095570798528, 4755733036782191103]};
 
-  let x_2_mul_g = _instance
-    .methods()
-    .proj_mul(g_converted_projective, x_2)
+  let x_2_mul_g = _methods
+    .proj_mul(g_converted_projective.clone(), x_2)
     .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
     .call().await.unwrap();
 
-  let affine_result = _instance
-    .methods()
-    .proj_to_affine(x_2_mul_g.value)
-    .tx_params(TxParameters::default().set_gas_limit(100_000_000))
-    .call().await.unwrap();
+  let (x_converted_x2g, y_converted_x2g) = proj_to_resulting_coordinates(&_methods, &x_mul_g.value).await;
 
-  let x_converted = _instance
-    .methods()
-    .fe_from_montgomery(affine_result.value.clone().x)
-    .call().await.unwrap();
-
-  let y_converted = _instance
-    .methods()
-    .fe_from_montgomery(affine_result.value.clone().y)
-    .call().await.unwrap();
-
-  assert_eq!(x_converted.value.ls[0], 8797506388050518575);
-  assert_eq!(x_converted.value.ls[1], 5381390155001572521);
-  assert_eq!(x_converted.value.ls[2], 14210276306527660856);
-  assert_eq!(x_converted.value.ls[3], 11433769691616765559);
-  assert_eq!(y_converted.value.ls[0], 18243921637092895352);
-  assert_eq!(y_converted.value.ls[1], 3362778627141179829);
-  assert_eq!(y_converted.value.ls[2], 4574725413093469409);
-  assert_eq!(y_converted.value.ls[3], 1998945958994053561);
+  assert_xy(x_converted_x2g, y_converted_x2g, 
+    [8797506388050518575, 5381390155001572521, 14210276306527660856, 11433769691616765559],
+    [18243921637092895352, 3362778627141179829, 4574725413093469409, 1998945958994053561]
+  );
 }
-
 
 
 #[tokio::test]
@@ -770,7 +707,7 @@ async fn hash_to_field() {
     q0_y: FieldElement,
     q1_x: FieldElement,
     q1_y: FieldElement,
-}
+  }
 
 // TestVector {
 //   msg: b"abc",
@@ -784,17 +721,19 @@ async fn hash_to_field() {
 //   q1_y: hex!("589a62d2b22357fed5449bc38065b760095ebe6aeac84b01156ee4252715446e"),
 
 
-let vector1: TestVector = TestVector { 
-  msg: vec![97,98,99], 
-  p_x: FieldElement{ls: [9760948305482254863, 5273691893279789413, 4527611864262133003, 844627740724632228]},
-  p_y: FieldElement{ls: [12145770588654543150, 9750847572926286980, 12775516694752652589, 6647792232841226151]},
-  u_0: FieldElement{ls: [11474617306762578673, 10051857245547636254, 14710634624562028470, 12674395089602151525]},
-  u_1: FieldElement{ls: [355165799953876704, 13806404278462796839, 8925185093799233376, 4006558263084318319]},
-  q0_x: FieldElement{ls: [8245103793509288776, 7845454890279372487,13192191604878931934, 5915949860614556745]}, 
-  q0_y: FieldElement{ls: [3837913169617567439, 14525823833306047554, 17040321694184184214, 8741509203355699915]}, 
-  q1_x: FieldElement{ls: [3674762227143116639, 6545563691401106128, 11489685293311925559, 115823331987417843]}, 
-  q1_y: FieldElement{ls: [1544422570455286894, 675186360566958849, 15367579092470052704, 6384524078822414334]} 
-};
+  let vector1: TestVector = TestVector { 
+    msg: vec![97,98,99], 
+    p_x: FieldElement{ls: [9760948305482254863, 5273691893279789413, 4527611864262133003, 844627740724632228]},
+    p_y: FieldElement{ls: [12145770588654543150, 9750847572926286980, 12775516694752652589, 6647792232841226151]},
+    // first fieldelement should be:
+    u_0: FieldElement{ls: [11474617306762578673, 10051857245547636254, 14710634624562028470, 12674395089602151525]},
+    // second:
+    u_1: FieldElement{ls: [355165799953876704, 13806404278462796839, 8925185093799233376, 4006558263084318319]},
+    q0_x: FieldElement{ls: [8245103793509288776, 7845454890279372487,13192191604878931934, 5915949860614556745]}, 
+    q0_y: FieldElement{ls: [3837913169617567439, 14525823833306047554, 17040321694184184214, 8741509203355699915]}, 
+    q1_x: FieldElement{ls: [3674762227143116639, 6545563691401106128, 11489685293311925559, 115823331987417843]}, 
+    q1_y: FieldElement{ls: [1544422570455286894, 675186360566958849, 15367579092470052704, 6384524078822414334]} 
+  };
 
   let hash2field = _instance
     .methods()
@@ -810,4 +749,24 @@ let vector1: TestVector = TestVector {
   // assert_eq!(hash2field.value[2].ls[1], vector1.u_1.ls[1]);
   // assert_eq!(hash2field.value[1].ls[2], vector1.u_1.ls[2]);
   // assert_eq!(hash2field.value[1].ls[3], vector1.u_1.ls[3]);
+  /*
+[
+    FieldElement {
+        ls: [
+            5558440387825546382,
+            3847105416776803854,
+            7750824039606471729,
+            7912861609532536943,
+        ],
+    },
+    FieldElement {
+        ls: [
+            8221126445215785285,
+            2718699095896804070,
+            17495599248517130367,
+            12413621221617920475,
+        ],
+    },
+]
+  */
 }
