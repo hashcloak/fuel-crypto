@@ -4,6 +4,7 @@ use ::field::FieldElement;
 use std::hash::sha256;
 use std::bytes::Bytes;
 use std::u256::U256;
+use std::logging::log;
 
 /*
 In this file hash_to_field is implemented as specified in https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-5.3
@@ -22,7 +23,7 @@ fn decompose(val: b256) -> (u64, u64, u64, u64) {
 
 // expand message using SHA256 `expand_message_xmd` https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-5.4.1
 // returns 2 hashes (b_1, b_2)
-fn expand_message(data: Vec<u8>) -> (b256, b256, b256) {
+pub fn expand_message(data: Vec<u8>) -> (b256, b256, b256) {
   // Note: This implementation is specific for P256
 
 // len_in_bytes = 48
@@ -229,20 +230,26 @@ pub fn from_b256(input: [u64;6]) -> FieldElement {
 
 
 
-pub fn from_okm(data: [u64; 6]) -> FieldElement {
+pub fn from_okm(data: [u8; 48]) -> FieldElement {
+  let mut i = 0;
+  let mut data_u64: [u64; 6] = [0u64; 6];
+  let mut j = 0;
+  while i < 48 {
+    data_u64[j] = (data[i + 0] << 56).binary_or(data[i + 1] << 48).binary_or(data[i + 2] << 40).binary_or(data[i + 3] << 32).binary_or(data[i + 4] << 24).binary_or(data[i + 5] << 16).binary_or(data[i + 6] << 8).binary_or(data[i + 7]);
+    i += 8;
+    j += 1;
+  }
+
   // value from reference repo: 0x00000000000000030000000200000000fffffffffffffffefffffffeffffffff
   // equals: 18831305209083045566509456472951307377184560236057732317183
   // in u64's: [18446744069414584319, 18446744073709551614, 8589934592, 3]
-  let mut F_2_192: FieldElement = FieldElement {ls: [18446744069414584319, 18446744073709551614, 8589934592, 3]};
-  F_2_192 = FieldElement::fe_to_montgomery(F_2_192);
+  let F_2_192: FieldElement = FieldElement {ls: [18446744069414584319, 18446744073709551614, 8589934592, 3]};
 
   // 192 bits per field element
   // ls[0] + ls[1] * 2^64 + ls[2] * 2^128 + ls[3] * 2^192
-  let mut d0 = FieldElement { ls: [data[0], data[1], data[2], 0]}.fe_to_montgomery();
-  let mut d1 = FieldElement { ls: [data[3], data[4], data[5], 0]}.fe_to_montgomery();
-  
-  // should probably be converted to montgomery, but for debugging we can do the conversion in test and check both values, just in case
-  // FieldElement::fe_from_montgomery((d0 * F_2_192 + d1))
+  let mut d0 = FieldElement { ls: [data_u64[2], data_u64[1], data_u64[0], 0]}.fe_to_montgomery();
+  let mut d1 = FieldElement { ls: [data_u64[5], data_u64[4], data_u64[3], 0]}.fe_to_montgomery();
+
   d0 * F_2_192 + d1
 }
 
@@ -279,7 +286,8 @@ pub fn hash_to_field(data: Vec<u8>) -> [FieldElement; 2] {
   let (b20, b21, b22, b23) = decompose(b2);
   let (b30, b31, b32, b33) = decompose(b3);
 
-  let fe_b1 = from_okm([b10, b11, b12, b13, b20, b21]);
-  let fe_b2 = from_okm([b22, b23, b30, b31, b32, b33]);
-  [fe_b1, fe_b2]
+  // let fe_b1 = from_okm([b10, b11, b12, b13, b20, b21]);
+  // let fe_b2 = from_okm([b22, b23, b30, b31, b32, b33]);
+  // [fe_b1, fe_b2]
+  [FieldElement::one(), FieldElement::one()]
 }
