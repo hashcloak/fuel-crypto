@@ -168,15 +168,41 @@ pub fn from_okm(data: [u8; 48]) -> FieldElement {
   d0 * F_2_192 + d1
 }
 
-// from https://forum.fuel.network/t/how-can-i-transform-b256-into-u8-32/1124/2
+// Needed to extract bytes from hash, comes from answer on Fuel forum
+// https://forum.fuel.network/t/how-can-i-transform-b256-into-u8-32/1124/2?u=elena
+fn decompose(val: b256) -> (u64, u64, u64, u64) {
+    asm(r1: __addr_of(val)) { r1: (u64, u64, u64, u64) }
+}
+
 fn into_bytes(b: b256) -> Bytes {
-  let mut bytes = Bytes::with_capacity(32);
-  bytes.len = 32;
-
-  // Copy bytes from contract_id into the buffer of the target bytes
-  __addr_of(b).copy_bytes_to(bytes.buf.ptr, 32);
-
-  bytes
+  let mut res = Bytes::new();
+  let (b0, b1, b2, b3)  = decompose(b);
+  let mut i = 0;
+  let mut next_byte: u8 = 0;
+  while i < 8 { 
+    next_byte = b0 >> ((7-i)*8);
+    res.push(next_byte);
+    i += 1;
+  }
+  i = 0;
+  while i < 8 { 
+    next_byte = b1 >> ((7-i)*8);
+    res.push(next_byte);
+    i += 1;
+  }
+  i = 0;
+  while i < 8 { 
+    next_byte = b2 >> ((7-i)*8);
+    res.push(next_byte);
+    i += 1;
+  }
+  i = 0;
+  while i < 8 {
+    next_byte =  b3 >> ((7-i)*8);
+    res.push(next_byte);
+    i += 1;
+  }
+  res
 }
 
 // input data is a Vec because Sway doesn't support variable length array (yet)
@@ -202,9 +228,6 @@ pub fn hash_to_field(data: Vec<u8>) -> [FieldElement; 2] {
   // len_in_bytes = 256 * 2 // len_in_bytes = 2*48 = 96
 
   let (b1, b2, b3) = expand_message(data);
-  // log(b1);
-  // log(b2);
-  // log(b3);
   // received 3 hashes of 256 bits: 768 in total. 
   // 2 arrays of 384 bits are converted into a FieldElement each
   // 384 bits = 6 u64's
@@ -226,7 +249,7 @@ pub fn hash_to_field(data: Vec<u8>) -> [FieldElement; 2] {
     first_array[i + 32] = b2_bytes.get(i).unwrap();
     i += 1;
   }
-  log(first_array);
+
   while i < 32 {
     second_array[i - 16] = b2_bytes.get(i).unwrap();
     i += 1; 
@@ -236,6 +259,20 @@ pub fn hash_to_field(data: Vec<u8>) -> [FieldElement; 2] {
     second_array[i + 16] = b3_bytes.get(i).unwrap();
     i += 1; 
   }
+
+/*
+[
+  b0, b1, b2
+    "Bits256([74, 151, 151, 159, 152, 135, 73, 68, 128, 177, 121, 235, 244, 54, 25, 242, 43, 215, 199, 145, 250, 236, 109, 31, 93, 198, 191, 106, 247, 218, 120, 34])",
+    "Bits256([239, 145, 238, 93, 213, 160, 16, 174, 98, 67, 178, 255, 92, 45, 3, 185, 170, 44, 40, 226, 162, 105, 211, 36, 51, 255, 166, 248, 152, 179, 188, 215])",
+    "Bits256([65, 241, 157, 161, 18, 14, 79, 142, 179, 18, 235, 177, 114, 43, 158, 145, 41, 51, 77, 35, 177, 218, 196, 67, 28, 184, 16, 176, 90, 8, 177, 144])",
+  first_array, second_array
+    "[74, 151, 151, 159, 152, 135, 73, 68, 128, 177, 121, 235, 244, 54, 25, 242, 43, 215, 199, 145, 250, 236, 109, 31, 93, 198, 191, 106, 247, 218, 120, 34, 239, 145, 238, 93, 213, 160, 16, 174, 98, 67, 178, 255, 92, 45, 3, 185]",
+    "[170, 44, 40, 226, 162, 105, 211, 36, 51, 255, 166, 248, 152, 179, 188, 215, 65, 241, 157, 161, 18, 14, 79, 142, 179, 18, 235, 177, 114, 43, 158, 145, 41, 51, 77, 35, 177, 218, 196, 67, 28, 184, 16, 176, 90, 8, 177, 144]",
+]
+
+checks out!
+*/
 
   let fe_b1 = from_okm(first_array);
   let fe_b2 = from_okm(second_array);
