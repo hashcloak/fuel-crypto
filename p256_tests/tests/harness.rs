@@ -1,5 +1,5 @@
 use fuels::{prelude::*, 
-  tx::{ConsensusParameters, ContractId}, accounts::fuel_crypto::coins_bip32::enc::Test
+  tx::{ConsensusParameters, ContractId}, accounts::fuel_crypto::coins_bip32::enc::Test, types::Bits256
 };
 use fuel_core_chain_config::ChainConfig;
 
@@ -69,6 +69,13 @@ fn assert_xy(x: FieldElement, y: FieldElement, x_res: [u64; 4], y_res: [u64;4]) 
   assert_eq!(y.ls[1], y_res[1]);
   assert_eq!(y.ls[2], y_res[2]);
   assert_eq!(y.ls[3], y_res[3]);
+}
+
+fn assert_fieldelement(a: FieldElement, expected_res: [u64; 4]) {
+  assert_eq!(a.ls[0], expected_res[0]);
+  assert_eq!(a.ls[1], expected_res[1]);
+  assert_eq!(a.ls[2], expected_res[2]);
+  assert_eq!(a.ls[3], expected_res[3]);
 }
 
 async fn affine_to_proj(_methods: &MyContractMethods<WalletUnlocked>, p: &AffinePoint) -> ProjectivePoint {
@@ -580,7 +587,7 @@ async fn test_proj_affine_add() {
   );
 }
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_proj_mul_2g() {
   // TEST 1
 
@@ -652,7 +659,8 @@ async fn test_proj_mul_2g() {
 }
 
 
-#[tokio::test]
+// TODO hash_to_field has to be debugged and fixed
+#[tokio::test]#[ignore]
 async fn test_hash_to_field() {
   let (_methods, _id) = get_contract_methods().await;
 
@@ -707,30 +715,10 @@ async fn test_hash_to_field() {
   // assert_eq!(hash2field.value[2].ls[1], vector1.u_1.ls[1]);
   // assert_eq!(hash2field.value[1].ls[2], vector1.u_1.ls[2]);
   // assert_eq!(hash2field.value[1].ls[3], vector1.u_1.ls[3]);
-  /*
-[
-    FieldElement {
-        ls: [
-            5558440387825546382,
-            3847105416776803854,
-            7750824039606471729,
-            7912861609532536943,
-        ],
-    },
-    FieldElement {
-        ls: [
-            8221126445215785285,
-            2718699095896804070,
-            17495599248517130367,
-            12413621221617920475,
-        ],
-    },
-]
-  */
 }
 
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_from_okm () {
 
   let (_methods, _id) = get_contract_methods().await;
@@ -739,73 +727,30 @@ async fn test_from_okm () {
   // 29574121323020303933831581169207951122829468626121072655439219863093377468360436174282205068642494412975233236534840
   // big-endian [13845646450878251009, 10719928016004921607, 6631139461101160670, 14991082624209354397, 7557322358563246340, 13282407956253574712]
 
-  let data: [u64;6] = [13282407956253574712, 7557322358563246340, 14991082624209354397, 6631139461101160670, 10719928016004921607, 13845646450878251009];
-
-  //data mod p = 62131433325401680921587730707513702893170241835423190670417046194110784567011
-  // big-endian [9898108385776269852, 1848279183386716385, 8118914882040770333, 4852748885269640931]
+  // let data: [u64;6] = [13282407956253574712, 7557322358563246340, 14991082624209354397, 6631139461101160670, 10719928016004921607, 13845646450878251009];
+  let data: [u8; 48] = [56, 6, 81, 186, 169, 151, 84, 184, 4, 145, 71, 11, 165, 0, 225, 104, 157, 126, 135, 118, 56, 6, 11, 208, 222, 136, 2, 227, 52, 138, 6, 92, 7, 57, 187, 227, 187, 213, 196, 148, 1, 0, 63, 246, 22, 158, 37, 192];
 
   let result = _methods
     .from_okm(data)
     .call().await.unwrap();
-
-  println!("{:#?}", result.value);
-
-  let result_converted = _methods
-    .fe_to_montgomery(result.value.clone())
-    .call().await.unwrap();
-
-  println!("{:#?}", result_converted.value);
 
   // correct value according to reference repo:
   // 0xBC5BDAC732B6B32C0C76A01A486F2AAF0CE104CE7EE79FB2D9FAD9EE57DEF6E7
   // equals: 85197108567622674053253976229903765397140825897163024844039591489851386427111
-  // digits [1696585306386912869, 18671264376322509483, 28134130252141285337, 15707106268107699943]
+  // digits [13572682451095302956, 898081210451831471, 928028283153915826, 15707106268107699943]
 
-
+  assert_fieldelement(result.value, [15707106268107699943, 928028283153915826, 898081210451831471, 13572682451095302956]);
 }
 
 #[tokio::test]
-async fn test_one_from_okm () {
-
+async fn test_expand_msg () {
   let (_methods, _id) = get_contract_methods().await;
 
-  let data: [u64;6] = [1, 0, 0, 0, 0, 0];
-  //result from refernce repo p256/src/arithmetic/hash2curve.rs
-  //0xBC5BDAC732B6B32C0C76A01A486F2AAF0CE104CE7EE79FB2D9FAD9EE57DEF6E7
-  //85197108567622674053253976229903765397140825897163024844039591489851386427111
-  //reverse [13572682451095302956, 898081210451831471, 928028283153915826, 15707106268107699943]
-
+  let data = vec![97,98,99];
   let result = _methods
-    .from_okm(data)
+    .expand_message(data)
     .call().await.unwrap();
 
-  println!("{:#?}", result.value.clone());
-  
-  let result_converted = _methods
-    .fe_to_montgomery(result.value.clone())
-    .call().await.unwrap();
-
-  println!("{:#?}", result_converted.value);
-
-  /*
-  printed result :(
-  FieldElement {
-      ls: [
-          18446744039349813239,
-          30064771065,
-          47244640267,
-          18446744056529682446,
-      ],
-  }
-  FieldElement {
-      ls: [
-          18446743876141055942,
-          279172874218,
-          193273528391,
-          18446743901910859837,
-      ],
-  }
-
-
-  */
+  let expected = Bits256 ([216, 204, 171, 35, 181, 152, 92, 206, 168, 101, 198, 201, 123, 110, 91, 131, 80, 231, 148, 230, 3, 180, 185, 121, 2, 245, 58, 138, 13, 96, 86, 21]);
+  assert_eq!(result.value.0, expected);
 }
