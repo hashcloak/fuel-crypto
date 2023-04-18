@@ -660,7 +660,7 @@ async fn test_proj_mul_2g() {
 
 
 // TODO hash_to_field has to be debugged and fixed
-#[tokio::test]#[ignore]
+#[tokio::test]
 async fn test_hash_to_field() {
   let (_methods, _id) = get_contract_methods().await;
 
@@ -706,8 +706,11 @@ async fn test_hash_to_field() {
     .hash_to_field(vector1.msg)
     .call().await.unwrap();
 
-  println!("{:#?}", hash2field.value);
-  // assert_eq!(hash2field.value[0].ls[0], vector1.u_0.ls[0]);
+    let logs = hash2field.get_logs().unwrap();
+    println!("{:#?}", logs);
+
+  // println!("{:#?}", hash2field.value);
+  assert_eq!(hash2field.value[0].ls[0], vector1.u_0.ls[0]);
   // assert_eq!(hash2field.value[0].ls[1], vector1.u_0.ls[1]);
   // assert_eq!(hash2field.value[0].ls[2], vector1.u_0.ls[2]);
   // assert_eq!(hash2field.value[0].ls[3], vector1.u_0.ls[3]);
@@ -742,7 +745,7 @@ async fn test_from_okm () {
   assert_fieldelement(result.value, [15707106268107699943, 928028283153915826, 898081210451831471, 13572682451095302956]);
 }
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_expand_msg () {
   let (_methods, _id) = get_contract_methods().await;
 
@@ -753,4 +756,16 @@ async fn test_expand_msg () {
 
   let expected = Bits256 ([216, 204, 171, 35, 181, 152, 92, 206, 168, 101, 198, 201, 123, 110, 91, 131, 80, 231, 148, 230, 3, 180, 185, 121, 2, 245, 58, 138, 13, 96, 86, 21]);
   assert_eq!(result.value.0, expected);
+
+  // second message
+  // msg: b"abcdef0123456789",
+  // uniform_bytes: &hex!("eff31487c770a893cfb36f912fbfcbff40d5661771ca4b2cb4eafe524333f5c1"),
+  let data2 = vec![97, 98, 99, 100, 101, 102, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57];
+  let result2 = _methods
+    .expand_message(data2)
+    .call().await.unwrap();
+
+  let expected2 = Bits256([239, 243, 20, 135, 199, 112, 168, 147, 207, 179, 111, 145, 47, 191, 203, 255, 64, 213, 102, 23, 113, 202, 75, 44, 180, 234, 254, 82, 67, 51, 245, 193]);
+  assert_eq!(result2.value.0, expected2);
+
 }
