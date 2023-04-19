@@ -30,12 +30,10 @@ pub fn expand_message(data: Vec<u8>) -> (b256, b256, b256) {
    5.  l_i_b_str = I2OSP(len_in_bytes, 2)
    6.  msg_prime = Z_pad || msg || l_i_b_str || I2OSP(0, 1) || DST_prime
 */
-  // 3. I2OSP(44,1) = 0x2c, so below is hardcoded the DST array with 0x2c added at the end
-  // length is 38
-  // "QUUX-V01-CS02-with-expander-SHA256-128"
-  // let DST_prime: [u8; 39] = [81, 85, 85, 88, 45, 86, 48, 49, 45, 67, 83, 48, 50, 45, 119, 105, 116, 104, 45, 101, 120, 112, 97, 110, 100, 101, 114, 45, 83, 72, 65, 50, 53, 54, 45, 49, 50, 56, 38];
+  // 3. I2OSP(44,1) = 44, this is added after DST in DST_prime
 
- // (according to reference implementation https://github.com/RustCrypto/elliptic-curves/blob/master/p256/src/arithmetic/hash2curve.rs )chnaged the DST according to the reference implementation
+ // DST is equal to testing in elliptic-curves repo https://github.com/RustCrypto/elliptic-curves/blob/master/p256/src/arithmetic/hash2curve.rs
+ // note that DST in testing is different in traits repo
   let DST_prime:[u8;45] = [81, 85, 85, 88, 45, 86, 48, 49, 45, 67, 83, 48, 50, 45, 119, 105, 116, 104, 45, 80, 50, 53, 54, 95, 88, 77, 68, 58, 83, 72, 65, 45, 50, 53, 54, 95, 83, 83, 87, 85, 95, 82, 79, 95, 44];
 
   // 6. 
@@ -62,8 +60,7 @@ pub fn expand_message(data: Vec<u8>) -> (b256, b256, b256) {
 
   i = 0;
   // add DST_prime
-  // while i < 39 { //changed according to reference implementation
-    while i < 45 {
+  while i < 45 {
     msg_prime.push(DST_prime[i]);
     i += 1;
   }
@@ -83,8 +80,7 @@ pub fn expand_message(data: Vec<u8>) -> (b256, b256, b256) {
   input_second_hash.push(0x01);
   i = 0;
   // add DST_prime
-  // while i < 39 { //changed according to reference implementation
-    while i < 45 {
+  while i < 45 {
     input_second_hash.push(DST_prime[i]);
     i += 1;
   }
@@ -112,8 +108,7 @@ pub fn expand_message(data: Vec<u8>) -> (b256, b256, b256) {
   // I2OSP(2, 1)
   input_third_hash.push(0x02);
   i = 0;
-  // while i < 39 { //changed according to reference implementation
-    while i < 45 {
+  while i < 45 {
     input_third_hash.push(DST_prime[i]);
     i += 1;
   }
@@ -135,8 +130,7 @@ pub fn expand_message(data: Vec<u8>) -> (b256, b256, b256) {
   // I2OSP(3, 1)
   input_fourth_hash.push(0x03);
   i = 0;
-  // while i < 39 { //changed according to reference implementation
-    while i < 45 {
+  while i < 45 {
     input_fourth_hash.push(DST_prime[i]);
     i += 1;
   }
@@ -206,6 +200,7 @@ fn into_bytes(b: b256) -> Bytes {
 }
 
 // input data is a Vec because Sway doesn't support variable length array (yet)
+// reference https://github.com/RustCrypto/traits/blob/master/elliptic-curve/src/hash2curve/hash2field.rs#L35
 pub fn hash_to_field(data: Vec<u8>) -> [FieldElement; 2] {
   /*
   https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-5.3

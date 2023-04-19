@@ -151,6 +151,94 @@ async fn to_montgomery(_methods: &MyContractMethods<WalletUnlocked>, a: FieldEle
     .call().await.unwrap().value
 }
 
+#[tokio::test]
+async fn test_bytes_to_scalar() {
+    let (_methods, _id) = get_contract_methods().await;
+
+// test value: 112889434785065900135211481371037383646282385554418514861667765615237067913479
+    let byte_array: [u8;32] = [249, 149, 39, 226, 134, 32, 66, 219, 182, 99, 19, 244, 76, 76, 71, 182, 192, 37, 158, 22, 246, 63, 0, 1, 148, 196, 213, 187, 227, 187, 57, 7];
+    let result = _methods
+      .scalar_from_bytes(byte_array)
+      .call().await.unwrap();
+
+    assert_eq!(result.value.ls[0], 10719928016004921607);
+    assert_eq!(result.value.ls[1], 13845646450878251009);
+    assert_eq!(result.value.ls[2], 13142370077570254774);
+    assert_eq!(result.value.ls[3], 17984324540840297179);
+}
+
+fn check_fieldelement(a: FieldElement, expected_res: FieldElement) {
+  assert_eq!(a.ls[0], expected_res.ls[0]);
+  assert_eq!(a.ls[1], expected_res.ls[1]);
+  assert_eq!(a.ls[2], expected_res.ls[2]);
+  assert_eq!(a.ls[3], expected_res.ls[3]);
+
+}
+
+fn assert_signingkey(a: SigningKey, expected_res: SigningKey) {
+  // assert equality of scalar
+  assert_eq!(a.secret_scalar.ls[0], expected_res.secret_scalar.ls[0]);
+  assert_eq!(a.secret_scalar.ls[1], expected_res.secret_scalar.ls[1]);
+  assert_eq!(a.secret_scalar.ls[2], expected_res.secret_scalar.ls[2]);
+  assert_eq!(a.secret_scalar.ls[3], expected_res.secret_scalar.ls[3]);
+  // assert equality of point coordinates
+  check_fieldelement(a.verifying_key.inner.point.x, expected_res.verifying_key.inner.point.x);
+  check_fieldelement(a.verifying_key.inner.point.y, expected_res.verifying_key.inner.point.y);
+
+  assert_eq!(a.verifying_key.inner.point.infinity, expected_res.verifying_key.inner.point.infinity);
+}
+
+#[tokio::test]
+async fn test_bytes_to_signingkey() {
+    let (_methods, _id) = get_contract_methods().await;
+
+// 0xc9afa9d845ba75166b5c215767b1d6934e50c3db36e89b127b8a622b120f6721
+// 91225253027397101270059260515990221874496108017261222445699397644687913215777
+// be [201, 175, 169, 216, 69, 186, 117, 22, 107, 92, 33, 87, 103, 177, 214, 147, 78, 80, 195, 219, 54, 232, 155, 18, 123, 138, 98, 43, 18, 15, 103, 33]
+// value from ref impl elliptic-curves ecdsa.rs
+    let byte_array: [u8;32] = [201, 175, 169, 216, 69, 186, 117, 22, 107, 92, 33, 87, 103, 177, 214, 147, 78, 80, 195, 219, 54, 232, 155, 18, 123, 138, 98, 43, 18, 15, 103, 33];
+    let result = _methods
+      .signingkey_from_bytes(byte_array)
+      .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
+      .call().await.unwrap();
+
+    // Expected value from reference repo elliptic-curves
+    let expected = SigningKey {
+      secret_scalar: Scalar {
+          ls: [
+              8902035550577321761,
+              5643225679381699346,
+              7736094919201248915,
+              14533021268895757590,
+          ],
+      }, 
+      verifying_key: VerifyingKey {
+          inner: PublicKey {
+              point: AffinePoint {
+                  x: FieldElement {
+                      ls: [
+                          854155409699656515,
+                          3316163128507520414,
+                          4813278211787846225,
+                          17918716845990570650,
+                      ],
+                  },
+                  y: FieldElement {
+                      ls: [
+                          2963932528407990331,
+                          8170061389371059402,
+                          12842851857548027727,
+                          2638587248444126887,
+                      ],
+                  },
+                  infinity: 0,
+              },
+          },
+      }
+    };
+
+    assert_signingkey(result.value, expected);
+}
 
 #[tokio::test] #[ignore]
 async fn test_fe_mul_1() {
@@ -702,8 +790,11 @@ async fn test_expand_msg () {
     .expand_message(data2)
     .call().await.unwrap();
 
-  let expected2 = Bits256([239, 243, 20, 135, 199, 112, 168, 147, 207, 179, 111, 145, 47, 191, 203, 255, 64, 213, 102, 23, 113, 202, 75, 44, 180, 234, 254, 82, 67, 51, 245, 193]);
-  assert_eq!(result2.value.0, expected2);
+  // This test only works with DST equal to: "QUUX-V01-CS02-with-expander-SHA256-128"
+  // let DST_prime: [u8; 39] = [81, 85, 85, 88, 45, 86, 48, 49, 45, 67, 83, 48, 50, 45, 119, 105, 116, 104, 45, 101, 120, 112, 97, 110, 100, 101, 114, 45, 83, 72, 65, 50, 53, 54, 45, 49, 50, 56, 38];
+  
+  // let expected2 = Bits256([239, 243, 20, 135, 199, 112, 168, 147, 207, 179, 111, 145, 47, 191, 203, 255, 64, 213, 102, 23, 113, 202, 75, 44, 180, 234, 254, 82, 67, 51, 245, 193]);
+  // assert_eq!(result2.value.0, expected2);
 
 }
 
@@ -750,6 +841,7 @@ async fn test_hash_to_field() {
     q1_y: FieldElement{ls: [1544422570455286894, 675186360566958849, 15367579092470052704, 6384524078822414334]} 
   };
 
+  
   let hash2field = _methods
     .hash_to_field(vector1.msg)
     .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))

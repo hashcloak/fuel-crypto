@@ -131,7 +131,7 @@ fn subtract_n_if_necessary(r0: u64, r1: u64, r2: u64, r3: u64, r4: u64) -> [u64;
 
 impl Scalar {
   // Zero scalar
-  fn zero() -> Scalar {
+  pub fn zero() -> Scalar {
       Scalar{ls:[0,0,0,0]}
   }
 
@@ -208,6 +208,28 @@ impl Scalar {
       let (w6, w7) = mac(w6, self.ls[3], b.ls[3], carry);
 
       [w0, w1, w2, w3, w4, w5, w6, w7]
+  }
+
+  // returns scalar from big endian byte array (32 bytes)
+  pub fn from_bytes(bytes: [u8; 32]) -> Self {
+    // Scalar: ls: [u64; 4] is in little endian
+    let mut i = 0;
+    let mut j = 4;
+    let mut u64s: [u64;4] = [0;4];
+    while i < 32 {
+      u64s[j-1] = (bytes[i + 0] << 56)
+        .binary_or(bytes[i + 1] << 48)
+        .binary_or(bytes[i + 2] << 40)
+        .binary_or(bytes[i + 3] << 32)
+        .binary_or(bytes[i + 4] << 24)
+        .binary_or(bytes[i + 5] << 16)
+        .binary_or(bytes[i + 6] << 8)
+        .binary_or(bytes[i + 7]);
+      j -= 1;
+      i += 8;
+    }
+    
+    Scalar { ls: u64s}
   }
 }
 

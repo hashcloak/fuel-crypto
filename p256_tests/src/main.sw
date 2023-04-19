@@ -6,7 +6,8 @@ use p256::{
   affine::AffinePoint,
   projective::{ProjectivePoint},
   hash_to_field::{hash_to_field, from_okm, expand_message},
-  hash2curve::hash_to_curve
+  hash2curve::hash_to_curve,
+  signingkey::SigningKey
 };
 
 use utils::choice::CtOption;
@@ -39,6 +40,11 @@ abi MyContract {
     fn hash_to_curve(msg: Vec<u8>) -> ProjectivePoint;
     fn from_okm (data: [u8;48]) -> FieldElement;
     fn expand_message(data: Vec<u8>) -> (b256, b256, b256);
+
+  // ecdsa related
+    fn scalar_from_bytes(in: [u8; 32]) -> Scalar;
+    fn signingkey_from_bytes(b: [u8;32]) -> SigningKey;
+
 }
 
 impl MyContract for Contract {
@@ -120,5 +126,13 @@ impl MyContract for Contract {
 
     fn expand_message(data: Vec<u8>) -> (b256, b256, b256) {
       expand_message(data)
+    }
+
+    fn scalar_from_bytes(in: [u8; 32]) -> Scalar {
+      Scalar::from_bytes(in)
+    }
+
+    fn signingkey_from_bytes(b: [u8;32]) -> SigningKey {
+      SigningKey::from_bytes(b)
     }
 }

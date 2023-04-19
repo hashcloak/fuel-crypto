@@ -49,6 +49,7 @@ impl ProjectivePoint {
       z: FieldElement::zero()
     }
   }
+
 }
 
 impl ConditionallySelectable for ProjectivePoint {
@@ -178,6 +179,10 @@ pub fn point_add_mixed(lhs: ProjectivePoint, rhs: AffinePoint) -> ProjectivePoin
 }
 
 impl ProjectivePoint {
+
+  pub fn generator() -> Self {
+    ProjectivePoint::from(AffinePoint::generator())
+  }
 
   /// Returns `self + other`.
   pub fn add(self, other: ProjectivePoint) -> Self {
