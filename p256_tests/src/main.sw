@@ -8,7 +8,7 @@ use p256::{
   hash_to_field::{hash_to_field, from_okm, expand_message, hash_to_scalar},
   hash2curve::hash_to_curve,
   signingkey::SigningKey,
-  ecdsa::try_sign_prehash,
+  ecdsa::{try_sign_prehash, verify_prehashed},
   // secretkey::SecretKey,
 };
 
@@ -22,8 +22,9 @@ abi MyContract {
     fn sqrt(w: FieldElement) -> CtOption<FieldElement>;
     fn invert(w: FieldElement) -> CtOption<FieldElement>;
     fn pow_vartime(w: FieldElement, exp: [u64;4]) -> FieldElement;
+    fn fe_to_bytes(a: FieldElement) -> [u8;32];
 
-  //scalar64
+  // scalar
     fn scalar_add(a: Scalar, b: Scalar) -> Scalar;
     fn scalar_sub(a: Scalar, b: Scalar) -> Scalar;
     fn scalar_mul(a: Scalar, b: Scalar) -> Scalar;
@@ -37,7 +38,7 @@ abi MyContract {
     fn proj_aff_add(p1_proj: ProjectivePoint, p2_aff: AffinePoint) -> ProjectivePoint;
     fn proj_mul(p: ProjectivePoint, k: Scalar) -> ProjectivePoint;
 
-    //hash2curve
+  // hash2curve
     fn hash_to_field(data: Vec<u8>) -> [FieldElement; 2];
     fn hash_to_curve(msg: Vec<u8>) -> ProjectivePoint;
     fn from_okm (data: [u8;48]) -> FieldElement;
@@ -48,6 +49,7 @@ abi MyContract {
     fn signingkey_from_bytes(b: [u8;32]) -> SigningKey;
     fn hash_to_scalar(h: b256) -> Scalar;
     fn try_sign_prehash(d: Scalar, k: Scalar, z: Scalar) -> (Scalar, Scalar);
+    fn verify_prehashed(a: AffinePoint, bytes: [u8;32], r: Scalar, s: Scalar) -> bool;
 
 }
 
@@ -146,6 +148,14 @@ impl MyContract for Contract {
 
     fn try_sign_prehash(d: Scalar, k: Scalar, z: Scalar) -> (Scalar, Scalar) {
       try_sign_prehash(d,k,z)
+    }
+
+    fn verify_prehashed(a: AffinePoint, bytes: [u8;32], r: Scalar, s: Scalar) -> bool {
+      verify_prehashed(a, bytes, r, s)
+    }
+
+    fn fe_to_bytes(a: FieldElement) -> [u8;32] {
+      a.to_bytes()
     }
 
 }

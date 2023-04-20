@@ -75,6 +75,31 @@ impl FieldElement {
   fn fe_sub(self, b: Self) -> Self {
       sub_inner([self.ls[0], self.ls[1], self.ls[2], self.ls[3], 0], [b.ls[0], b.ls[1], b.ls[2], b.ls[3], 0])
   }
+
+// normalize and convert to bytes
+  pub fn to_bytes(self) -> [u8;32] {
+      let reduced = sub_inner(
+          [self.ls[0], self.ls[1], self.ls[2], self.ls[3], 0],
+          [modulus[0], modulus[1], modulus[2], modulus[3], 0],
+      );
+      let mut res: [u8;32] = [0u8;32];
+      // big endian
+      let mut i = 4;
+      let mut j = 0;
+      while j < 32 {
+        i -= 1; // to prevent overflow at last run
+        res[j] = reduced.ls[i] >> 56;
+        res[j + 1] = reduced.ls[i] >> 48;
+        res[j + 2] = reduced.ls[i] >> 40;
+        res[j + 3] = reduced.ls[i] >> 32;
+        res[j + 4] = reduced.ls[i] >> 24;
+        res[j + 5] = reduced.ls[i] >> 16;
+        res[j + 6] = reduced.ls[i] >> 8;
+        res[j + 7] = reduced.ls[i];        
+        j += 8;
+      }
+      res
+  }
 }
 
 fn montgomery_reduce(r: [u64; 8]) -> FieldElement {
