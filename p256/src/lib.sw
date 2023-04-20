@@ -10,3 +10,4 @@ mod publickey;
 mod verifyingkey;
 mod secretkey;
 mod signingkey;
+mod ecdsa;

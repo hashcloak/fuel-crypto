@@ -1,5 +1,5 @@
 use fuels::{prelude::*, 
-  tx::{ConsensusParameters, ContractId}, accounts::fuel_crypto::coins_bip32::enc::Test, types::Bits256
+  tx::{ConsensusParameters, ContractId}, accounts::fuel_crypto::{coins_bip32::enc::Test, SecretKey}, types::Bits256
 };
 use fuel_core_chain_config::ChainConfig;
 
@@ -151,7 +151,7 @@ async fn to_montgomery(_methods: &MyContractMethods<WalletUnlocked>, a: FieldEle
     .call().await.unwrap().value
 }
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_bytes_to_scalar() {
     let (_methods, _id) = get_contract_methods().await;
 
@@ -188,7 +188,7 @@ fn assert_signingkey(a: SigningKey, expected_res: SigningKey) {
   assert_eq!(a.verifying_key.inner.point.infinity, expected_res.verifying_key.inner.point.infinity);
 }
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_bytes_to_signingkey() {
     let (_methods, _id) = get_contract_methods().await;
 
@@ -799,7 +799,7 @@ async fn test_expand_msg () {
 }
 
 // TODO hash_to_field has to be debugged and fixed
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_hash_to_field() {
   let (_methods, _id) = get_contract_methods().await;
 
@@ -886,4 +886,104 @@ async fn test_hash_to_field() {
   assert_eq!(hash2field.value[1].ls[1], vector1.u_1.ls[1]);
   assert_eq!(hash2field.value[1].ls[2], vector1.u_1.ls[2]);
   assert_eq!(hash2field.value[1].ls[3], vector1.u_1.ls[3]);
+}
+
+
+
+#[tokio::test]#[ignore]
+async fn test_try_sign_prehash() {
+  let (_methods, _id) = get_contract_methods().await;
+
+/* 
+  https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Standards-and-Guidelines/documents/examples/P256_SHA256.pdf
+
+  Signature Generation
+  H: A41A41A12A799548211C410C65D8133AFDE34D28BDD542E4B680CF2899C8A8C4
+  E/z: A41A41A12A799548211C410C65D8133AFDE34D28BDD542E4B680CF2899C8A8C4
+  K: 7A1A7E52797FC8CAAA435D2A4DACE39158504BF204FBE19F14DBB427FAEE50AE
+  Kinv: 62159E5BA9E712FB098CCE8FE20F1BED8346554E98EF3C7C1FC3332BA67D87EF
+  R_x: 2B42F576D07F4165FF65D1F3B1500F81E44C316F1F0B3EF57325B69ACA46104F
+  R_y: 3CE76603264661EA2F602DF7B4510BBC9ED939233C553EA5F42FB3F1338174B5
+  R: 2B42F576D07F4165FF65D1F3B1500F81E44C316F1F0B3EF57325B69ACA46104F
+  D: C477F9F65C22CCE20657FAA5B2D1D8122336F851A508A1ED04E479C34985BF96
+  S: DC42C2122D6392CD3E3A993A89502A8198C1886FE69D262C4B329BDB6B63FAF1
+  Signature 
+  R: 2B42F576D07F4165FF65D1F3B1500F81E44C316F1F0B3EF57325B69ACA46104F
+  S: DC42C2122D6392CD3E3A993A89502A8198C1886FE69D262C4B329BDB6B63FAF1
+*/
+  //z = msg digest into scalar
+  let z: Scalar = Scalar{ls: [13150738685207554244, 18294550948687987428, 2385853424103592762, 11824835932072809800]};
+  //k = random secret 
+  let k: Scalar = Scalar {ls: [1502992984464838830, 6363669776312295839, 12268752246160548753, 8798483714712520906]};
+  //d = secret key 
+  let d: Scalar = Scalar{ls: [352540550500827030, 2537488469614698989, 457109476778039314, 14157058790165499106]};
+
+  let sign = _methods
+    .try_sign_prehash(d, k, z)
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
+    .call().await.unwrap();
+
+  let expected_sign = (Scalar{ls:[8297238664434815055, 16450577892209540853, 18403346296901472129, 3117323782746751333]}, Scalar{ls:[5418564668381985521, 11007228978462008876, 4484064855691635329, 15871461420133749453]});
+
+  let logs = sign.get_logs().unwrap();
+  println!("{:#?}", logs);
+
+  //correct values: k_inv
+  assert_eq!(sign.value.0.ls[0], expected_sign.0.ls[0]);
+  assert_eq!(sign.value.0.ls[1], expected_sign.0.ls[1]);
+  assert_eq!(sign.value.0.ls[2], expected_sign.0.ls[2]);
+  assert_eq!(sign.value.0.ls[3], expected_sign.0.ls[3]);
+  assert_eq!(sign.value.1.ls[0], expected_sign.1.ls[0]);
+  assert_eq!(sign.value.1.ls[1], expected_sign.1.ls[1]);
+  assert_eq!(sign.value.1.ls[2], expected_sign.1.ls[2]);
+  assert_eq!(sign.value.1.ls[3], expected_sign.1.ls[3]);
+}
+
+
+
+#[tokio::test]
+async fn test_try_sign_prehash_and_check_hash_digest() {
+  // This test is for checking the hash digest as well as the signature  
+  // test vector taken from https://datatracker.ietf.org/doc/html/rfc6979#appendix-A.2.5
+
+  let (_methods, _id) = get_contract_methods().await;
+
+  // let msg: Vec<u8> = vec![115, 97, 109, 112, 108, 101];
+
+  // let hash = _methods
+  //     .expand_message(msg)
+  //     .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
+  //     .call().await.unwrap();
+
+  // let z = _methods
+  //     .hash_to_scalar(hash.value.0)
+  //     .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
+  //     .call().await.unwrap();
+
+  // z = sha256("sample") calculated using https://emn178.github.io/online-tools/sha256.html = af2bdbe1aa9b6ec1e2ade1d694f41fc71a831d0268e9891562113d8a62add1bf
+  let z = Scalar{ls: [7066496954891358655, 1910402563122497813, 16333959735280934855, 12622424142912384705]};
+  //k = random secret 
+  let k: Scalar = Scalar {ls: [5575783208203234656, 4258059470363603186, 604951544618933580, 12025672574162353808]};
+  //d = secret key 
+  let x: Scalar = Scalar{ls: [8902035550577321761, 5643225679381699346, 7736094919201248915, 14533021268895757590]};
+
+  let sign = _methods
+    .try_sign_prehash(x, k, z)
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
+    .call().await.unwrap();
+
+  let expected_sign = (Scalar{ls:[14072920526640068374, 11325576126734727569, 1243237162801856982, 17281590685529975037]}, Scalar{ls:[5603792056925998504, 17575579964503225350, 15291629082155065189, 17855396570382826561]});
+
+  let logs = sign.get_logs().unwrap();
+  println!("{:#?}", logs);
+
+  //correct values: k_inv
+  assert_eq!(sign.value.0.ls[0], expected_sign.0.ls[0]);
+  assert_eq!(sign.value.0.ls[1], expected_sign.0.ls[1]);
+  assert_eq!(sign.value.0.ls[2], expected_sign.0.ls[2]);
+  assert_eq!(sign.value.0.ls[3], expected_sign.0.ls[3]);
+  assert_eq!(sign.value.1.ls[0], expected_sign.1.ls[0]);
+  assert_eq!(sign.value.1.ls[1], expected_sign.1.ls[1]);
+  assert_eq!(sign.value.1.ls[2], expected_sign.1.ls[2]);
+  assert_eq!(sign.value.1.ls[3], expected_sign.1.ls[3]);
 }

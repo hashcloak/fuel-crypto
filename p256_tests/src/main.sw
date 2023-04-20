@@ -5,9 +5,11 @@ use p256::{
   scalar::*,
   affine::AffinePoint,
   projective::{ProjectivePoint},
-  hash_to_field::{hash_to_field, from_okm, expand_message},
+  hash_to_field::{hash_to_field, from_okm, expand_message, hash_to_scalar},
   hash2curve::hash_to_curve,
-  signingkey::SigningKey
+  signingkey::SigningKey,
+  ecdsa::try_sign_prehash,
+  // secretkey::SecretKey,
 };
 
 use utils::choice::CtOption;
@@ -44,6 +46,8 @@ abi MyContract {
   // ecdsa related
     fn scalar_from_bytes(in: [u8; 32]) -> Scalar;
     fn signingkey_from_bytes(b: [u8;32]) -> SigningKey;
+    fn hash_to_scalar(h: b256) -> Scalar;
+    fn try_sign_prehash(d: Scalar, k: Scalar, z: Scalar) -> (Scalar, Scalar);
 
 }
 
@@ -135,4 +139,13 @@ impl MyContract for Contract {
     fn signingkey_from_bytes(b: [u8;32]) -> SigningKey {
       SigningKey::from_bytes(b)
     }
+
+    fn hash_to_scalar(h: b256) -> Scalar {
+      hash_to_scalar(h)
+    }
+
+    fn try_sign_prehash(d: Scalar, k: Scalar, z: Scalar) -> (Scalar, Scalar) {
+      try_sign_prehash(d,k,z)
+    }
+
 }

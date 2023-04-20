@@ -5,7 +5,7 @@ use std::hash::sha256;
 use std::bytes::Bytes;
 use std::u256::U256;
 use std::logging::log;
-
+use ::scalar::Scalar;
 /*
 In this file hash_to_field is implemented as specified in https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11#section-5.3
 Specifically for the usecase of P256, using SHA256.
@@ -273,3 +273,12 @@ checks out!
   let fe_b2 = from_okm(second_array);
   [fe_b1, fe_b2]
 }
+
+
+  //returns hash digest reduced to scalar
+  pub fn hash_to_scalar(h: b256) -> Scalar {
+    let  (b0, b1, b2, b3) = decompose(h);
+
+    //reduces into scalar mod n(order of the curve)
+    Scalar{ls: [b0, b1, b2, b3]} + Scalar::zero()
+  }
