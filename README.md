@@ -3,6 +3,8 @@ Various Cryptographic Primitives in Sway for the Fuel VM
 
 # Testing 
 
+Note: Testing for `p256` is done in `p256_tests`, instructions can be found in `p256_tests/README.md`.
+
 For testing we use `fuels`, read about it [here](https://fuellabs.github.io/fuels-rs/v0.25.0/). 
 
 ## BLS
