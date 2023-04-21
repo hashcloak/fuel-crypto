@@ -8,7 +8,7 @@ use p256::{
   hash_to_field::{hash_to_field, from_okm, expand_message, hash_to_scalar},
   hash2curve::hash_to_curve,
   signingkey::SigningKey,
-  ecdsa::{try_sign_prehash, verify_prehashed},
+  ecdsa::{try_sign_prehash, verify_prehashed, bits2field},
   // secretkey::SecretKey,
 };
 
@@ -48,8 +48,9 @@ abi MyContract {
     fn scalar_from_bytes(in: [u8; 32]) -> Scalar;
     fn signingkey_from_bytes(b: [u8;32]) -> SigningKey;
     fn hash_to_scalar(h: b256) -> Scalar;
-    fn try_sign_prehash(d: Scalar, k: Scalar, z: Scalar) -> (Scalar, Scalar);
+    fn try_sign_prehash(d: Scalar, k: Scalar, bytes: [u8;32]) -> (Scalar, Scalar);
     fn verify_prehashed(a: AffinePoint, bytes: [u8;32], r: Scalar, s: Scalar) -> bool;
+    fn bits2field (bits: Vec<u8>) -> [u8;32];
 
 }
 
@@ -146,8 +147,8 @@ impl MyContract for Contract {
       hash_to_scalar(h)
     }
 
-    fn try_sign_prehash(d: Scalar, k: Scalar, z: Scalar) -> (Scalar, Scalar) {
-      try_sign_prehash(d,k,z)
+    fn try_sign_prehash(d: Scalar, k: Scalar, bytes: [u8;32]) -> (Scalar, Scalar) {
+      try_sign_prehash(d,k,bytes)
     }
 
     fn verify_prehashed(a: AffinePoint, bytes: [u8;32], r: Scalar, s: Scalar) -> bool {
@@ -156,6 +157,10 @@ impl MyContract for Contract {
 
     fn fe_to_bytes(a: FieldElement) -> [u8;32] {
       a.to_bytes()
+    }
+
+    fn bits2field (bits: Vec<u8>) -> [u8;32] {
+      bits2field(bits)
     }
 
 }

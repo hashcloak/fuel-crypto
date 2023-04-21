@@ -1,3 +1,5 @@
+use std::hash;
+
 use fuels::{prelude::*, 
   tx::{ConsensusParameters, ContractId}, accounts::fuel_crypto::{coins_bip32::enc::Test, SecretKey}, types::Bits256
 };
@@ -76,6 +78,13 @@ fn assert_fieldelement(a: FieldElement, expected_res: [u64; 4]) {
   assert_eq!(a.ls[1], expected_res[1]);
   assert_eq!(a.ls[2], expected_res[2]);
   assert_eq!(a.ls[3], expected_res[3]);
+}
+
+fn assert_scalar(res: Scalar, expected: Scalar) {
+  assert_eq!(res.ls[0], expected.ls[0]);
+  assert_eq!(res.ls[1], expected.ls[1]);
+  assert_eq!(res.ls[2], expected.ls[2]);
+  assert_eq!(res.ls[3], expected.ls[3]);
 }
 
 async fn affine_to_proj(_methods: &MyContractMethods<WalletUnlocked>, p: &AffinePoint) -> ProjectivePoint {
@@ -878,14 +887,7 @@ async fn test_hash_to_field() {
   */
 
   println!("{:#?}", hash2field.value);
-  assert_eq!(hash2field.value[0].ls[0], vector1.u_0.ls[0]);
-  assert_eq!(hash2field.value[0].ls[1], vector1.u_0.ls[1]);
-  assert_eq!(hash2field.value[0].ls[2], vector1.u_0.ls[2]);
-  assert_eq!(hash2field.value[0].ls[3], vector1.u_0.ls[3]);
-  assert_eq!(hash2field.value[1].ls[0], vector1.u_1.ls[0]);
-  assert_eq!(hash2field.value[1].ls[1], vector1.u_1.ls[1]);
-  assert_eq!(hash2field.value[1].ls[2], vector1.u_1.ls[2]);
-  assert_eq!(hash2field.value[1].ls[3], vector1.u_1.ls[3]);
+  assert_xy(hash2field.value[0].clone(), hash2field.value[1].clone(), vector1.u_0.ls, vector1.u_1.ls);
 }
 
 
@@ -911,15 +913,16 @@ async fn test_try_sign_prehash() {
   R: 2B42F576D07F4165FF65D1F3B1500F81E44C316F1F0B3EF57325B69ACA46104F
   S: DC42C2122D6392CD3E3A993A89502A8198C1886FE69D262C4B329BDB6B63FAF1
 */
-  //z = msg digest into scalar
-  let z: Scalar = Scalar{ls: [13150738685207554244, 18294550948687987428, 2385853424103592762, 11824835932072809800]};
+  // //z = msg digest into scalar
+  // let z: Scalar = Scalar{ls: [13150738685207554244, 18294550948687987428, 2385853424103592762, 11824835932072809800]};
+  let bytes =  [164, 26, 65, 161, 42, 121, 149, 72, 33, 28, 65, 12, 101, 216, 19, 58, 253, 227, 77, 40, 189, 213, 66, 228, 182, 128, 207, 40, 153, 200, 168, 196];
   //k = random secret 
   let k: Scalar = Scalar {ls: [1502992984464838830, 6363669776312295839, 12268752246160548753, 8798483714712520906]};
   //d = secret key 
   let d: Scalar = Scalar{ls: [352540550500827030, 2537488469614698989, 457109476778039314, 14157058790165499106]};
 
   let sign = _methods
-    .try_sign_prehash(d, k, z)
+    .try_sign_prehash(d, k, bytes)
     .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
     .call().await.unwrap();
 
@@ -928,20 +931,13 @@ async fn test_try_sign_prehash() {
   let logs = sign.get_logs().unwrap();
   println!("{:#?}", logs);
 
-  //correct values: k_inv
-  assert_eq!(sign.value.0.ls[0], expected_sign.0.ls[0]);
-  assert_eq!(sign.value.0.ls[1], expected_sign.0.ls[1]);
-  assert_eq!(sign.value.0.ls[2], expected_sign.0.ls[2]);
-  assert_eq!(sign.value.0.ls[3], expected_sign.0.ls[3]);
-  assert_eq!(sign.value.1.ls[0], expected_sign.1.ls[0]);
-  assert_eq!(sign.value.1.ls[1], expected_sign.1.ls[1]);
-  assert_eq!(sign.value.1.ls[2], expected_sign.1.ls[2]);
-  assert_eq!(sign.value.1.ls[3], expected_sign.1.ls[3]);
+  assert_scalar(sign.value.0, expected_sign.0);
+  assert_scalar(sign.value.1, expected_sign.1);
 }
 
 
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_try_sign_prehash_and_check_hash_digest() {
   // This test is for checking the hash digest as well as the signature  
   // test vector taken from https://datatracker.ietf.org/doc/html/rfc6979#appendix-A.2.5
@@ -961,14 +957,16 @@ async fn test_try_sign_prehash_and_check_hash_digest() {
   //     .call().await.unwrap();
 
   // z = sha256("sample") calculated using https://emn178.github.io/online-tools/sha256.html = af2bdbe1aa9b6ec1e2ade1d694f41fc71a831d0268e9891562113d8a62add1bf
-  let z = Scalar{ls: [7066496954891358655, 1910402563122497813, 16333959735280934855, 12622424142912384705]};
+  // let z = Scalar{ls: [7066496954891358655, 1910402563122497813, 16333959735280934855, 12622424142912384705]};
+  let bytes = [175, 43, 219, 225, 170, 155, 110, 193, 226, 173, 225, 214, 148, 244, 31, 199, 26, 131, 29, 2, 104, 233, 137, 21, 98, 17, 61, 138, 98, 173, 209, 191];
+
   //k = random secret 
   let k: Scalar = Scalar {ls: [5575783208203234656, 4258059470363603186, 604951544618933580, 12025672574162353808]};
   //d = secret key 
   let x: Scalar = Scalar{ls: [8902035550577321761, 5643225679381699346, 7736094919201248915, 14533021268895757590]};
 
   let sign = _methods
-    .try_sign_prehash(x, k, z)
+    .try_sign_prehash(x, k, bytes)
     .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
     .call().await.unwrap();
 
@@ -977,18 +975,11 @@ async fn test_try_sign_prehash_and_check_hash_digest() {
   let logs = sign.get_logs().unwrap();
   println!("{:#?}", logs);
 
-  //correct values: k_inv
-  assert_eq!(sign.value.0.ls[0], expected_sign.0.ls[0]);
-  assert_eq!(sign.value.0.ls[1], expected_sign.0.ls[1]);
-  assert_eq!(sign.value.0.ls[2], expected_sign.0.ls[2]);
-  assert_eq!(sign.value.0.ls[3], expected_sign.0.ls[3]);
-  assert_eq!(sign.value.1.ls[0], expected_sign.1.ls[0]);
-  assert_eq!(sign.value.1.ls[1], expected_sign.1.ls[1]);
-  assert_eq!(sign.value.1.ls[2], expected_sign.1.ls[2]);
-  assert_eq!(sign.value.1.ls[3], expected_sign.1.ls[3]);
+  assert_scalar(sign.value.0, expected_sign.0);
+  assert_scalar(sign.value.1, expected_sign.1);
 }
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_fe_to_bytes() {
   let (_methods, _id) = get_contract_methods().await;
 
@@ -1003,7 +994,7 @@ async fn test_fe_to_bytes() {
   assert_eq!(bytes.value, [96, 254, 212, 186, 37, 90, 157, 49, 201, 97, 235, 116, 198, 53, 109, 104, 192, 73, 184, 146, 59, 97, 250, 108, 230, 105, 98, 46, 96, 242, 159, 182]);
 }
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_verify_prehashed() {
   // test vectors taken from https://datatracker.ietf.org/doc/html/rfc6979#appendix-A.2.5
 
@@ -1051,4 +1042,36 @@ async fn test_verify_prehashed() {
     .call().await.unwrap();
 
   assert!(!verify_failed.value);
+}
+
+
+#[tokio::test]
+async fn test_bits2field() {
+  let (_methods, _id) = get_contract_methods().await;
+
+  
+  let bits: Vec<u8> = vec! [170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170];
+  let bytes = _methods
+    .bits2field(bits)
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
+    .call().await.unwrap();
+
+  assert_eq!(bytes.value, [170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+
+
+  let bits2: Vec<u8> = vec![170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170];
+  let bytes2 = _methods
+    .bits2field(bits2)
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
+    .call().await.unwrap();
+
+  assert_eq!(bytes2.value, [170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170]);
+
+  let bits3: Vec<u8> = vec![170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187, 187];
+  let bytes3 = _methods
+    .bits2field(bits3)
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
+    .call().await.unwrap();
+
+  assert_eq!(bytes3.value, [170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170]);
 }

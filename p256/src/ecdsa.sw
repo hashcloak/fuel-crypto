@@ -9,13 +9,13 @@ use std::logging::log;
 use ::field::FieldElement;
 
 // https://github.com/RustCrypto/signatures/blob/91a62e8abaca19bcdf126b34f60424144ee46dfe/ecdsa/src/hazmat.rs#L75
-// TODO: FieldBytes implementation
-// From z of type fieldBytes, it is converted(reduced) into a scalar mod n (order of the p256 curve)
-// as of now, we consider z to  be the prehash scalar value
+
 // k: random secret used while signing 
 // d: secret key
-pub fn try_sign_prehash(d: Scalar, k: Scalar, z: Scalar) -> (Scalar, Scalar){
+//bytes: message digest to be signed. MUST BE OUTPUT OF A CRYPTOGRAPHICALLY SECURE DIGEST ALGORITHM!!!
+pub fn try_sign_prehash(d: Scalar, k: Scalar, bytes: [u8;32]) -> (Scalar, Scalar){
 
+    let z = Scalar::from_bytes(bytes);
     // check if k is non-zero
     assert(!k.ct_eq(Scalar::zero()).unwrap_as_bool());
 
@@ -79,3 +79,29 @@ pub fn verify_prehashed(a: AffinePoint, bytes: [u8;32], r: Scalar, s: Scalar) ->
       false
     }
 }
+
+
+/// This is used to convert a message digest whose size may be smaller or
+/// larger than the size of the curve's scalar field into a serialized
+/// (unreduced) field element.
+///
+/// [RFC6979 § 2.3.2]: https://datatracker.ietf.org/doc/html/rfc6979#section-2.3.2
+/// [SEC1]: https://www.secg.org/sec1-v2.pdf
+pub fn bits2field (bits: Vec<u8>) -> [u8;32] {
+  
+  //if length of bits less than half of digest raise error
+  if bits.len() < 16 {
+    //TODO: raise error
+  }
+  //if bits length is smaller than 32, pad it with zeros
+  // if bits length is more than 32(larger than the field size), truncate 
+
+  let mut fieldBytes = [0u8;32];
+  let mut i = 0; 
+  while i < bits.len() && i < 32 {
+    fieldBytes[i] = bits.get(i).unwrap();
+    i = i + 1;
+  }
+
+  fieldBytes
+  }
