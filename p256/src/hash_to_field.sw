@@ -168,7 +168,7 @@ fn decompose(val: b256) -> (u64, u64, u64, u64) {
     asm(r1: __addr_of(val)) { r1: (u64, u64, u64, u64) }
 }
 
-fn into_bytes(b: b256) -> Bytes {
+pub fn into_bytes(b: b256) -> Bytes {
   let mut res = Bytes::new();
   let (b0, b1, b2, b3)  = decompose(b);
   let mut i = 0;
