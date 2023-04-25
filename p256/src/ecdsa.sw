@@ -13,7 +13,7 @@ use ::field::FieldElement;
 // k: random secret used while signing 
 // d: secret key
 //bytes: message digest to be signed. MUST BE OUTPUT OF A CRYPTOGRAPHICALLY SECURE DIGEST ALGORITHM!!!
-pub fn try_sign_prehash(d: Scalar, k: Scalar, bytes: [u8;32]) -> (Scalar, Scalar){
+pub fn try_sign_prehashed(d: Scalar, k: Scalar, bytes: [u8;32]) -> (Scalar, Scalar){
 
     let z = Scalar::from_bytes(bytes);
     // check if k is non-zero

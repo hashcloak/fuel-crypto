@@ -113,11 +113,11 @@ pub fn hmac(data: Vec<u8>, key: [u8;32]) -> Vec<u8> {
 
 // Needed to extract bytes from hash, comes from answer on Fuel forum
 // https://forum.fuel.network/t/how-can-i-transform-b256-into-u8-32/1124/2?u=elena
-fn decompose(val: b256) -> (u64, u64, u64, u64) {
+pub fn decompose(val: b256) -> (u64, u64, u64, u64) {
     asm(r1: __addr_of(val)) { r1: (u64, u64, u64, u64) }
 }
 
-fn compose(words: (u64, u64, u64, u64)) -> b256 {
+pub fn compose(words: (u64, u64, u64, u64)) -> b256 {
     asm(r1: __addr_of(words)) { r1: b256 }
 }
 
@@ -301,7 +301,7 @@ pub fn generate_k(data: Vec<u8>, x: [u8;32]) -> Scalar {
 //used in generate_k
 // TODO should have a different name because it only works for fixed length
 // TODO should have an assert on the length of data
-fn vec_to_array(data: Vec<u8>) -> [u8;32] {
+pub fn vec_to_array(data: Vec<u8>) -> [u8;32] {
 
     let mut result: [u8; 32] = [0u8; 32];
 
