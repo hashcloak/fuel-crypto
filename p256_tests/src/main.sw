@@ -1,7 +1,7 @@
 contract;
 
 use p256::{
-  // field::FieldElement,
+  field::FieldElement,
   scalar::*,
   affine::AffinePoint,
   // projective::{ProjectivePoint},
@@ -9,9 +9,9 @@ use p256::{
   // hash2curve::hash_to_curve,
   publickey::PublicKey,
   signingkey::SigningKey,
-  ecdsa::{try_sign_prehashed, verify_prehashed},//, verify_prehashed, bits2field},
+  ecdsa::{try_sign_prehashed, verify_prehashed, Signature},//, verify_prehashed, bits2field},
   hmac::{hmac, generate_k},
-
+  verifyingkey::VerifyingKey
 };
 
 use utils::choice::CtOption;
@@ -20,7 +20,7 @@ abi MyContract {
   // // field
   //   fn fe_mul(a: FieldElement, b: FieldElement) -> FieldElement;
   //   fn fe_to_montgomery(w: FieldElement) -> FieldElement;
-  //   fn fe_from_montgomery(w: FieldElement) -> FieldElement;
+    fn fe_from_montgomery(w: FieldElement) -> FieldElement;
   //   fn sqrt(w: FieldElement) -> CtOption<FieldElement>;
   //   fn invert(w: FieldElement) -> CtOption<FieldElement>;
   //   fn pow_vartime(w: FieldElement, exp: [u64;4]) -> FieldElement;
@@ -50,13 +50,14 @@ abi MyContract {
   //   fn scalar_from_bytes(in: [u8; 32]) -> Scalar;
   //   fn signingkey_from_bytes(b: [u8;32]) -> SigningKey;
   //   fn hash_to_scalar(h: b256) -> Scalar;
-    fn try_sign_prehashed(d: Scalar, k: Scalar, bytes: [u8;32]) -> (Scalar, Scalar);
-    fn verify_prehashed(a: AffinePoint, bytes: [u8;32], r: Scalar, s: Scalar) -> bool;
+    fn try_sign_prehashed(d: Scalar, k: Scalar, bytes: [u8;32]) -> Signature;
+    fn verify_prehashed(a: AffinePoint, bytes: [u8;32], sig: Signature) -> bool;
   //   fn bits2field (bits: Vec<u8>) -> [u8;32];
     fn hmac(data: Vec<u8>, key: [u8;32]) -> Vec<u8>;
     fn generate_k(data: Vec<u8>, x: [u8;32]) -> Scalar;
-    fn try_sign(key: SigningKey, msg: Vec<u8>) -> (Scalar, Scalar);
-
+    fn try_sign(key: SigningKey, msg: Vec<u8>) -> Signature;
+    fn from_secret_scalar(scalar: Scalar) -> VerifyingKey;
+    fn verify_prehash(verifyingkey: VerifyingKey, bytes: [u8;32], sig: Signature) -> bool;
 }
 
 impl MyContract for Contract {
@@ -68,9 +69,9 @@ impl MyContract for Contract {
     //   w.fe_to_montgomery()
     // }
 
-    // fn fe_from_montgomery(w: FieldElement) -> FieldElement {
-    //   w.fe_from_montgomery()
-    // }
+    fn fe_from_montgomery(w: FieldElement) -> FieldElement {
+      w.fe_from_montgomery()
+    }
 
     // fn sqrt(w: FieldElement) -> CtOption<FieldElement> {
     //   w.sqrt()
@@ -152,12 +153,12 @@ impl MyContract for Contract {
     //   hash_to_scalar(h)
     // }
 
-    fn try_sign_prehashed(d: Scalar, k: Scalar, bytes: [u8;32]) -> (Scalar, Scalar) {
-      try_sign_prehashed(d,k,bytes)
+    fn try_sign_prehashed(d: Scalar, k: Scalar, bytes: [u8;32]) -> Signature {
+      try_sign_prehashed(d, k, bytes)
     }
 
-    fn verify_prehashed(a: AffinePoint, bytes: [u8;32], r: Scalar, s: Scalar) -> bool {
-      verify_prehashed(a, bytes, r, s)
+    fn verify_prehashed(a: AffinePoint, bytes: [u8;32], sig: Signature) -> bool {
+      verify_prehashed(a, bytes, sig)
     }
 
     // fn fe_to_bytes(a: FieldElement) -> [u8;32] {
@@ -176,9 +177,15 @@ impl MyContract for Contract {
       generate_k(data, x)
     }
 
-    fn try_sign(key: SigningKey, msg: Vec<u8>) -> (Scalar, Scalar) {
+    fn try_sign(key: SigningKey, msg: Vec<u8>) -> Signature {
       key.try_sign(msg)
     }
 
+    fn from_secret_scalar(scalar: Scalar) -> VerifyingKey {
+      VerifyingKey::from_secret_scalar(scalar)
+    }
 
+    fn verify_prehash(verifyingkey: VerifyingKey, bytes: [u8;32], sig: Signature) -> bool {
+      verifyingkey.verify_prehash(bytes, sig)
+    }
 }

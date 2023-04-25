@@ -68,7 +68,7 @@ impl From<AffinePoint> for ProjectivePoint {
         let projective = ProjectivePoint {
             x: p.x,
             y: p.y,
-            z: FieldElement::one(),
+            z: FieldElement::one_montgomery_form(),
         };
         Self::conditional_select(Self::identity(), projective, p.is_identity())
     }

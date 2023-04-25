@@ -8,12 +8,17 @@ use ::projective::ProjectivePoint;
 use std::logging::log;
 use ::field::FieldElement;
 
+pub struct Signature {
+  r: Scalar,
+  s: Scalar
+}
+
 // https://github.com/RustCrypto/signatures/blob/91a62e8abaca19bcdf126b34f60424144ee46dfe/ecdsa/src/hazmat.rs#L75
 
 // k: random secret used while signing 
 // d: secret key
 //bytes: message digest to be signed. MUST BE OUTPUT OF A CRYPTOGRAPHICALLY SECURE DIGEST ALGORITHM!!!
-pub fn try_sign_prehashed(d: Scalar, k: Scalar, bytes: [u8;32]) -> (Scalar, Scalar){
+pub fn try_sign_prehashed(d: Scalar, k: Scalar, bytes: [u8;32]) -> Signature {
 
     let z = Scalar::from_bytes(bytes);
     // check if k is non-zero
@@ -42,18 +47,18 @@ pub fn try_sign_prehashed(d: Scalar, k: Scalar, bytes: [u8;32]) -> (Scalar, Scal
     //check if s is zero or not
     assert(!s.ct_eq(Scalar::zero()).unwrap_as_bool());
 
-    (r,s)
+    Signature { r: r , s: s }
 }
 
 // Reference impl https://github.com/RustCrypto/signatures/blob/91a62e8abaca19bcdf126b34f60424144ee46dfe/ecdsa/src/hazmat.rs#L160
 // a is the public key
 // bytes is the hash
 // (r,s) signature
-pub fn verify_prehashed(a: AffinePoint, bytes: [u8;32], r: Scalar, s: Scalar) -> bool {
+pub fn verify_prehashed(a: AffinePoint, bytes: [u8;32], sig: Signature) -> bool {
     let z = Scalar::from_bytes(bytes);
-    let s_inv: Scalar = s.scalar_invert().unwrap();
+    let s_inv: Scalar = sig.s.scalar_invert().unwrap();
     let u1: Scalar = z * s_inv;
-    let u2: Scalar = r * s_inv;
+    let u2: Scalar = sig.r * s_inv;
 
     let g_affine = ProjectivePoint::from(AffinePoint::generator());
     let g_x_montgomery = FieldElement::fe_to_montgomery(g_affine.x);
@@ -73,7 +78,7 @@ pub fn verify_prehashed(a: AffinePoint, bytes: [u8;32], r: Scalar, s: Scalar) ->
     let res: FieldElement = x.into().x.fe_from_montgomery();
     let res_scalar: Scalar = Scalar::from_bytes(res.to_bytes());
 
-    if res_scalar.ct_eq(r).unwrap_as_bool() {
+    if res_scalar.ct_eq(sig.r).unwrap_as_bool() {
       true
     } else {
       false
@@ -104,4 +109,4 @@ pub fn bits2field (bits: Vec<u8>) -> [u8;32] {
   }
 
   fieldBytes
-  }
+}

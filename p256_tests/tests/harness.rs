@@ -11,17 +11,6 @@ abigen!(Contract(
     abi = "out/debug/p256_tests-abi.json"
 ));
 
-// const g: AffinePoint = AffinePoint {
-//   x: FieldElement{ls: [17627433388654248598, 8575836109218198432, 17923454489921339634, 7716867327612699207]},
-//   y: FieldElement{ls: [14678990851816772085, 3156516839386865358, 10297457778147434006, 5756518291402817435]},
-//   infinity: 0,
-// };
-
-// //41624337018869194729192205381537838788846303834619688597471765238035829032504
-// const x_scalar: Scalar = Scalar{ls: [13282407956253574712, 7557322358563246340, 14991082624209354397, 6631139461101160670]};
-
-// //112889434785065900135211481371037383646282385554418514861667765615237067913479
-// const y_scalar: Scalar = Scalar{ls:[ 10719928016004921607, 13845646450878251009, 13142370077570254774, 17984324540840297179]};
 async fn get_contract_methods() -> (MyContractMethods<WalletUnlocked>, ContractId) {
 
   let mut wallet = WalletUnlocked::new_random(None);
@@ -62,16 +51,29 @@ async fn get_contract_methods() -> (MyContractMethods<WalletUnlocked>, ContractI
   (instance.methods(), id.into())
 }
 
-// fn assert_xy(x: FieldElement, y: FieldElement, x_res: [u64; 4], y_res: [u64;4]) {
-//   assert_eq!(x.ls[0], x_res[0]);
-//   assert_eq!(x.ls[1], x_res[1]);
-//   assert_eq!(x.ls[2], x_res[2]);
-//   assert_eq!(x.ls[3], x_res[3]);
-//   assert_eq!(y.ls[0], y_res[0]);
-//   assert_eq!(y.ls[1], y_res[1]);
-//   assert_eq!(y.ls[2], y_res[2]);
-//   assert_eq!(y.ls[3], y_res[3]);
-// }
+
+// const g: AffinePoint = AffinePoint {
+//   x: FieldElement{ls: [17627433388654248598, 8575836109218198432, 17923454489921339634, 7716867327612699207]},
+//   y: FieldElement{ls: [14678990851816772085, 3156516839386865358, 10297457778147434006, 5756518291402817435]},
+//   infinity: 0,
+// };
+
+// //41624337018869194729192205381537838788846303834619688597471765238035829032504
+// const x_scalar: Scalar = Scalar{ls: [13282407956253574712, 7557322358563246340, 14991082624209354397, 6631139461101160670]};
+
+// //112889434785065900135211481371037383646282385554418514861667765615237067913479
+// const y_scalar: Scalar = Scalar{ls:[ 10719928016004921607, 13845646450878251009, 13142370077570254774, 17984324540840297179]};
+
+fn assert_xy(x: FieldElement, y: FieldElement, x_res: [u64; 4], y_res: [u64;4]) {
+  assert_eq!(x.ls[0], x_res[0]);
+  assert_eq!(x.ls[1], x_res[1]);
+  assert_eq!(x.ls[2], x_res[2]);
+  assert_eq!(x.ls[3], x_res[3]);
+  assert_eq!(y.ls[0], y_res[0]);
+  assert_eq!(y.ls[1], y_res[1]);
+  assert_eq!(y.ls[2], y_res[2]);
+  assert_eq!(y.ls[3], y_res[3]);
+}
 
 // fn assert_fieldelement(a: FieldElement, expected_res: [u64; 4]) {
 //   assert_eq!(a.ls[0], expected_res[0]);
@@ -79,6 +81,13 @@ async fn get_contract_methods() -> (MyContractMethods<WalletUnlocked>, ContractI
 //   assert_eq!(a.ls[2], expected_res[2]);
 //   assert_eq!(a.ls[3], expected_res[3]);
 // }
+
+fn assert_fieldelements_eq(a: FieldElement, b: FieldElement) {
+  assert_eq!(a.ls[0], b.ls[0]);
+  assert_eq!(a.ls[1], b.ls[1]);
+  assert_eq!(a.ls[2], b.ls[2]);
+  assert_eq!(a.ls[3], b.ls[3]);
+}
 
 fn assert_scalar(res: Scalar, expected: Scalar) {
   assert_eq!(res.ls[0], expected.ls[0]);
@@ -124,17 +133,17 @@ fn assert_scalar(res: Scalar, expected: Scalar) {
 //   (x_converted, y_converted)
 // }
 
-// async fn convert_from_montgomery(_methods: &MyContractMethods<WalletUnlocked>, p: &AffinePoint) -> (FieldElement, FieldElement) {
-//   let x_converted = _methods
-//     .fe_from_montgomery(p.clone().x)
-//     .call().await.unwrap();
+async fn convert_from_montgomery(_methods: &MyContractMethods<WalletUnlocked>, p: &AffinePoint) -> (FieldElement, FieldElement) {
+  let x_converted = _methods
+    .fe_from_montgomery(p.clone().x)
+    .call().await.unwrap();
 
-//   let y_converted = _methods
-//     .fe_from_montgomery(p.clone().y)
-//     .call().await.unwrap();
+  let y_converted = _methods
+    .fe_from_montgomery(p.clone().y)
+    .call().await.unwrap();
 
-//   (x_converted.value, y_converted.value)
-// }
+  (x_converted.value, y_converted.value)
+}
 
 // async fn to_montgomery_ab(_methods: &MyContractMethods<WalletUnlocked>, a: FieldElement, b: FieldElement) -> (FieldElement, FieldElement) {
 //   let a_montgomery_form = _methods
@@ -1145,11 +1154,9 @@ async fn test_try_sign_prehashed_with_k_generated() {
     .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
     .call().await.unwrap();
 
-  let (r,s) = sign.value;
-
   // verification for signature on "sample"
   let verify_sample = _methods
-    .verify_prehashed(a.clone(), bytes.clone(), r.clone(), s.clone())
+    .verify_prehashed(a.clone(), bytes.clone(), sign.value)
     .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
     .call().await.unwrap();
 
@@ -1159,7 +1166,7 @@ async fn test_try_sign_prehashed_with_k_generated() {
 
 
 #[tokio::test]#[ignore]
-async fn test_generake_k() {
+async fn test_generate_k() {
   let (_methods, _id) = get_contract_methods().await;
   
   // https://datatracker.ietf.org/doc/html/rfc6979#appendix-A.2.5
@@ -1194,7 +1201,7 @@ async fn test_generake_k() {
 }
 
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn rfc6979() {
   let (_methods, _id) = get_contract_methods().await;
   
@@ -1255,8 +1262,8 @@ async fn rfc6979() {
   // )
 
   let expected = (Scalar{ls: [14072920526640068374, 11325576126734727569, 1243237162801856982, 17281590685529975037]}, Scalar{ls: [5603792056925998504, 17575579964503225350, 15291629082155065189, 17855396570382826561]});
-  assert_scalar(result.value.0, expected.0);
-  assert_scalar(result.value.1, expected.1);
+  assert_scalar(result.value.r, expected.0);
+  assert_scalar(result.value.s, expected.1);
 
     // TEST 2
     // msg = "test"
@@ -1273,6 +1280,73 @@ async fn rfc6979() {
     //  )
 
     let expected2 = (Scalar{ls: [5704041684016530279, 17095379372343503669, 8203448929688135267, 17414206049896059341]}, Scalar{ls: [921059038994563203, 6856306437048585036, 13629460836803561749, 116883667144026900]});
-    assert_scalar(result2.value.0, expected2.0);
-    assert_scalar(result2.value.1, expected2.1);
+    assert_scalar(result2.value.r, expected2.0);
+    assert_scalar(result2.value.s, expected2.1);
+}
+
+#[tokio::test]#[ignore]
+async fn test_generate_verifyingkey() {
+  // test vectors taken from https://datatracker.ietf.org/doc/html/rfc6979#appendix-A.2.5
+
+  let (_methods, _id) = get_contract_methods().await;
+
+  // private scalar C9AFA9D845BA75166B5C215767B1D6934E50C3DB36E89B127B8A622B120F6721
+  let x = Scalar { ls: [8902035550577321761, 5643225679381699346, 7736094919201248915, 14533021268895757590]};
+
+  // verification for signature on "sample"
+  let get_verifying_key = _methods
+    .from_secret_scalar(x)
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
+    .call().await.unwrap();
+
+  // convert the coordinates to compare them with the value from the doc
+  let converted_coordinates = convert_from_montgomery(&_methods, &get_verifying_key.value.inner.point).await;
+
+  // should be equal to the pubkey given in the doc
+  assert_xy(converted_coordinates.0, converted_coordinates.1, [16602909452612575158, 13855808666783054444, 14511138361138572648, 6989257567681289521], [8620948056189575833, 17505968991938453329, 11825020959996820580, 8720092648338668697]);
+}
+
+#[tokio::test]
+async fn test_verify_with_generated_verifyingkey() {
+  // test vectors taken from https://datatracker.ietf.org/doc/html/rfc6979#appendix-A.2.5
+
+  let (_methods, _id) = get_contract_methods().await;
+
+  // private scalar C9AFA9D845BA75166B5C215767B1D6934E50C3DB36E89B127B8A622B120F6721
+  let x = Scalar { ls: [8902035550577321761, 5643225679381699346, 7736094919201248915, 14533021268895757590]};
+
+  // verification for signature on "sample"
+  let verifying_key = _methods
+    .from_secret_scalar(x)
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
+    .call().await.unwrap();
+
+  // With SHA-256, message = "sample":
+  // sha256 of "sample" af2bdbe1aa9b6ec1e2ade1d694f41fc71a831d0268e9891562113d8a62add1bf
+  let hash1 = [175, 43, 219, 225, 170, 155, 110, 193, 226, 173, 225, 214, 148, 244, 31, 199, 26, 131, 29, 2, 104, 233, 137, 21, 98, 17, 61, 138, 98, 173, 209, 191];
+  let r1 = Scalar{ls:[14072920526640068374, 11325576126734727569, 1243237162801856982, 17281590685529975037]};
+  let s1 = Scalar{ls:[5603792056925998504, 17575579964503225350, 15291629082155065189, 17855396570382826561]};
+  let signature1 = Signature { r: r1, s: s1}; 
+
+  // With SHA-256, message = "test":
+  // signature of that hashed message
+  let r2 = Scalar{ls: [5704041684016530279, 17095379372343503669, 8203448929688135267, 17414206049896059341]};
+  let s2 = Scalar{ls: [921059038994563203, 6856306437048585036, 13629460836803561749, 116883667144026900]};
+  let signature2 = Signature { r: r2, s: s2}; 
+
+// verification for signature on "sample"
+  let verify1 = _methods
+    .verify_prehash(verifying_key.value.clone(), hash1.clone(), signature1)
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
+    .call().await.unwrap();
+
+  assert!(verify1.value);
+
+  // Check for a failing verification
+  let verify_failed = _methods
+    .verify_prehash(verifying_key.value.clone(), hash1.clone(), signature2)
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
+    .call().await.unwrap();
+
+  assert!(!verify_failed.value);
 }
