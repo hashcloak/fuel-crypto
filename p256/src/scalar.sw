@@ -209,6 +209,15 @@ impl Scalar {
 
       [w0, w1, w2, w3, w4, w5, w6, w7]
   }
+}
+
+impl Scalar {
+
+  // Returns self * rhs mod n
+  pub fn scalar_mul(self, b: Self) -> Self {
+      let t: [u64; 8] = self.mul_wide(b);
+      (Scalar{ls:[t[0], t[1], t[2], t[3]]}).barrett_reduce(Scalar{ls: [t[4], t[5], t[6], t[7]]})
+  }
 
   // returns scalar from big endian byte array (32 bytes)
   pub fn from_bytes(bytes: [u8; 32]) -> Self {
@@ -228,19 +237,8 @@ impl Scalar {
       j -= 1;
       i += 8;
     }
-    
-    Scalar { ls: u64s}
+    Scalar { ls: u64s}.scalar_add(Self::zero()) // trigger the mod q
   }
-}
-
-impl Scalar {
-
-  // Returns self * rhs mod n
-  pub fn scalar_mul(self, b: Self) -> Self {
-      let t: [u64; 8] = self.mul_wide(b);
-      (Scalar{ls:[t[0], t[1], t[2], t[3]]}).barrett_reduce(Scalar{ls: [t[4], t[5], t[6], t[7]]})
-  }
-
 }
 
 impl ConstantTimeEq for Scalar {

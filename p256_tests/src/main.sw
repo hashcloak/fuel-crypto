@@ -3,13 +3,13 @@ contract;
 use p256::{
   // field::FieldElement,
   scalar::*,
-  // affine::AffinePoint,
+  affine::AffinePoint,
   // projective::{ProjectivePoint},
   // hash_to_field::{hash_to_field, from_okm, expand_message, hash_to_scalar},
   // hash2curve::hash_to_curve,
   // signingkey::SigningKey,
-  // ecdsa::{try_sign_prehash, verify_prehashed, bits2field},
-  hmac::hmac,
+  ecdsa::{try_sign_prehash, verify_prehashed},//, verify_prehashed, bits2field},
+  hmac::{hmac, generate_k},
 
 };
 
@@ -49,10 +49,11 @@ abi MyContract {
   //   fn scalar_from_bytes(in: [u8; 32]) -> Scalar;
   //   fn signingkey_from_bytes(b: [u8;32]) -> SigningKey;
   //   fn hash_to_scalar(h: b256) -> Scalar;
-  //   fn try_sign_prehash(d: Scalar, k: Scalar, bytes: [u8;32]) -> (Scalar, Scalar);
-  //   fn verify_prehashed(a: AffinePoint, bytes: [u8;32], r: Scalar, s: Scalar) -> bool;
+    fn try_sign_prehash(d: Scalar, k: Scalar, bytes: [u8;32]) -> (Scalar, Scalar);
+    fn verify_prehashed(a: AffinePoint, bytes: [u8;32], r: Scalar, s: Scalar) -> bool;
   //   fn bits2field (bits: Vec<u8>) -> [u8;32];
     fn hmac(data: Vec<u8>, key: [u8;32]) -> Vec<u8>;
+    fn generate_k(data: Vec<u8>, x: [u8;32]) -> Scalar;
 
 }
 
@@ -149,13 +150,13 @@ impl MyContract for Contract {
     //   hash_to_scalar(h)
     // }
 
-    // fn try_sign_prehash(d: Scalar, k: Scalar, bytes: [u8;32]) -> (Scalar, Scalar) {
-    //   try_sign_prehash(d,k,bytes)
-    // }
+    fn try_sign_prehash(d: Scalar, k: Scalar, bytes: [u8;32]) -> (Scalar, Scalar) {
+      try_sign_prehash(d,k,bytes)
+    }
 
-    // fn verify_prehashed(a: AffinePoint, bytes: [u8;32], r: Scalar, s: Scalar) -> bool {
-    //   verify_prehashed(a, bytes, r, s)
-    // }
+    fn verify_prehashed(a: AffinePoint, bytes: [u8;32], r: Scalar, s: Scalar) -> bool {
+      verify_prehashed(a, bytes, r, s)
+    }
 
     // fn fe_to_bytes(a: FieldElement) -> [u8;32] {
     //   a.to_bytes()
@@ -167,6 +168,10 @@ impl MyContract for Contract {
 
     fn hmac(data: Vec<u8>, key: [u8;32]) -> Vec<u8> {
       hmac(data, key)
+    }
+
+    fn generate_k(data: Vec<u8>, x: [u8;32]) -> Scalar {
+      generate_k(data, x)
     }
 
 }

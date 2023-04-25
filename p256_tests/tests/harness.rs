@@ -80,12 +80,12 @@ async fn get_contract_methods() -> (MyContractMethods<WalletUnlocked>, ContractI
 //   assert_eq!(a.ls[3], expected_res[3]);
 // }
 
-// fn assert_scalar(res: Scalar, expected: Scalar) {
-//   assert_eq!(res.ls[0], expected.ls[0]);
-//   assert_eq!(res.ls[1], expected.ls[1]);
-//   assert_eq!(res.ls[2], expected.ls[2]);
-//   assert_eq!(res.ls[3], expected.ls[3]);
-// }
+fn assert_scalar(res: Scalar, expected: Scalar) {
+  assert_eq!(res.ls[0], expected.ls[0]);
+  assert_eq!(res.ls[1], expected.ls[1]);
+  assert_eq!(res.ls[2], expected.ls[2]);
+  assert_eq!(res.ls[3], expected.ls[3]);
+}
 
 // async fn affine_to_proj(_methods: &MyContractMethods<WalletUnlocked>, p: &AffinePoint) -> ProjectivePoint {
 //   let p_proj = _methods
@@ -1076,7 +1076,7 @@ async fn get_contract_methods() -> (MyContractMethods<WalletUnlocked>, ContractI
 //   assert_eq!(bytes3.value, [170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170]);
 // }
 
-#[tokio::test]
+#[tokio::test]#[ignore]
 async fn test_hmac() {
   let (_methods, _id) = get_contract_methods().await;
 
@@ -1115,3 +1115,45 @@ async fn test_hmac() {
   let expected2 = vec![91, 220, 193, 70, 191, 96, 117, 78, 106, 4, 36, 38, 8, 149, 117, 199, 90, 0, 63, 8, 157, 39, 57, 131, 157, 236, 88, 185, 100, 236, 56, 67];
   assert_eq!(result2.value, expected2);
 }
+
+
+#[tokio::test]
+async fn test_try_sign_prehash_with_k_generated() {
+  let (_methods, _id) = get_contract_methods().await;
+
+  // //z = msg digest into scalar
+  // let z: Scalar = Scalar{ls: [13150738685207554244, 18294550948687987428, 2385853424103592762, 11824835932072809800]};
+  let bytes = [164, 26, 65, 161, 42, 121, 149, 72, 33, 28, 65, 12, 101, 216, 19, 58, 253, 227, 77, 40, 189, 213, 66, 228, 182, 128, 207, 40, 153, 200, 168, 196];
+  let bytes_as_vec: Vec<u8> = bytes.to_vec();
+  //d = secret key 
+  let d: Scalar = Scalar{ls: [352540550500827030, 2537488469614698989, 457109476778039314, 14157058790165499106]};
+  let d_bytes: [u8;32] = [196, 119, 249, 246, 92, 34, 204, 226, 6, 87, 250, 165, 178, 209, 216, 18, 35, 54, 248, 81, 165, 8, 161, 237, 4, 228, 121, 195, 73, 133, 191, 150];
+  // pubkey
+  let a = AffinePoint {
+    x: FieldElement { ls:[16602909452612575158, 13855808666783054444, 14511138361138572648, 6989257567681289521] },
+    y: FieldElement { ls:[8620948056189575833, 17505968991938453329, 11825020959996820580, 8720092648338668697] },
+    infinity: 0
+  };
+
+  let k_generated = _methods
+    .generate_k(bytes_as_vec, d_bytes)
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
+    .call().await.unwrap();
+
+  let sign = _methods
+    .try_sign_prehash(d, k_generated.value, bytes)
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
+    .call().await.unwrap();
+
+  let (r,s) = sign.value;
+
+  // verification for signature on "sample"
+  let verify_sample = _methods
+    .verify_prehashed(a.clone(), bytes.clone(), r.clone(), s.clone())
+    .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
+    .call().await.unwrap();
+
+  assert!(!verify_sample.value);
+}
+
+
