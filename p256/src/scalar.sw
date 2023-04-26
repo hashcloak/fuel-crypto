@@ -239,6 +239,32 @@ impl Scalar {
     }
     Scalar { ls: u64s}.scalar_add(Self::zero()) // trigger the mod q
   }
+
+// TODO is the same as in Field, this will be one of the functions that is taken out
+// normalize and convert to bytes
+  pub fn to_bytes(self) -> [u8;32] {
+      let reduced = sub_inner(
+          [self.ls[0], self.ls[1], self.ls[2], self.ls[3], 0],
+          [MODULUS[0], MODULUS[1], MODULUS[2], MODULUS[3], 0],
+      );
+      let mut res: [u8;32] = [0u8;32];
+      // big endian
+      let mut i = 4;
+      let mut j = 0;
+      while j < 32 {
+        i -= 1; // to prevent overflow at last run
+        res[j] = reduced.ls[i] >> 56;
+        res[j + 1] = reduced.ls[i] >> 48;
+        res[j + 2] = reduced.ls[i] >> 40;
+        res[j + 3] = reduced.ls[i] >> 32;
+        res[j + 4] = reduced.ls[i] >> 24;
+        res[j + 5] = reduced.ls[i] >> 16;
+        res[j + 6] = reduced.ls[i] >> 8;
+        res[j + 7] = reduced.ls[i];        
+        j += 8;
+      }
+      res
+  }
 }
 
 impl ConstantTimeEq for Scalar {

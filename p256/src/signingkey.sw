@@ -5,7 +5,7 @@ use ::scalar::Scalar;
 use ::secretkey::SecretKey;
 use ::utils::choice::Choice;
 use ::ecdsa::{Signature, try_sign_prehashed};
-use ::hmac::{generate_k, vec_to_array, into_bytes, compose};
+use ::hmac::{generate_k, into_byte_array, compose};
 use std::bytes::Bytes;
 
 
@@ -36,7 +36,7 @@ impl SigningKey {
   pub fn try_sign(self, msg: Vec<u8>) -> Signature {
     let mut d = self.secret_scalar;
     let mut d_256 = compose((d.ls[3], d.ls[2], d.ls[1], d.ls[0]));
-    let mut d_bytes = vec_to_array(into_bytes(d_256).into_vec_u8());
+    let mut d_bytes: [u8;32] = into_byte_array(d_256);
 
     let k = generate_k(msg, d_bytes);
 
@@ -52,7 +52,7 @@ impl SigningKey {
     }
 
     let digest = msg_bytes.sha256();
-    let digest_bytes = vec_to_array(into_bytes(digest).into_vec_u8());
+    let digest_bytes: [u8;32] = into_byte_array(digest);
 
     try_sign_prehashed(self.secret_scalar, k, digest_bytes)
   }

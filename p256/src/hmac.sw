@@ -5,24 +5,22 @@ use std::bytes::Bytes;
 use ::scalar::Scalar;
 use utils::choice::Choice;
 
-pub fn hmac(data: Vec<u8>, key: [u8;32]) -> Vec<u8> {
-    //!!!!!!!!NOTICE!!!!!!!!!!
-    // This hmac implementation is for sha256 only
-    // Assumes that key size is at most 256bits (32 bytes) keeping in mind about p256 curve
-
-    // https://datatracker.ietf.org/doc/html/rfc2104#section-2
-    //    We assume H to be a cryptographic
-    //    hash function where data is hashed by iterating a basic compression
-    //    function on blocks of data.   We denote by B the byte-length of such
-    //    blocks (B=64 for all the above mentioned examples of hash functions),
-    //    and by L the byte-length of hash outputs (L=16 for MD5, L=20 for
-    //    SHA-1) 
+/*
+  Documentation: https://datatracker.ietf.org/doc/html/rfc2104#section-2
+  Note: this hmac implementation is for sha256 only!
     
+  returns H(key XOR opad, H(key XOR ipad, data))
+    where ipad = the byte 0x36 repeated 64 times, opad = the byte 0x5C repeated 64 times.
+  
+  - key: secret key of 32 bytes
+  - data: variable length of bytes
+*/
+pub fn hmac(data: Vec<u8>, key: [u8;32]) -> [u8;32] {    
     // B = 64
     //ipad = the byte 0x36 repeated B times
     let mut ipad: u8 = 0x36;
 
-    // opad = the byte 0x5C repeated B(32 time for sha256) times
+    // opad = the byte 0x5C repeated B times
     let mut opad: u8 = 0x5c;
 
     // (1) append zeros to the end of K to create a B byte string
@@ -40,18 +38,16 @@ pub fn hmac(data: Vec<u8>, key: [u8;32]) -> Vec<u8> {
     // (7) apply H to the stream generated in step (6) and output
     //     the result
 
-    
     let mut key_xor_ipad: [u8;64] = [0u8; 64];
 
     let mut i = 0;
     while i < 32 {
-        key_xor_ipad[i] = key[i];
+        key_xor_ipad[i] = key[i] ^ ipad;
         i = i + 1;
     }
 
-    i = 0;
     while i < 64 {
-        key_xor_ipad[i] = key_xor_ipad[i] ^ ipad;
+        key_xor_ipad[i] = 0 ^ ipad;
         i = i + 1;
     }
 
@@ -69,20 +65,17 @@ pub fn hmac(data: Vec<u8>, key: [u8;32]) -> Vec<u8> {
         i = i + 1;
     }
     
-    let mut hash_data_append = data_appended.sha256();
-
-    
+    let mut hash_data_append = data_appended.sha256();    
     let mut key_xor_opad: [u8;64] = [0u8;64];
 
     i = 0;
     while i < 32 {
-        key_xor_opad[i] = key[i];
+        key_xor_opad[i] = key[i] ^ opad;
         i = i + 1;
     }
     
-    i = 0;
     while i < 64 {
-        key_xor_opad[i] = key_xor_opad[i] ^ opad;
+        key_xor_opad[i] = 0 ^ opad;
         i = i + 1;
     }
 
@@ -94,16 +87,15 @@ pub fn hmac(data: Vec<u8>, key: [u8;32]) -> Vec<u8> {
         i = i + 1;
     }
 
-    let hash_data_append_bytes = into_bytes(hash_data_append).into_vec_u8();
+    let hash_data_append_bytes = into_byte_array(hash_data_append);
 
     i = 0;
     while i < 32 {
-        second_append.push(hash_data_append_bytes.get(i).unwrap());
+        second_append.push(hash_data_append_bytes[i]);
         i = i + 1;
     }
     
-
-    into_bytes(second_append.sha256()).into_vec_u8()
+    into_byte_array(second_append.sha256())
 
 }
 
@@ -121,36 +113,38 @@ pub fn compose(words: (u64, u64, u64, u64)) -> b256 {
     asm(r1: __addr_of(words)) { r1: b256 }
 }
 
-// TODO
-// into_bytes is also defined in hash_to_field.
-// if we keep hash_to_field then instead of defining here we will directly call it.
-pub fn into_bytes(b: b256) -> Bytes {
-  let mut res = Bytes::new();
+pub fn into_byte_array(b: b256) -> [u8;32] {
+  let mut res = [0u8;32];
   let (b0, b1, b2, b3)  = decompose(b);
   let mut i = 0;
+  let mut j = 0;
   let mut next_byte: u8 = 0;
   while i < 8 { 
     next_byte = b0 >> ((7-i)*8);
-    res.push(next_byte);
+    res[j] = next_byte;
     i += 1;
+    j += 1;
   }
   i = 0;
   while i < 8 { 
     next_byte = b1 >> ((7-i)*8);
-    res.push(next_byte);
+    res[j] = next_byte;
     i += 1;
+    j += 1;
   }
   i = 0;
   while i < 8 { 
     next_byte = b2 >> ((7-i)*8);
-    res.push(next_byte);
+    res[j] = next_byte;
     i += 1;
+    j += 1;
   }
   i = 0;
   while i < 8 {
     next_byte =  b3 >> ((7-i)*8);
-    res.push(next_byte);
+    res[j] = next_byte;
     i += 1;
+    j += 1;
   }
   res
 }
@@ -178,13 +172,8 @@ pub fn generate_k(data: Vec<u8>, x: [u8;32]) -> Scalar {
     // b. set V = 0x01 0x01 0x01 ... 0x01 such that the length of V, in bits, is equal to 8*ceil(hlen/8)
     // c.  Set: K = 0x00 0x00 0x00 ... 0x00 such that the length of K, in bits, is equal to 8*ceil(hlen/8).
 
-    let mut V: Vec<u8> = Vec::new();
-    i = 0;
-    while i < 32 {
-        V.push(0x01);
-        i += 1;
-    }
-    let mut K: [u8; 32] = [0x00; 32];
+    let mut V: [u8; 32] = [0x01;32];
+    let mut K: [u8; 32] = [0x00;32];
 
     // d.  Set: K = HMAC_K(V || 0x00 || int2octets(x) || bits2octets(h1))
     // data_v_x_h1 = V || 0x00 || int2octets(x) || bits2octets(h1)
@@ -201,25 +190,25 @@ pub fn generate_k(data: Vec<u8>, x: [u8;32]) -> Scalar {
     data_v_x_h1.push(0x00);
 
     i = 0;
-    let x_int2octets = int2octets(x);
+    let x_int2octets: [u8;32] = int2octets(x);
     while i < 32 {
         // pushing x
-        data_v_x_h1.push(x_int2octets.get(i).unwrap());
+        data_v_x_h1.push(x_int2octets[i]);
         i = i + 1;
     }
 
-    let h1_bits2octets = bits2octets(h1);
+    let h1_bits2octets: [u8;32] = bits2octets(h1);
     i = 0;
     while i < 32 {
         // pushing h1
-        data_v_x_h1.push(h1_bits2octets.get(i).unwrap());
+        data_v_x_h1.push(h1_bits2octets[i]);
         i = i + 1;
     }
 
-    K = vec_to_array(hmac(data_v_x_h1, K));
+    K = hmac(data_v_x_h1, K);
 
     // e.  Set: V = HMAC_K(V)
-    V = hmac(V, K);
+    V = hmac(arr_to_vec(V), K);
 
     // f.  Set: K = HMAC_K(V || 0x01 || int2octets(x) || bits2octets(h1))
     // data2 = V || 0x01 || int2octets(x) || bits2octets(h1)
@@ -228,7 +217,7 @@ pub fn generate_k(data: Vec<u8>, x: [u8;32]) -> Scalar {
 
     i = 0;
     while i < 32 {
-        data_2.push(V.get(i).unwrap());
+        data_2.push(V[i]);
         i = i + 1;
     }
 
@@ -236,28 +225,28 @@ pub fn generate_k(data: Vec<u8>, x: [u8;32]) -> Scalar {
 
     i = 0;
     while i < 32 {
-        data_2.push(x_int2octets.get(i).unwrap());
+        data_2.push(x_int2octets[i]);
         i = i + 1;
     }
 
     i = 0;
     while i < 32 {
-        data_2.push(h1_bits2octets.get(i).unwrap());
+        data_2.push(h1_bits2octets[i]);
         i = i + 1;
     }
 
     // f.  Set: K = HMAC_K(V || 0x01 || int2octets(x) || bits2octets(h1))
-    K = vec_to_array(hmac(data_2, K));
+    K = hmac(data_2, K);
 
     // g.  Set: V = HMAC_K(V)
-    V = hmac(V , K);
+    V = hmac(arr_to_vec(V), K);
 
     let mut t_found = false;
     let mut k_option = Scalar::zero();
 
     while !t_found {
       // T must have bitlength 256, which is the case after running HMAC once
-      let T_array = vec_to_array(hmac(V , K));
+      let T_array = hmac(arr_to_vec(V), K);
       i = 0;
       let mut j = 4;
       let mut u64s: [u64;4] = [0;4];
@@ -286,53 +275,55 @@ pub fn generate_k(data: Vec<u8>, x: [u8;32]) -> Scalar {
         let mut v_append_0: Vec<u8> = Vec::new();
         i = 0;
         while i < 32 {
-          v_append_0.push(V.get(i).unwrap());
+          v_append_0.push(V[i]);
           i += 1;
         }
         v_append_0.push(0x00);
-        K = vec_to_array(hmac(v_append_0, K));
-        V = hmac(V, K);
+        K = hmac(v_append_0, K);
+        V = hmac(arr_to_vec(V), K);
       }
     }
 
     k_option
 }
 
-//used in generate_k
-// TODO should have a different name because it only works for fixed length
-// TODO should have an assert on the length of data
-pub fn vec_to_array(data: Vec<u8>) -> [u8;32] {
+// //used in generate_k
+// // TODO should have a different name because it only works for fixed length
+// // TODO should have an assert on the length of data
+// pub fn vec_to_array(data: Vec<u8>) -> [u8;32] {
+//     let mut result: [u8; 32] = [0u8; 32];
 
-    let mut result: [u8; 32] = [0u8; 32];
+//     let mut i = 0;
+//     while i < 32 {
+//         result[i] = data.get(i).unwrap();
+//         i = i + 1;
+//     }
 
-    let mut i = 0;
-    while i < 32 {
-        result[i] = data.get(i).unwrap();
-        i = i + 1;
-    }
+//     result
+// }
 
-    result
+fn arr_to_vec(a: [u8;32]) -> Vec<u8> {
+  let mut res = Vec::new();
+  let mut i = 0;
+  while i < 32 {
+    res.push(a[i]);
+    i += 1;
+  }
+  res
 }
-
 
 // https://datatracker.ietf.org/doc/html/rfc6979#section-2.3.7
-fn int2octets(x: [u8;32]) -> Vec<u8> {
+fn int2octets(x: [u8;32]) -> [u8;32] {
     // value x modulo q
-    let x_reduced_Scalar: Scalar = Scalar::from_bytes(x);
-    let mut x_256 = compose((x_reduced_Scalar.ls[3], x_reduced_Scalar.ls[2], x_reduced_Scalar.ls[1], x_reduced_Scalar.ls[0]));
-
-    into_bytes(x_256).into_vec_u8()
+    let x_reduced_scalar: Scalar = Scalar::from_bytes(x);
+    x_reduced_scalar.to_bytes()
 }
 
-fn bits2octets (h: b256) -> Vec<u8> {
-
+fn bits2octets(h: b256) -> [u8;32] {
     let  (b0, b1, b2, b3) = decompose(h);
 
     // value x modulo q
-    let mut z2 = Scalar{ls: [b3, b2, b1, b0]};
+    let mut z2 = Scalar{ls: [b3, b2, b1, b0]} + Scalar::zero(); // has to output Vec<u8>
 
-    let mut z2_256 = compose((z2.ls[3], z2.ls[2], z2.ls[1], z2.ls[0]));
-
-    into_bytes(z2_256).into_vec_u8()
-
+    z2.to_bytes()
 }

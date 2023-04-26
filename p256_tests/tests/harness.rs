@@ -64,16 +64,16 @@ async fn get_contract_methods() -> (MyContractMethods<WalletUnlocked>, ContractI
 // //112889434785065900135211481371037383646282385554418514861667765615237067913479
 // const y_scalar: Scalar = Scalar{ls:[ 10719928016004921607, 13845646450878251009, 13142370077570254774, 17984324540840297179]};
 
-fn assert_xy(x: FieldElement, y: FieldElement, x_res: [u64; 4], y_res: [u64;4]) {
-  assert_eq!(x.ls[0], x_res[0]);
-  assert_eq!(x.ls[1], x_res[1]);
-  assert_eq!(x.ls[2], x_res[2]);
-  assert_eq!(x.ls[3], x_res[3]);
-  assert_eq!(y.ls[0], y_res[0]);
-  assert_eq!(y.ls[1], y_res[1]);
-  assert_eq!(y.ls[2], y_res[2]);
-  assert_eq!(y.ls[3], y_res[3]);
-}
+// fn assert_xy(x: FieldElement, y: FieldElement, x_res: [u64; 4], y_res: [u64;4]) {
+//   assert_eq!(x.ls[0], x_res[0]);
+//   assert_eq!(x.ls[1], x_res[1]);
+//   assert_eq!(x.ls[2], x_res[2]);
+//   assert_eq!(x.ls[3], x_res[3]);
+//   assert_eq!(y.ls[0], y_res[0]);
+//   assert_eq!(y.ls[1], y_res[1]);
+//   assert_eq!(y.ls[2], y_res[2]);
+//   assert_eq!(y.ls[3], y_res[3]);
+// }
 
 // fn assert_fieldelement(a: FieldElement, expected_res: [u64; 4]) {
 //   assert_eq!(a.ls[0], expected_res[0]);
@@ -82,12 +82,12 @@ fn assert_xy(x: FieldElement, y: FieldElement, x_res: [u64; 4], y_res: [u64;4]) 
 //   assert_eq!(a.ls[3], expected_res[3]);
 // }
 
-fn assert_fieldelements_eq(a: FieldElement, b: FieldElement) {
-  assert_eq!(a.ls[0], b.ls[0]);
-  assert_eq!(a.ls[1], b.ls[1]);
-  assert_eq!(a.ls[2], b.ls[2]);
-  assert_eq!(a.ls[3], b.ls[3]);
-}
+// fn assert_fieldelements_eq(a: FieldElement, b: FieldElement) {
+//   assert_eq!(a.ls[0], b.ls[0]);
+//   assert_eq!(a.ls[1], b.ls[1]);
+//   assert_eq!(a.ls[2], b.ls[2]);
+//   assert_eq!(a.ls[3], b.ls[3]);
+// }
 
 fn assert_scalar(res: Scalar, expected: Scalar) {
   assert_eq!(res.ls[0], expected.ls[0]);
@@ -133,17 +133,17 @@ fn assert_scalar(res: Scalar, expected: Scalar) {
 //   (x_converted, y_converted)
 // }
 
-async fn convert_from_montgomery(_methods: &MyContractMethods<WalletUnlocked>, p: &AffinePoint) -> (FieldElement, FieldElement) {
-  let x_converted = _methods
-    .fe_from_montgomery(p.clone().x)
-    .call().await.unwrap();
+// async fn convert_from_montgomery(_methods: &MyContractMethods<WalletUnlocked>, p: &AffinePoint) -> (FieldElement, FieldElement) {
+//   let x_converted = _methods
+//     .fe_from_montgomery(p.clone().x)
+//     .call().await.unwrap();
 
-  let y_converted = _methods
-    .fe_from_montgomery(p.clone().y)
-    .call().await.unwrap();
+//   let y_converted = _methods
+//     .fe_from_montgomery(p.clone().y)
+//     .call().await.unwrap();
 
-  (x_converted.value, y_converted.value)
-}
+//   (x_converted.value, y_converted.value)
+// }
 
 // async fn to_montgomery_ab(_methods: &MyContractMethods<WalletUnlocked>, a: FieldElement, b: FieldElement) -> (FieldElement, FieldElement) {
 //   let a_montgomery_form = _methods
@@ -1085,7 +1085,7 @@ async fn convert_from_montgomery(_methods: &MyContractMethods<WalletUnlocked>, p
 //   assert_eq!(bytes3.value, [170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170]);
 // }
 
-#[tokio::test]#[ignore]
+#[tokio::test]
 async fn test_hmac() {
   let (_methods, _id) = get_contract_methods().await;
 
@@ -1105,7 +1105,7 @@ async fn test_hmac() {
     .call().await.unwrap();
 
   // HMAC-SHA-256 = b0344c61d8db38535ca8afceaf0bf12b881dc200c9833da726e9376c2e32cff7
-  let expected = vec![176, 52, 76, 97, 216, 219, 56, 83, 92, 168, 175, 206, 175, 11, 241, 43, 136, 29, 194, 0, 201, 131, 61, 167, 38, 233, 55, 108, 46, 50, 207, 247];
+  let expected = [176, 52, 76, 97, 216, 219, 56, 83, 92, 168, 175, 206, 175, 11, 241, 43, 136, 29, 194, 0, 201, 131, 61, 167, 38, 233, 55, 108, 46, 50, 207, 247];
   assert_eq!(result.value, expected);
 
   // TEST CASE 2
@@ -1121,48 +1121,47 @@ async fn test_hmac() {
     .call().await.unwrap();
 
   // HMAC-SHA-256 = 5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843
-  let expected2 = vec![91, 220, 193, 70, 191, 96, 117, 78, 106, 4, 36, 38, 8, 149, 117, 199, 90, 0, 63, 8, 157, 39, 57, 131, 157, 236, 88, 185, 100, 236, 56, 67];
+  let expected2 = [91, 220, 193, 70, 191, 96, 117, 78, 106, 4, 36, 38, 8, 149, 117, 199, 90, 0, 63, 8, 157, 39, 57, 131, 157, 236, 88, 185, 100, 236, 56, 67];
   assert_eq!(result2.value, expected2);
 }
 
 
-#[tokio::test]#[ignore]
-async fn test_try_sign_prehashed_with_k_generated() {
-  let (_methods, _id) = get_contract_methods().await;
+// #[tokio::test]#[ignore]
+// async fn test_try_sign_prehashed_with_k_generated() {
+//   let (_methods, _id) = get_contract_methods().await;
 
-  // //z = msg digest into scalar
-  // let z: Scalar = Scalar{ls: [13150738685207554244, 18294550948687987428, 2385853424103592762, 11824835932072809800]};
-  let bytes = [164, 26, 65, 161, 42, 121, 149, 72, 33, 28, 65, 12, 101, 216, 19, 58, 253, 227, 77, 40, 189, 213, 66, 228, 182, 128, 207, 40, 153, 200, 168, 196];
-  let bytes_as_vec: Vec<u8> = bytes.to_vec();
-  //d = secret key 
-  let d: Scalar = Scalar{ls: [352540550500827030, 2537488469614698989, 457109476778039314, 14157058790165499106]};
-  let d_bytes: [u8;32] = [196, 119, 249, 246, 92, 34, 204, 226, 6, 87, 250, 165, 178, 209, 216, 18, 35, 54, 248, 81, 165, 8, 161, 237, 4, 228, 121, 195, 73, 133, 191, 150];
-  // pubkey
-  let a = AffinePoint {
-    x: FieldElement { ls:[16602909452612575158, 13855808666783054444, 14511138361138572648, 6989257567681289521] },
-    y: FieldElement { ls:[8620948056189575833, 17505968991938453329, 11825020959996820580, 8720092648338668697] },
-    infinity: 0
-  };
+//   // //z = msg digest into scalar
+//   // let z: Scalar = Scalar{ls: [13150738685207554244, 18294550948687987428, 2385853424103592762, 11824835932072809800]};
+//   let bytes = [164, 26, 65, 161, 42, 121, 149, 72, 33, 28, 65, 12, 101, 216, 19, 58, 253, 227, 77, 40, 189, 213, 66, 228, 182, 128, 207, 40, 153, 200, 168, 196];
+//   let bytes_as_vec: Vec<u8> = bytes.to_vec();
+//   //d = secret key 
+//   let d: Scalar = Scalar{ls: [352540550500827030, 2537488469614698989, 457109476778039314, 14157058790165499106]};
+//   let d_bytes: [u8;32] = [196, 119, 249, 246, 92, 34, 204, 226, 6, 87, 250, 165, 178, 209, 216, 18, 35, 54, 248, 81, 165, 8, 161, 237, 4, 228, 121, 195, 73, 133, 191, 150];
+//   // pubkey
+//   let a = AffinePoint {
+//     x: FieldElement { ls:[16602909452612575158, 13855808666783054444, 14511138361138572648, 6989257567681289521] },
+//     y: FieldElement { ls:[8620948056189575833, 17505968991938453329, 11825020959996820580, 8720092648338668697] },
+//     infinity: 0
+//   };
 
-  let k_generated = _methods
-    .generate_k(bytes_as_vec, d_bytes)
-    .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
-    .call().await.unwrap();
+//   let k_generated = _methods
+//     .generate_k(bytes_as_vec, d_bytes)
+//     .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
+//     .call().await.unwrap();
 
-  let sign = _methods
-    .try_sign_prehashed(d, k_generated.value, bytes)
-    .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
-    .call().await.unwrap();
+//   let sign = _methods
+//     .try_sign_prehashed(d, k_generated.value, bytes)
+//     .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
+//     .call().await.unwrap();
 
-  // verification for signature on "sample"
-  let verify_sample = _methods
-    .verify_prehashed(a.clone(), bytes.clone(), sign.value)
-    .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
-    .call().await.unwrap();
+//   // verification for signature on "sample"
+//   let verify_sample = _methods
+//     .verify_prehashed(a.clone(), bytes.clone(), sign.value)
+//     .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
+//     .call().await.unwrap();
 
-  assert!(!verify_sample.value);
-}
-
+//   assert!(!verify_sample.value);
+// }
 
 
 #[tokio::test]#[ignore]
@@ -1201,7 +1200,7 @@ async fn test_generate_k() {
 }
 
 
-#[tokio::test]#[ignore]
+#[tokio::test]
 async fn rfc6979() {
   let (_methods, _id) = get_contract_methods().await;
   
@@ -1284,27 +1283,27 @@ async fn rfc6979() {
     assert_scalar(result2.value.s, expected2.1);
 }
 
-#[tokio::test]#[ignore]
-async fn test_generate_verifyingkey() {
-  // test vectors taken from https://datatracker.ietf.org/doc/html/rfc6979#appendix-A.2.5
+// #[tokio::test]#[ignore]
+// async fn test_generate_verifyingkey() {
+//   // test vectors taken from https://datatracker.ietf.org/doc/html/rfc6979#appendix-A.2.5
 
-  let (_methods, _id) = get_contract_methods().await;
+//   let (_methods, _id) = get_contract_methods().await;
 
-  // private scalar C9AFA9D845BA75166B5C215767B1D6934E50C3DB36E89B127B8A622B120F6721
-  let x = Scalar { ls: [8902035550577321761, 5643225679381699346, 7736094919201248915, 14533021268895757590]};
+//   // private scalar C9AFA9D845BA75166B5C215767B1D6934E50C3DB36E89B127B8A622B120F6721
+//   let x = Scalar { ls: [8902035550577321761, 5643225679381699346, 7736094919201248915, 14533021268895757590]};
 
-  // verification for signature on "sample"
-  let get_verifying_key = _methods
-    .from_secret_scalar(x)
-    .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
-    .call().await.unwrap();
+//   // verification for signature on "sample"
+//   let get_verifying_key = _methods
+//     .from_secret_scalar(x)
+//     .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
+//     .call().await.unwrap();
 
-  // convert the coordinates to compare them with the value from the doc
-  let converted_coordinates = convert_from_montgomery(&_methods, &get_verifying_key.value.inner.point).await;
+//   // convert the coordinates to compare them with the value from the doc
+//   let converted_coordinates = convert_from_montgomery(&_methods, &get_verifying_key.value.inner.point).await;
 
-  // should be equal to the pubkey given in the doc
-  assert_xy(converted_coordinates.0, converted_coordinates.1, [16602909452612575158, 13855808666783054444, 14511138361138572648, 6989257567681289521], [8620948056189575833, 17505968991938453329, 11825020959996820580, 8720092648338668697]);
-}
+//   // should be equal to the pubkey given in the doc
+//   assert_xy(converted_coordinates.0, converted_coordinates.1, [16602909452612575158, 13855808666783054444, 14511138361138572648, 6989257567681289521], [8620948056189575833, 17505968991938453329, 11825020959996820580, 8720092648338668697]);
+// }
 
 #[tokio::test]
 async fn test_verify_with_generated_verifyingkey() {
