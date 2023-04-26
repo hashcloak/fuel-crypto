@@ -940,8 +940,8 @@ fn assert_scalar(res: Scalar, expected: Scalar) {
 //   let logs = sign.get_logs().unwrap();
 //   println!("{:#?}", logs);
 
-//   assert_scalar(sign.value.0, expected_sign.0);
-//   assert_scalar(sign.value.1, expected_sign.1);
+//   assert_scalar(sign.value.r, expected_sign.0);
+//   assert_scalar(sign.value.s, expected_sign.1);
 // }
 
 
@@ -984,8 +984,8 @@ fn assert_scalar(res: Scalar, expected: Scalar) {
 //   let logs = sign.get_logs().unwrap();
 //   println!("{:#?}", logs);
 
-//   assert_scalar(sign.value.0, expected_sign.0);
-//   assert_scalar(sign.value.1, expected_sign.1);
+//   assert_scalar(sign.value.r, expected_sign.0);
+//   assert_scalar(sign.value.s, expected_sign.1);
 // }
 
 // #[tokio::test]#[ignore]
@@ -1027,18 +1027,19 @@ fn assert_scalar(res: Scalar, expected: Scalar) {
 //     y: FieldElement { ls:[8620948056189575833, 17505968991938453329, 11825020959996820580, 8720092648338668697] },
 //     infinity: 0
 //   };
-
+// let sign1 = Signature{r: r1, s: s1};
 // // verification for signature on "sample"
 //   let verify1 = _methods
-//     .verify_prehashed(a.clone(), hash1.clone(), r1, s1)
+//     .verify_prehashed(a.clone(), hash1.clone(), sign1)
 //     .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
 //     .call().await.unwrap();
 
 //   assert!(verify1.value);
 
+//   let sign2 = Signature{r: r2.clone(), s: s2.clone()};
 // // verification for signature on "test"
 //   let verify2 = _methods
-//     .verify_prehashed(a.clone(), hash2, r2.clone(), s2.clone())
+//     .verify_prehashed(a.clone(), hash2, sign2.clone())
 //     .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
 //     .call().await.unwrap();
 
@@ -1046,7 +1047,7 @@ fn assert_scalar(res: Scalar, expected: Scalar) {
 
 //   // Check for a failing verification
 //   let verify_failed = _methods
-//     .verify_prehashed(a.clone(), hash1.clone(), r2.clone(), s2.clone()) // hash1, with signature for hash2 should fail
+//     .verify_prehashed(a.clone(), hash1.clone(), sign2.clone()) // hash1, with signature for hash2 should fail
 //     .tx_params(TxParameters::default().set_gas_limit(100_000_000_000))
 //     .call().await.unwrap();
 
