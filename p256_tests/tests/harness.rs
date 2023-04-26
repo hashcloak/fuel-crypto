@@ -9,57 +9,18 @@ abigen!(Contract(
     abi = "out/debug/p256_tests-abi.json"
 ));
 
-const g: AffinePoint = AffinePoint {
+const G: AffinePoint = AffinePoint {
   x: FieldElement{ls: [17627433388654248598, 8575836109218198432, 17923454489921339634, 7716867327612699207]},
   y: FieldElement{ls: [14678990851816772085, 3156516839386865358, 10297457778147434006, 5756518291402817435]},
   infinity: 0,
 };
 
 //41624337018869194729192205381537838788846303834619688597471765238035829032504
-const x_scalar: Scalar = Scalar{ls: [13282407956253574712, 7557322358563246340, 14991082624209354397, 6631139461101160670]};
+const X_SCALAR: Scalar = Scalar{ls: [13282407956253574712, 7557322358563246340, 14991082624209354397, 6631139461101160670]};
 
 //112889434785065900135211481371037383646282385554418514861667765615237067913479
-const y_scalar: Scalar = Scalar{ls:[ 10719928016004921607, 13845646450878251009, 13142370077570254774, 17984324540840297179]};
+const Y_SCALAR: Scalar = Scalar{ls:[ 10719928016004921607, 13845646450878251009, 13142370077570254774, 17984324540840297179]};
 
-async fn get_contract_instance() -> (MyContract<WalletUnlocked>, ContractId) {
-
-    let mut wallet = WalletUnlocked::new_random(None);
-    let num_assets = 1;
-    let coins_per_asset = 100;
-    let amount_per_coin = 100000;
-
-    let (coins, asset_ids) = setup_multiple_assets_coins(
-        wallet.address(),
-        num_assets,
-        coins_per_asset,
-        amount_per_coin,
-    );
-
-    // Custom gas limit
-    let consensus_parameters_config = ConsensusParameters::DEFAULT
-      .with_max_gas_per_tx(100_000_000_000).with_gas_per_byte(0);
-
-    let mut chain_config = ChainConfig::local_testnet();
-    // This is needed to allow for expensive operations
-    chain_config.block_gas_limit = 100_000_000_000;
-
-    let (client, addr) = setup_test_client(coins, vec![], None, Some(chain_config), Some(consensus_parameters_config)).await;
-
-    let provider = Provider::new(client);
-    wallet.set_provider(provider.clone());
-
-    let id = Contract::deploy(
-        "./out/debug/p256_tests.bin",
-        &wallet,
-        DeployConfiguration::default(),
-    )
-    .await
-    .unwrap();
-
-    let instance = MyContract::new(id.clone(), wallet);
-
-    (instance, id.into())
-}
 
 async fn get_contract_methods() -> (MyContractMethods<WalletUnlocked>, ContractId) {
 
@@ -68,7 +29,7 @@ async fn get_contract_methods() -> (MyContractMethods<WalletUnlocked>, ContractI
   let coins_per_asset = 100;
   let amount_per_coin = 100000;
 
-  let (coins, asset_ids) = setup_multiple_assets_coins(
+  let (coins, _asset_ids) = setup_multiple_assets_coins(
       wallet.address(),
       num_assets,
       coins_per_asset,
@@ -83,7 +44,7 @@ async fn get_contract_methods() -> (MyContractMethods<WalletUnlocked>, ContractI
   // This is needed to allow for expensive operations
   chain_config.block_gas_limit = 100_000_000_000;
 
-  let (client, addr) = setup_test_client(coins, vec![], None, Some(chain_config), Some(consensus_parameters_config)).await;
+  let (client, _addr) = setup_test_client(coins, vec![], None, Some(chain_config), Some(consensus_parameters_config)).await;
 
   let provider = Provider::new(client);
   wallet.set_provider(provider.clone());
@@ -368,7 +329,7 @@ async fn test_scalar_sub() {
   let (_methods, _id) = get_contract_methods().await;
 
   let scalar_sub = _methods
-    .scalar_sub(x_scalar, y_scalar)
+    .scalar_sub(X_SCALAR, Y_SCALAR)
     .call().await.unwrap();
 
   // Result = 38721682593578846101706239803167648905131734164902443116717271792204384901614
@@ -383,7 +344,7 @@ async fn test_scalar_mul() {
   let (_methods, _id) = get_contract_methods().await;
 
   let scalar_mul = _methods
-    .scalar_mul(x_scalar, y_scalar)
+    .scalar_mul(X_SCALAR, Y_SCALAR)
     .call().await.unwrap();
 
   // Result = 103996961415186572744923623518133659781096567566995581831564221704662704998922
@@ -428,7 +389,7 @@ async fn test_proj_double_1() {
   x = 7CF27B188D034F7E8A52380304B51AC3C08969E277F21B35A60B48FC47669978 = [9003393950442278782, 9967090510939364035, 13873736548487404341, 11964737083406719352]
   y = 07775510DB8ED040293D9AC69F7430DBBA7DADE63CE982299E04B79D227873D1 = [537992211385471040, 2971701507003789531, 13438088067519447593, 11386427643415524305]
   */
-  let g_converted_projective = affine_to_proj(&_methods, &g).await;
+  let g_converted_projective = affine_to_proj(&_methods, &G).await;
 
   let double_g = _methods
     .proj_double(g_converted_projective)
@@ -530,7 +491,7 @@ async fn test_proj_double_add_equality() {
   */
 
   let (_methods, _id) = get_contract_methods().await;
-  let g_converted_projective = affine_to_proj(&_methods, &g).await;
+  let g_converted_projective = affine_to_proj(&_methods, &G).await;
 
   let double_g = _methods
     .proj_double(g_converted_projective.clone())
@@ -628,7 +589,7 @@ async fn test_proj_mul_2g() {
   // 2G should give the same output as addition formulas above
   let (_methods, _id) = get_contract_methods().await;
 
-  let g_converted_projective = affine_to_proj(&_methods, &g).await;
+  let g_converted_projective = affine_to_proj(&_methods, &G).await;
 
   //2
   let x: Scalar = Scalar{ls: [2, 0, 0, 0]};
@@ -660,7 +621,7 @@ async fn test_proj_mul_2g() {
   print(V);
   */
 
-  let g_converted_projective = affine_to_proj(&_methods, &g).await;
+  let g_converted_projective = affine_to_proj(&_methods, &G).await;
 
   //31416255128259651114300763853743354944401428675127717048158727858123196938092
   let x: Scalar = Scalar{ls: [15982738825684268908, 12861376030615125811, 9837491998535547791, 5004898192290387222]};
