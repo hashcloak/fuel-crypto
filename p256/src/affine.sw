@@ -16,7 +16,7 @@ impl AffinePoint {
       AffinePoint {
         x: FieldElement::zero(),
         y: FieldElement::zero(),
-        infinity: 1,
+        infinity: 1u8,
       }
     }
 
@@ -25,7 +25,7 @@ impl AffinePoint {
       AffinePoint {
         x: FieldElement{ls: [17627433388654248598, 8575836109218198432, 17923454489921339634, 7716867327612699207]},
         y: FieldElement{ls: [14678990851816772085, 3156516839386865358, 10297457778147434006, 5756518291402817435]},
-        infinity: 0,
+        infinity: 0u8,
       }
 
     }

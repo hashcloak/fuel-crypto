@@ -78,7 +78,7 @@ impl From<AffinePoint> for ProjectivePoint {
         AffinePoint {
           x: self.x * zinv.unwrap(),
           y: self.y * zinv.unwrap(),
-          infinity: 0
+          infinity: 0u8
         }
       } else {
         AffinePoint::identity()

@@ -3,7 +3,7 @@ library;
 use utils::integer_utils::{adc, sbb, mac}; 
 use utils::choice::*; //This wildcard import is needed because of importing ConstantTimeEq for u64 since it's a trait for a primitive type
 use core::ops::{Add, Subtract, Multiply};
-
+use :: modular_helper::{sub_inner, mul_wide, add, ct_eq, conditional_select};
 
 pub struct Scalar { 
   ls: [u64; 4] 
@@ -11,30 +11,13 @@ pub struct Scalar {
 // Constant representing the modulus
 // n = 115792089210356248762697446949407573529996955224135760342422259061068512044369
 // n = FFFFFFFF 00000000 FFFFFFFF FFFFFFFF BCE6FAAD A7179E84 F3B9CAC2 FC632551 representing the order of the group/generator
-pub const MODULUS: [u64;4] = [17562291160714782033, 13611842547513532036, 18446744073709551615, 18446744069414584320];
+pub const MODULUS_SCALAR: [u64;4] = [17562291160714782033, 13611842547513532036, 18446744073709551615, 18446744069414584320];
 
 // MU = floor(2^512 / n)
 //    = 115792089264276142090721624801893421302707618245269942344307673200490803338238
 //    = 0x100000000fffffffffffffffeffffffff43190552df1a6c21012ffd85eedf9bfe
 pub const MU: [u64; 5] = [85565669623438334, 4834901528447446049, 18446744069414584319, 4294967295, 1];
 
-fn sub_inner(l: [u64; 5], r: [u64; 5]) -> Scalar {
-    let (w0, borrow) = sbb(l[0], r[0], 0);
-    let (w1, borrow) = sbb(l[1], r[1], borrow);
-    let (w2, borrow) = sbb(l[2], r[2], borrow);
-    let (w3, borrow) = sbb(l[3], r[3], borrow);
-    let (_, borrow) = sbb(l[4], r[4], borrow);
-
-    // If underflow occurred on the final limb, borrow = 0xfff...fff, otherwise
-    // borrow = 0x000...000. Thus, we use it as a mask to conditionally add the
-    // modulus.
-    let (w0, carry) = adc(w0, MODULUS[0] & borrow, 0);
-    let (w1, carry) = adc(w1, MODULUS[1] & borrow, carry);
-    let (w2, carry) = adc(w2, MODULUS[2] & borrow, carry);
-    let (w3, _) = adc(w3, MODULUS[3] & borrow, carry);
-
-    Scalar{ls: [w0, w1, w2, w3]}
-}
 
 fn q1_times_mu_shift_five(q1: [u64; 5]) -> [u64; 5] {
     // Schoolbook multiplication.
@@ -75,25 +58,25 @@ fn q1_times_mu_shift_five(q1: [u64; 5]) -> [u64; 5] {
 fn q3_times_n_keep_five(q3: [u64; 5]) -> [u64; 5] {
     // Schoolbook multiplication.
 
-    let (w0, carry) = mac(0, q3[0], MODULUS[0], 0);
-    let (w1, carry) = mac(0, q3[0], MODULUS[1], carry);
-    let (w2, carry) = mac(0, q3[0], MODULUS[2], carry);
-    let (w3, carry) = mac(0, q3[0], MODULUS[3], carry);
+    let (w0, carry) = mac(0, q3[0], MODULUS_SCALAR[0], 0);
+    let (w1, carry) = mac(0, q3[0], MODULUS_SCALAR[1], carry);
+    let (w2, carry) = mac(0, q3[0], MODULUS_SCALAR[2], carry);
+    let (w3, carry) = mac(0, q3[0], MODULUS_SCALAR[3], carry);
     let (w4, _) = mac(0, q3[0], 0, carry);
 
-    let (w1, carry) = mac(w1, q3[1], MODULUS[0], 0);
-    let (w2, carry) = mac(w2, q3[1], MODULUS[1], carry);
-    let (w3, carry) = mac(w3, q3[1], MODULUS[2], carry);
-    let (w4, _) = mac(w4, q3[1], MODULUS[3], carry);
+    let (w1, carry) = mac(w1, q3[1], MODULUS_SCALAR[0], 0);
+    let (w2, carry) = mac(w2, q3[1], MODULUS_SCALAR[1], carry);
+    let (w3, carry) = mac(w3, q3[1], MODULUS_SCALAR[2], carry);
+    let (w4, _) = mac(w4, q3[1], MODULUS_SCALAR[3], carry);
 
-    let (w2, carry) = mac(w2, q3[2], MODULUS[0], 0);
-    let (w3, carry) = mac(w3, q3[2], MODULUS[1], carry);
-    let (w4, _) = mac(w4, q3[2], MODULUS[2], carry);
+    let (w2, carry) = mac(w2, q3[2], MODULUS_SCALAR[0], 0);
+    let (w3, carry) = mac(w3, q3[2], MODULUS_SCALAR[1], carry);
+    let (w4, _) = mac(w4, q3[2], MODULUS_SCALAR[2], carry);
 
-    let (w3, carry) = mac(w3, q3[3], MODULUS[0], 0);
-    let (w4, _) = mac(w4, q3[3], MODULUS[1], carry);
+    let (w3, carry) = mac(w3, q3[3], MODULUS_SCALAR[0], 0);
+    let (w4, _) = mac(w4, q3[3], MODULUS_SCALAR[1], carry);
 
-    let (w4, _) = mac(w4, q3[4], MODULUS[0], 0);
+    let (w4, _) = mac(w4, q3[4], MODULUS_SCALAR[0], 0);
 
     [w0, w1, w2, w3, w4]
 }
@@ -111,19 +94,19 @@ fn sub_inner_five(l: [u64; 5], r: [u64; 5]) -> [u64; 5] {
 
 fn subtract_n_if_necessary(r0: u64, r1: u64, r2: u64, r3: u64, r4: u64) -> [u64; 5] {
 
-    let (w0, borrow) = sbb(r0, MODULUS[0], 0);
-    let (w1, borrow) = sbb(r1, MODULUS[1], borrow);
-    let (w2, borrow) = sbb(r2, MODULUS[2], borrow);
-    let (w3, borrow) = sbb(r3, MODULUS[3], borrow);
+    let (w0, borrow) = sbb(r0, MODULUS_SCALAR[0], 0);
+    let (w1, borrow) = sbb(r1, MODULUS_SCALAR[1], borrow);
+    let (w2, borrow) = sbb(r2, MODULUS_SCALAR[2], borrow);
+    let (w3, borrow) = sbb(r3, MODULUS_SCALAR[3], borrow);
     let (w4, borrow) = sbb(r4, 0, borrow);
 
     // If underflow occurred on the final limb, borrow = 0xfff...fff, otherwise
     // borrow = 0x000...000. Thus, we use it as a mask to conditionally add the
     // modulus.
-    let (w0, carry) = adc(w0, MODULUS[0] & borrow, 0);
-    let (w1, carry) = adc(w1, MODULUS[1] & borrow, carry);
-    let (w2, carry) = adc(w2, MODULUS[2] & borrow, carry);
-    let (w3, carry) = adc(w3, MODULUS[3] & borrow, carry);
+    let (w0, carry) = adc(w0, MODULUS_SCALAR[0] & borrow, 0);
+    let (w1, carry) = adc(w1, MODULUS_SCALAR[1] & borrow, carry);
+    let (w2, carry) = adc(w2, MODULUS_SCALAR[2] & borrow, carry);
+    let (w3, carry) = adc(w3, MODULUS_SCALAR[3] & borrow, carry);
     let (w4, _carry) = adc(w4, 0, carry);
 
     [w0, w1, w2, w3, w4]
@@ -142,21 +125,12 @@ impl Scalar {
 
   // Returns a + b mod n
   pub fn scalar_add(self, b: Self) -> Self {
-      let (w0, carry0) = adc(self.ls[0], b.ls[0], 0);
-      let (w1, carry1) = adc(self.ls[1], b.ls[1], carry0);
-      let (w2, carry2) = adc(self.ls[2], b.ls[2], carry1);
-      let (w3, w4) = adc(self.ls[3], b.ls[3], carry2);
-      
-      // Attempt to subtract the modulus, to ensure the result is in the field.
-      sub_inner(
-          [w0, w1, w2, w3, w4],
-          [MODULUS[0], MODULUS[1], MODULUS[2], MODULUS[3], 0],
-      )
+    Scalar{ls: add(self.ls, b.ls, MODULUS_SCALAR)}
   }
 
   // Returns `a - b mod n`.
   pub fn scalar_sub(self, b: Self) -> Self {
-      sub_inner([self.ls[0], self.ls[1], self.ls[2], self.ls[3], 0], [b.ls[0], b.ls[1], b.ls[2], b.ls[3], 0])
+      Scalar{ls: sub_inner([self.ls[0], self.ls[1], self.ls[2], self.ls[3], 0], [b.ls[0], b.ls[1], b.ls[2], b.ls[3], 0], MODULUS_SCALAR)}
   }
 
   pub fn barrett_reduce(self, h: Self) -> Self {
@@ -184,38 +158,13 @@ impl Scalar {
       Scalar{ls: [r[0], r[1], r[2], r[3]]}
   }
 
-  // Multiplies two scalars without modulo reduction, producing up to a 512-bit scalar.
-  pub fn mul_wide(self, b: Self) -> [u64;8] {
-
-      let (w0, carry) = mac(0, self.ls[0], b.ls[0], 0);
-      let (w1, carry) = mac(0, self.ls[0], b.ls[1], carry);
-      let (w2, carry) = mac(0, self.ls[0], b.ls[2], carry);
-      let (w3, w4) = mac(0, self.ls[0], b.ls[3], carry);
-
-      let (w1, carry) = mac(w1, self.ls[1], b.ls[0], 0);
-      let (w2, carry) = mac(w2, self.ls[1], b.ls[1], carry);
-      let (w3, carry) = mac(w3, self.ls[1], b.ls[2], carry);
-      let (w4, w5) = mac(w4, self.ls[1], b.ls[3], carry);
-
-      let (w2, carry) = mac(w2, self.ls[2], b.ls[0], 0);
-      let (w3, carry) = mac(w3, self.ls[2], b.ls[1], carry);
-      let (w4, carry) = mac(w4, self.ls[2], b.ls[2], carry);
-      let (w5, w6) = mac(w5, self.ls[2], b.ls[3], carry);
-
-      let (w3, carry) = mac(w3, self.ls[3], b.ls[0], 0);
-      let (w4, carry) = mac(w4, self.ls[3], b.ls[1], carry);
-      let (w5, carry) = mac(w5, self.ls[3], b.ls[2], carry);
-      let (w6, w7) = mac(w6, self.ls[3], b.ls[3], carry);
-
-      [w0, w1, w2, w3, w4, w5, w6, w7]
-  }
 }
 
 impl Scalar {
 
   // Returns self * rhs mod n
   pub fn scalar_mul(self, b: Self) -> Self {
-      let t: [u64; 8] = self.mul_wide(b);
+      let t: [u64; 8] = mul_wide(self.ls, b.ls);
       (Scalar{ls:[t[0], t[1], t[2], t[3]]}).barrett_reduce(Scalar{ls: [t[4], t[5], t[6], t[7]]})
   }
 
@@ -224,10 +173,7 @@ impl Scalar {
 impl ConstantTimeEq for Scalar {
   // returns (self == other), as a choice
   fn ct_eq(self, other: Scalar) -> Choice {
-      u64::ct_eq(self.ls[0], other.ls[0])
-      & u64::ct_eq(self.ls[1], other.ls[1])
-      & u64::ct_eq(self.ls[2], other.ls[2])
-      & u64::ct_eq(self.ls[3], other.ls[3])
+      ct_eq(self.ls, other.ls)
   }
 }
 
@@ -315,5 +261,12 @@ impl Scalar {
   // If element is zero, the result is CtOption(value: xxx, is_some: false)
   pub fn scalar_invert(self) -> CtOption<Self> {
       CtOption::new(self.invert_unchecked(), !self.ct_eq(Self::zero()))
+  }
+}
+
+impl ConditionallySelectable for Scalar {
+  // Select a if choice == 1 or select b if choice == 0, in constant time.
+  fn conditional_select(self, b: Self, choice: Choice) -> Self {
+      Scalar{ ls: conditional_select(self.ls, b.ls, choice)}
   }
 }

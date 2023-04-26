@@ -5,6 +5,7 @@ use utils::{
   choice::* //This wildcard import is needed because of importing ConstantTimeEq for u64 since it's a trait for a primitive type
 };
 use core::ops::{Add, Subtract, Multiply};
+use ::modular_helper::{sub_inner, mul_wide, add, ct_eq, conditional_select};
 
 // Little endian
 // ls[0] + ls[1] * 2^64 + ls[2] * 2^128 + ls[3] * 2^192
@@ -15,28 +16,12 @@ pub struct FieldElement {
 
 // 115792089210356248762697446949407573530086143415290314195533631308867097853951
 // 18446744073709551615 + 4294967295 * 2ˆ64 + 18446744069414584321 * 2ˆ192
-const modulus: [u64; 4] = [18446744073709551615, 4294967295, 0, 18446744069414584321];
+// const modulus: [u64; 4] = [18446744073709551615, 4294967295, 0, 18446744069414584321];
+const MODULUS_FE: [u64; 4] = [18446744073709551615, 4294967295, 0, 18446744069414584321];
 
 // R^2 = 2^512 mod p = 134799733323198995502561713907086292154532538166959272814710328655875
 const R_2: [u64; 4] = [3, 18446744056529682431, 18446744073709551614, 21474836477];
 
-fn sub_inner(l: [u64; 5], r: [u64; 5]) -> FieldElement {
-    let (w0, borrow0) = sbb(l[0], r[0], 0);
-    let (w1, borrow1) = sbb(l[1], r[1], borrow0);
-    let (w2, borrow2) = sbb(l[2], r[2], borrow1);
-    let (w3, borrow3) = sbb(l[3], r[3], borrow2);
-    let (_, borrow4) = sbb(l[4], r[4], borrow3);
-
-    // If l[4] < r[4] then borrow = 11...11, otherwise borrow 00...00
-    // If there was a borrow, 1x modulus has to bed added
-    // borrow4 is used as a mask
-    let (w0, carry0) = adc(w0, modulus[0] & borrow4, 0);
-    let (w1, carry1) = adc(w1, modulus[1] & borrow4, carry0);
-    let (w2, carry2) = adc(w2, modulus[2] & borrow4, carry1);
-    let (w3, _) = adc(w3, modulus[3] & borrow4, carry2);
-  
-    FieldElement { ls: [w0, w1, w2, w3] }
-}
 
 impl FieldElement {
 
@@ -58,22 +43,14 @@ impl FieldElement {
     Choice::from(self.ls[0] & 1)
   }
 
+  // Returns `a + b mod p`.
   fn fe_add(self, b: Self) -> Self {
-      let (w0, carry0) = adc(self.ls[0], b.ls[0], 0);
-      let (w1, carry1) = adc(self.ls[1], b.ls[1], carry0);
-      let (w2, carry2) = adc(self.ls[2], b.ls[2], carry1);
-      let (w3, w4) = adc(self.ls[3], b.ls[3], carry2);
-      
-      // To make sure result is within field, try to subtract modulus
-      sub_inner(
-          [w0, w1, w2, w3, w4],
-          [modulus[0], modulus[1], modulus[2], modulus[3], 0],
-      )
+    FieldElement {ls: add(self.ls, b.ls, MODULUS_FE)}
   }
 
   // Returns `a - b mod p`.
   fn fe_sub(self, b: Self) -> Self {
-      sub_inner([self.ls[0], self.ls[1], self.ls[2], self.ls[3], 0], [b.ls[0], b.ls[1], b.ls[2], b.ls[3], 0])
+      FieldElement{ ls: sub_inner([self.ls[0], self.ls[1], self.ls[2], self.ls[3], 0], [b.ls[0], b.ls[1], b.ls[2], b.ls[3], 0], MODULUS_FE)}
   }
 }
 
@@ -88,57 +65,38 @@ fn montgomery_reduce(r: [u64; 8]) -> FieldElement {
     let r6 = r[6];
     let r7 = r[7];
 
-    let (r1, carry) = mac(r1, r0, modulus[1], r0);
+    let (r1, carry) = mac(r1, r0, MODULUS_FE[1], r0);
     let (r2, carry) = adc(r2, 0, carry);
-    let (r3, carry) = mac(r3, r0, modulus[3], carry);
+    let (r3, carry) = mac(r3, r0, MODULUS_FE[3], carry);
     let (r4, carry2) = adc(r4, 0, carry);
 
-    let (r2, carry) = mac(r2, r1, modulus[1], r1);
+    let (r2, carry) = mac(r2, r1, MODULUS_FE[1], r1);
     let (r3, carry) = adc(r3, 0, carry);
-    let (r4, carry) = mac(r4, r1, modulus[3], carry);
+    let (r4, carry) = mac(r4, r1, MODULUS_FE[3], carry);
     let (r5, carry2) = adc(r5, carry2, carry);
 
-    let (r3, carry) = mac(r3, r2, modulus[1], r2);
+    let (r3, carry) = mac(r3, r2, MODULUS_FE[1], r2);
     let (r4, carry) = adc(r4, 0, carry);
-    let (r5, carry) = mac(r5, r2, modulus[3], carry);
+    let (r5, carry) = mac(r5, r2, MODULUS_FE[3], carry);
     let (r6, carry2) = adc(r6, carry2, carry);
 
-    let (r4, carry) = mac(r4, r3, modulus[1], r3);
+    let (r4, carry) = mac(r4, r3, MODULUS_FE[1], r3);
     let (r5, carry) = adc(r5, 0, carry);
-    let (r6, carry) = mac(r6, r3, modulus[3], carry);
+    let (r6, carry) = mac(r6, r3, MODULUS_FE[3], carry);
     let (r7, r8) = adc(r7, carry2, carry);
 
-    sub_inner(
+    FieldElement{ls: sub_inner(
         [r4, r5, r6, r7, r8],
-        [modulus[0], modulus[1], modulus[2], modulus[3], 0],
-    )
+        [MODULUS_FE[0], MODULUS_FE[1], MODULUS_FE[2], MODULUS_FE[3], 0],
+        MODULUS_FE
+    )}
 }
 
 impl FieldElement {
 
   /// Returns `a * b mod p`.
   pub fn fe_mul(self, b: Self) -> Self {
-      let (w0, carry) = mac(0, self.ls[0], b.ls[0], 0);
-      let (w1, carry) = mac(0, self.ls[0], b.ls[1], carry);
-      let (w2, carry) = mac(0, self.ls[0], b.ls[2], carry);
-      let (w3, w4) = mac(0, self.ls[0], b.ls[3], carry);
-
-      let (w1, carry) = mac(w1, self.ls[1], b.ls[0], 0);
-      let (w2, carry) = mac(w2, self.ls[1], b.ls[1], carry);
-      let (w3, carry) = mac(w3, self.ls[1], b.ls[2], carry);
-      let (w4, w5) = mac(w4, self.ls[1], b.ls[3], carry);
-
-      let (w2, carry) = mac(w2, self.ls[2], b.ls[0], 0);
-      let (w3, carry) = mac(w3, self.ls[2], b.ls[1], carry);
-      let (w4, carry) = mac(w4, self.ls[2], b.ls[2], carry);
-      let (w5, w6) = mac(w5, self.ls[2], b.ls[3], carry);
-
-      let (w3, carry) = mac(w3, self.ls[3], b.ls[0], 0);
-      let (w4, carry) = mac(w4, self.ls[3], b.ls[1], carry);
-      let (w5, carry) = mac(w5, self.ls[3], b.ls[2], carry);
-      let (w6, w7) = mac(w6, self.ls[3], b.ls[3], carry);
-
-      montgomery_reduce([w0, w1, w2, w3, w4, w5, w6, w7])
+    montgomery_reduce(mul_wide(self.ls, b.ls))
   }
 
   // Translate a field element out of the Montgomery domain.
@@ -188,10 +146,7 @@ impl FieldElement {
 impl ConstantTimeEq for FieldElement {
   // returns (self == other), as a choice
   fn ct_eq(self, other: FieldElement) -> Choice {
-      u64::ct_eq(self.ls[0], other.ls[0])
-      & u64::ct_eq(self.ls[1], other.ls[1])
-      & u64::ct_eq(self.ls[2], other.ls[2])
-      & u64::ct_eq(self.ls[3], other.ls[3])
+      ct_eq(self.ls, other.ls)
   }
 }
 
@@ -298,11 +253,6 @@ impl FieldElement {
 impl ConditionallySelectable for FieldElement {
   // Select a if choice == 1 or select b if choice == 0, in constant time.
   fn conditional_select(self, b: Self, choice: Choice) -> Self {
-      FieldElement{ ls: [
-          u64::conditional_select(self.ls[0], b.ls[0], choice),
-          u64::conditional_select(self.ls[1], b.ls[1], choice),
-          u64::conditional_select(self.ls[2], b.ls[2], choice),
-          u64::conditional_select(self.ls[3], b.ls[3], choice),
-      ]}
+      FieldElement{ ls: conditional_select(self.ls, b.ls, choice)}
   }
 }
