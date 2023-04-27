@@ -1,6 +1,6 @@
 use fuels::prelude::*;
 use crate::utils::{FieldElement, Scalar, AffinePoint, ProjectivePoint, helpers::get_contract_methods};
-use crate::utils::{MyContractMethods, assert_xy, convert_from_montgomery};
+use crate::utils::{MyContractMethods, helpers::assert_xy, helpers::convert_from_montgomery};
 
 mod success {
   use super::*;
@@ -27,14 +27,11 @@ mod success {
       .fe_to_montgomery(p_proj.value.clone().y)
       .call().await.unwrap();
 
-    let z_converted_p = _methods
-      .fe_to_montgomery(p_proj.value.clone().z)
-      .call().await.unwrap();
-
     let p_converted_projective = ProjectivePoint {
       x: x_converted_p.value,
       y: y_converted_p.value,
-      z: z_converted_p.value
+      // z is already in the montgomery form while converting from affine to projective
+      z: p_proj.value.z
     };
 
     p_converted_projective
