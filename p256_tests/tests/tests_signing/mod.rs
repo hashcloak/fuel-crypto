@@ -14,14 +14,15 @@ use crate::utils::MyContractMethods;
 mod success {
   use super::*;
 
+  // assert that field elements are equal
   fn check_fieldelement(a: FieldElement, expected_res: FieldElement) {
     assert_eq!(a.ls[0], expected_res.ls[0]);
     assert_eq!(a.ls[1], expected_res.ls[1]);
     assert_eq!(a.ls[2], expected_res.ls[2]);
     assert_eq!(a.ls[3], expected_res.ls[3]);
-
   }
 
+  // assert that 2 signing keys are equal
   fn assert_signingkey(a: SigningKey, expected_res: SigningKey) {
     // assert equality of scalar
     assert_eq!(a.secret_scalar.ls[0], expected_res.secret_scalar.ls[0]);
@@ -123,9 +124,6 @@ mod success {
       .call().await.unwrap();
 
     let expected_sign = (Scalar{ls:[8297238664434815055, 16450577892209540853, 18403346296901472129, 3117323782746751333]}, Scalar{ls:[5418564668381985521, 11007228978462008876, 4484064855691635329, 15871461420133749453]});
-
-    let logs = sign.get_logs().unwrap();
-    println!("{:#?}", logs);
 
     assert_scalar(sign.value.r, expected_sign.0);
     assert_scalar(sign.value.s, expected_sign.1);

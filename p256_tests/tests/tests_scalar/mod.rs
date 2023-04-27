@@ -1,8 +1,9 @@
 use fuels::prelude::*;
-use crate::utils::{Scalar, helpers::get_contract_methods};
+use crate::utils::{Scalar, helpers::{get_contract_methods, assert_scalar}};
 
 mod success {
   use super::*;
+  
   //41624337018869194729192205381537838788846303834619688597471765238035829032504
   const X_SCALAR: Scalar = Scalar{ls: [13282407956253574712, 7557322358563246340, 14991082624209354397, 6631139461101160670]};
   
@@ -19,10 +20,8 @@ mod success {
       .scalar_from_bytes(byte_array)
       .call().await.unwrap();
 
-    assert_eq!(result.value.ls[0], 10719928016004921607);
-    assert_eq!(result.value.ls[1], 13845646450878251009);
-    assert_eq!(result.value.ls[2], 13142370077570254774);
-    assert_eq!(result.value.ls[3], 17984324540840297179);
+    let expected_res = Scalar{ ls: [10719928016004921607, 13845646450878251009, 13142370077570254774, 17984324540840297179]};
+    assert_scalar(result.value, expected_res);
   }
 
   #[tokio::test]
@@ -41,10 +40,8 @@ mod success {
       .call().await.unwrap();
 
     // Result is also 34428271419003178419185326270416938950243594150707623680154290927291036232480
-    assert_eq!(scalar_add.value.ls[0], 8134337258092653344);
-    assert_eq!(scalar_add.value.ls[1], 1157902268381881982);
-    assert_eq!(scalar_add.value.ls[2], 12007363352295742248);
-    assert_eq!(scalar_add.value.ls[3], 5484740071188655816);
+    let expected_res1 = Scalar{ ls: [8134337258092653344, 1157902268381881982, 12007363352295742248, 5484740071188655816]};
+    assert_scalar(scalar_add.value, expected_res1);
 
     // TEST 2
     //41624337018869194729192205381537838788846303834619688597471765238035829032504
@@ -58,10 +55,8 @@ mod success {
       .call().await.unwrap();
 
     // Result = 38721682593578846101706239803167648905131734164902443116717271792204384901614
-    assert_eq!(scalar_add2.value.ls[0], 6440044811543714286);
-    assert_eq!(scalar_add2.value.ls[1], 7791126261927965313);
-    assert_eq!(scalar_add2.value.ls[2], 9686708628070057556);
-    assert_eq!(scalar_add2.value.ls[3], 6168719932526873529);
+    let expected_res2 = Scalar{ ls: [6440044811543714286, 7791126261927965313, 9686708628070057556, 6168719932526873529]};
+    assert_scalar(scalar_add2.value, expected_res2);
   }
 
   #[tokio::test]
@@ -73,10 +68,8 @@ mod success {
       .call().await.unwrap();
 
     // Result = 38721682593578846101706239803167648905131734164902443116717271792204384901614
-    assert_eq!(scalar_sub.value.ls[0], 1678027027253883522);
-    assert_eq!(scalar_sub.value.ls[1], 7323518455198527368);
-    assert_eq!(scalar_sub.value.ls[2], 1848712546639099622);
-    assert_eq!(scalar_sub.value.ls[3], 7093558989675447812);
+    let expected_res = Scalar{ ls: [1678027027253883522, 7323518455198527368, 1848712546639099622, 7093558989675447812]};
+    assert_scalar(scalar_sub.value, expected_res);
   }
 
   #[tokio::test]
@@ -88,10 +81,8 @@ mod success {
       .call().await.unwrap();
 
     // Result = 103996961415186572744923623518133659781096567566995581831564221704662704998922
-    assert_eq!(scalar_mul.value.ls[0], 12652583779974793738);
-    assert_eq!(scalar_mul.value.ls[1], 11510399856113002259);
-    assert_eq!(scalar_mul.value.ls[2], 17112986354705659152);
-    assert_eq!(scalar_mul.value.ls[3], 16567671801288747593);
+    let expected_res = Scalar{ ls: [12652583779974793738, 11510399856113002259, 17112986354705659152, 16567671801288747593]};
+    assert_scalar(scalar_mul.value, expected_res);
   }
 
   #[tokio::test]
@@ -107,11 +98,7 @@ mod success {
       .call().await.unwrap();
 
     // result should be 84801081494837761602111676842516221872243864255054144073280115004536303842931
-    assert_eq!(invert_x.value.value.ls[0], 9530314696573515379);
-    assert_eq!(invert_x.value.value.ls[1], 1325056620123427311);
-    assert_eq!(invert_x.value.value.ls[2], 7698614219480972011);
-    assert_eq!(invert_x.value.value.ls[3], 13509591698470992260);
+    let expected_res = Scalar{ ls: [9530314696573515379, 1325056620123427311, 7698614219480972011, 13509591698470992260]};
+    assert_scalar(invert_x.value.value, expected_res);
   }
-
-
 }

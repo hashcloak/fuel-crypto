@@ -27,12 +27,12 @@ abi MyContract {
   //   fn pow_vartime(w: FieldElement, exp: [u64;4]) -> FieldElement;
   //   fn fe_to_bytes(a: FieldElement) -> [u8;32];
 
-  // // scalar
-  //   fn scalar_add(a: Scalar, b: Scalar) -> Scalar;
-  //   fn scalar_sub(a: Scalar, b: Scalar) -> Scalar;
-  //   fn scalar_mul(a: Scalar, b: Scalar) -> Scalar;
-  //   fn scalar_invert(a: Scalar) -> CtOption<Scalar>;
-  //   fn scalar_from_bytes(in: [u8; 32]) -> Scalar;
+  // scalar
+    fn scalar_add(a: Scalar, b: Scalar) -> Scalar;
+    fn scalar_sub(a: Scalar, b: Scalar) -> Scalar;
+    fn scalar_mul(a: Scalar, b: Scalar) -> Scalar;
+    fn scalar_invert(a: Scalar) -> CtOption<Scalar>;
+    fn scalar_from_bytes(in: [u8; 32]) -> Scalar;
 
   // // point arithmetic
   //   fn affine_to_proj(p: AffinePoint) -> ProjectivePoint;
@@ -97,26 +97,26 @@ impl MyContract for Contract {
   //     a.to_bytes()
   //   }
 
-  // // scalar
-  //   fn scalar_add(a: Scalar, b: Scalar) -> Scalar {
-  //       a + b
-  //   }
+  // scalar
+    fn scalar_add(a: Scalar, b: Scalar) -> Scalar {
+        a + b
+    }
 
-  //   fn scalar_sub(a: Scalar, b: Scalar) -> Scalar {
-  //       a - b
-  //   }
+    fn scalar_sub(a: Scalar, b: Scalar) -> Scalar {
+        a - b
+    }
 
-  //   fn scalar_mul(a: Scalar, b: Scalar) -> Scalar {
-  //       a * b
-  //   }
+    fn scalar_mul(a: Scalar, b: Scalar) -> Scalar {
+        a * b
+    }
 
-  //   fn scalar_invert(a: Scalar) -> CtOption<Scalar> {
-  //       a.scalar_invert()
-  //   }
+    fn scalar_invert(a: Scalar) -> CtOption<Scalar> {
+        a.scalar_invert()
+    }
 
-  //   fn scalar_from_bytes(in: [u8; 32]) -> Scalar {
-  //     Scalar::from_bytes(in)
-  //   }
+    fn scalar_from_bytes(in: [u8; 32]) -> Scalar {
+      Scalar::from_bytes(in)
+    }
 
   // // point arithmetic
   //   fn affine_to_proj(p: AffinePoint) -> ProjectivePoint {
