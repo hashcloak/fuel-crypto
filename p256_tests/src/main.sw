@@ -9,7 +9,7 @@ use p256::{
   // hash2curve::hash_to_curve,
   publickey::PublicKey,
   signingkey::SigningKey,
-  ecdsa::{try_sign_prehashed, verify_prehashed, Signature},
+  ecdsa::Signature,
   ecdsa::bits2field,
   hmac::{hmac, generate_k},
   verifyingkey::VerifyingKey
@@ -18,21 +18,23 @@ use p256::{
 use utils::choice::CtOption;
 
 abi MyContract {
-  // // field
-  //   fn fe_mul(a: FieldElement, b: FieldElement) -> FieldElement;
+  // Needed for utils
     fn fe_to_montgomery(w: FieldElement) -> FieldElement;
     fn fe_from_montgomery(w: FieldElement) -> FieldElement;
+
+  // // field
+  //   fn fe_mul(a: FieldElement, b: FieldElement) -> FieldElement;
   //   fn sqrt(w: FieldElement) -> CtOption<FieldElement>;
   //   fn invert(w: FieldElement) -> CtOption<FieldElement>;
   //   fn pow_vartime(w: FieldElement, exp: [u64;4]) -> FieldElement;
   //   fn fe_to_bytes(a: FieldElement) -> [u8;32];
 
-  // scalar
-    fn scalar_add(a: Scalar, b: Scalar) -> Scalar;
-    fn scalar_sub(a: Scalar, b: Scalar) -> Scalar;
-    fn scalar_mul(a: Scalar, b: Scalar) -> Scalar;
-    fn scalar_invert(a: Scalar) -> CtOption<Scalar>;
-    fn scalar_from_bytes(in: [u8; 32]) -> Scalar;
+  // // scalar
+  //   fn scalar_add(a: Scalar, b: Scalar) -> Scalar;
+  //   fn scalar_sub(a: Scalar, b: Scalar) -> Scalar;
+  //   fn scalar_mul(a: Scalar, b: Scalar) -> Scalar;
+  //   fn scalar_invert(a: Scalar) -> CtOption<Scalar>;
+  //   fn scalar_from_bytes(in: [u8; 32]) -> Scalar;
 
   // // point arithmetic
   //   fn affine_to_proj(p: AffinePoint) -> ProjectivePoint;
@@ -48,15 +50,16 @@ abi MyContract {
   //   fn from_okm (data: [u8;48]) -> FieldElement;
   //   fn expand_message(data: Vec<u8>) -> (b256, b256, b256);
 
-  // signing
-    fn signingkey_from_bytes(b: [u8;32]) -> SigningKey;
-    fn try_sign_prehashed(d: Scalar, k: Scalar, bytes: [u8;32]) -> Signature;
-    fn try_sign(key: SigningKey, msg: Vec<u8>) -> Signature;
+  // // signing
+  //   fn signingkey_from_bytes(b: [u8;32]) -> SigningKey;
+  //   fn try_sign_prehashed(d: Scalar, k: Scalar, bytes: [u8;32]) -> Signature;
+  //   fn try_sign(key: SigningKey, msg: Vec<u8>) -> Signature;
 
-  // verifying
-    fn verify_prehashed(a: AffinePoint, bytes: [u8;32], sig: Signature) -> bool;
-    fn from_secret_scalar(scalar: Scalar) -> VerifyingKey;
-    fn verify_prehash(verifyingkey: VerifyingKey, bytes: [u8;32], sig: Signature) -> bool;
+  // // verifying
+  //   fn verify_prehashed(a: AffinePoint, bytes: [u8;32], sig: Signature) -> bool;
+    // fn from_secret_scalar(scalar: Scalar) -> VerifyingKey;
+    fn verify_prehash_with_secret_scalar(scalar: Scalar, bytes: [u8;32], sig: Signature) -> bool;
+    // fn verify_prehash_with_pubkey(vk: VerifyingKey, bytes: [u8;32], sig: Signature) -> bool; 
 
   // other
     fn bits2field(bits: Vec<u8>) -> [u8;32];
@@ -66,11 +69,7 @@ abi MyContract {
 }
 
 impl MyContract for Contract {
-    // // field
-    // fn fe_mul(a: FieldElement, b: FieldElement) -> FieldElement {
-    //     a * b
-    // }
-
+  // Needed for utils
     fn fe_to_montgomery(w: FieldElement) -> FieldElement {
       w.fe_to_montgomery()
     }
@@ -78,6 +77,12 @@ impl MyContract for Contract {
     fn fe_from_montgomery(w: FieldElement) -> FieldElement {
       w.fe_from_montgomery()
     }
+
+    // // field
+    // fn fe_mul(a: FieldElement, b: FieldElement) -> FieldElement {
+    //     a * b
+    // }
+
 
     // fn sqrt(w: FieldElement) -> CtOption<FieldElement> {
     //   w.sqrt()
@@ -95,26 +100,26 @@ impl MyContract for Contract {
     //   a.to_bytes()
     // }
 
-  // scalar
-    fn scalar_add(a: Scalar, b: Scalar) -> Scalar {
-        a + b
-    }
+  // // scalar
+  //   fn scalar_add(a: Scalar, b: Scalar) -> Scalar {
+  //       a + b
+  //   }
 
-    fn scalar_sub(a: Scalar, b: Scalar) -> Scalar {
-        a - b
-    }
+  //   fn scalar_sub(a: Scalar, b: Scalar) -> Scalar {
+  //       a - b
+  //   }
 
-    fn scalar_mul(a: Scalar, b: Scalar) -> Scalar {
-        a * b
-    }
+  //   fn scalar_mul(a: Scalar, b: Scalar) -> Scalar {
+  //       a * b
+  //   }
 
-    fn scalar_invert(a: Scalar) -> CtOption<Scalar> {
-        a.scalar_invert()
-    }
+  //   fn scalar_invert(a: Scalar) -> CtOption<Scalar> {
+  //       a.scalar_invert()
+  //   }
 
-    fn scalar_from_bytes(in: [u8; 32]) -> Scalar {
-      Scalar::from_bytes(in)
-    }
+  //   fn scalar_from_bytes(in: [u8; 32]) -> Scalar {
+  //     Scalar::from_bytes(in)
+  //   }
 
   // // point arithmetic
   //   fn affine_to_proj(p: AffinePoint) -> ProjectivePoint {
@@ -141,31 +146,36 @@ impl MyContract for Contract {
   //     p.mul(k)
   //   }
 
-    // signing
-    fn signingkey_from_bytes(b: [u8;32]) -> SigningKey {
-      SigningKey::from_bytes(b)
-    }
+    // // signing
+    // fn signingkey_from_bytes(b: [u8;32]) -> SigningKey {
+    //   SigningKey::from_bytes(b)
+    // }
 
-    fn try_sign_prehashed(d: Scalar, k: Scalar, bytes: [u8;32]) -> Signature {
-      try_sign_prehashed(d, k, bytes)
-    }
+    // fn try_sign_prehashed(d: Scalar, k: Scalar, bytes: [u8;32]) -> Signature {
+    //   try_sign_prehashed(d, k, bytes)
+    // }
 
-    fn try_sign(key: SigningKey, msg: Vec<u8>) -> Signature {
-      key.try_sign(msg)
-    }
+    // fn try_sign(key: SigningKey, msg: Vec<u8>) -> Signature {
+    //   key.try_sign(msg)
+    // }
 
-    // verifying
-    fn verify_prehashed(a: AffinePoint, bytes: [u8;32], sig: Signature) -> bool {
-      verify_prehashed(a, bytes, sig)
-    }
+    // // verifying
+    // fn verify_prehashed(a: AffinePoint, bytes: [u8;32], sig: Signature) -> bool {
+    //   verify_prehashed(a, bytes, sig)
+    // }
     
-    fn from_secret_scalar(scalar: Scalar) -> VerifyingKey {
-      VerifyingKey::from_secret_scalar(scalar)
+    // fn from_secret_scalar(scalar: Scalar) -> VerifyingKey {
+    //   VerifyingKey::from_secret_scalar(scalar)
+    // }
+
+    fn verify_prehash_with_secret_scalar(scalar: Scalar, bytes: [u8;32], sig: Signature) -> bool {
+      VerifyingKey::verify_prehash_with_secret_scalar(scalar, bytes, sig)
     }
 
-    fn verify_prehash(verifyingkey: VerifyingKey, bytes: [u8;32], sig: Signature) -> bool {
-      verifyingkey.verify_prehash(bytes, sig)
-    }
+    // fn verify_prehash_with_pubkey(vk: VerifyingKey, bytes: [u8;32], sig: Signature) -> bool {
+    //   vk.verify_prehash_with_pubkey(bytes, sig)
+    // }
+    
 
     // other
     fn bits2field (bits: Vec<u8>) -> [u8;32] {
