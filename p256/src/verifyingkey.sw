@@ -4,9 +4,12 @@ use ::field::FieldElement;
 use ::scalar::Scalar;
 use ::affine::AffinePoint;
 use ::projective::ProjectivePoint;
-use ::publickey::PublicKey;
 use ::ecdsa::{Signature, verify_prehashed};
 use ::utils::choice::Choice;
+
+pub struct PublicKey {
+  point: AffinePoint,
+}
 
 pub struct VerifyingKey {
   inner: PublicKey,

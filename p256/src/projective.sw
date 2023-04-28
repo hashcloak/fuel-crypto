@@ -4,7 +4,7 @@ use ::affine::AffinePoint;
 use ::field::FieldElement;
 use ::scalar::Scalar;
 use ::std::convert::From;
-use ::utils::choice::*;//{ConditionallySelectable, Choice, CtOption}; because of ConditionallySelectable for u8
+use ::utils::choice::{ConditionallySelectable, Choice, CtOption};
 use std::logging::log;
 
 pub struct ProjectivePoint {
@@ -12,8 +12,6 @@ pub struct ProjectivePoint {
   y: FieldElement,
   z: FieldElement,
 }
-//The EQUATION_A, EQUATION_B constatnts are defined in hash2curve too but there is an issue in importing because
-// hash2curve importing projective and projective importing hash2curve, therefore the constant is defined here too 
 
 // a = -3 mod p
 pub const EQUATION_A: FieldElement = FieldElement{ ls:[

@@ -1,13 +1,14 @@
 library;
 
 use utils::integer_utils::{adc, sbb, mac}; 
-use utils::choice::*; //This wildcard import is needed because of importing ConstantTimeEq for u64 since it's a trait for a primitive type
+use utils::choice::{Choice, ConstantTimeEq, ConditionallySelectable, CtOption};
 use core::ops::{Add, Subtract, Multiply};
-use :: modular_helper::{sub_inner, mul_wide, add, ct_eq, conditional_select};
+use ::modular_helper::{sub_inner, mul_wide, add, ct_eq, conditional_select, to_bytes};
 
 pub struct Scalar { 
   ls: [u64; 4] 
 }
+
 // Constant representing the MODULUS_SCALAR
 // n = 115792089210356248762697446949407573529996955224135760342422259061068512044369
 // n = FFFFFFFF 00000000 FFFFFFFF FFFFFFFF BCE6FAAD A7179E84 F3B9CAC2 FC632551 representing the order of the group/generator
@@ -187,31 +188,9 @@ impl Scalar {
     Scalar { ls: u64s}.scalar_add(Self::zero()) // trigger the mod q
   }
 
-// TODO is the same as in Field, this will be one of the functions that is taken out
-// normalize and convert to bytes
+  // normalize and convert to bytes
   pub fn to_bytes(self) -> [u8;32] {
-    let reduced = sub_inner(
-        [self.ls[0], self.ls[1], self.ls[2], self.ls[3], 0],
-        [MODULUS_SCALAR[0], MODULUS_SCALAR[1], MODULUS_SCALAR[2], MODULUS_SCALAR[3], 0],
-        MODULUS_SCALAR
-    );
-    let mut res: [u8;32] = [0u8;32];
-    // big endian
-    let mut i = 4;
-    let mut j = 0;
-    while j < 32 {
-      i -= 1; // to prevent overflow at last run
-      res[j] = reduced[i] >> 56;
-      res[j + 1] = reduced[i] >> 48;
-      res[j + 2] = reduced[i] >> 40;
-      res[j + 3] = reduced[i] >> 32;
-      res[j + 4] = reduced[i] >> 24;
-      res[j + 5] = reduced[i] >> 16;
-      res[j + 6] = reduced[i] >> 8;
-      res[j + 7] = reduced[i];        
-      j += 8;
-    }
-    res
+    to_bytes([self.ls[0], self.ls[1], self.ls[2], self.ls[3], 0], MODULUS_SCALAR)
   }
 }
 

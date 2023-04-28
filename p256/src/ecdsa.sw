@@ -54,21 +54,10 @@ pub fn verify_prehashed(a: AffinePoint, bytes: [u8;32], sig: Signature) -> bool 
   let u1: Scalar = z * s_inv;
   let u2: Scalar = sig.r * s_inv;
 
-//double montgomery
   let g_proj = ProjectivePoint::from(AffinePoint::generator());
-  // remove montgomery transform
-  // let g_x_montgomery = FieldElement::fe_to_montgomery(g_affine.x);
-  // let g_y_montgomery = FieldElement::fe_to_montgomery(g_affine.y);
-  // let g_z_montgomery = FieldElement::fe_to_montgomery(g_affine.z);
-  // let g_projective_montgomery = ProjectivePoint{x: g_x_montgomery, y: g_y_montgomery, z: g_z_montgomery};
   let u1_g = g_proj.mul(u1);
 
   let a_proj_point = ProjectivePoint::from(a);
-  // remove montgomery transform
-  // let a_x_montgomery = FieldElement::fe_to_montgomery(a_proj_point.x);
-  // let a_y_montgomery = FieldElement::fe_to_montgomery(a_proj_point.y);
-  // let a_z_montgomery = FieldElement::fe_to_montgomery(a_proj_point.z);
-  // let a_projective_montgomery = ProjectivePoint{x: a_x_montgomery, y: a_y_montgomery, z: a_z_montgomery};
   let u2_a = a_proj_point.mul(u2);
 
   let x: ProjectivePoint = u1_g.add(u2_a);
@@ -80,30 +69,4 @@ pub fn verify_prehashed(a: AffinePoint, bytes: [u8;32], sig: Signature) -> bool 
   } else {
     false
   }
-}
-
-
-/// This is used to convert a message digest whose size may be smaller or
-/// larger than the size of the curve's scalar field into a serialized
-/// (unreduced) field element.
-///
-/// [RFC6979 § 2.3.2]: https://datatracker.ietf.org/doc/html/rfc6979#section-2.3.2
-/// [SEC1]: https://www.secg.org/sec1-v2.pdf
-pub fn bits2field (bits: Vec<u8>) -> [u8;32] {
-  
-  //if length of bits less than half of digest raise error
-  if bits.len() < 16 {
-    //TODO: raise error
-  }
-  //if bits length is smaller than 32, pad it with zeros
-  // if bits length is more than 32(larger than the field size), truncate 
-
-  let mut fieldBytes = [0u8;32];
-  let mut i = 0; 
-  while i < bits.len() && i < 32 {
-    fieldBytes[i] = bits.get(i).unwrap();
-    i = i + 1;
-  }
-
-  fieldBytes
 }

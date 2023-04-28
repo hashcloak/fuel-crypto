@@ -80,3 +80,28 @@ pub fn conditional_select(a: [u64;4], b: [u64; 4], choice: Choice) -> [u64;4] {
     u64::conditional_select(a[3], b[3], choice),
   ]
 }
+
+pub fn to_bytes(limbs: [u64; 5], MODULUS: [u64; 4]) -> [u8;32] {
+  let reduced = sub_inner(
+      [limbs[0], limbs[1], limbs[2], limbs[3], 0],
+      [MODULUS[0], MODULUS[1], MODULUS[2], MODULUS[3], 0],
+      MODULUS
+  );
+  let mut res: [u8;32] = [0u8;32];
+  // big endian
+  let mut i = 4;
+  let mut j = 0;
+  while j < 32 {
+    i -= 1; // to prevent overflow at last run
+    res[j] = reduced[i] >> 56;
+    res[j + 1] = reduced[i] >> 48;
+    res[j + 2] = reduced[i] >> 40;
+    res[j + 3] = reduced[i] >> 32;
+    res[j + 4] = reduced[i] >> 24;
+    res[j + 5] = reduced[i] >> 16;
+    res[j + 6] = reduced[i] >> 8;
+    res[j + 7] = reduced[i];        
+    j += 8;
+  }
+  res
+}

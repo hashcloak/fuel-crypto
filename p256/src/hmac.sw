@@ -98,10 +98,6 @@ pub fn hmac(data: Vec<u8>, key: [u8;32]) -> [u8;32] {
   into_byte_array(second_append.sha256())
 }
 
-// TODO
-// decompose is also defined in hash_to_field.
-// if we keep hash_to_field then instead of defining here we will directly call it.
-
 // Needed to extract bytes from hash, comes from answer on Fuel forum
 // https://forum.fuel.network/t/how-can-i-transform-b256-into-u8-32/1124/2?u=elena
 pub fn decompose(val: b256) -> (u64, u64, u64, u64) {
@@ -154,8 +150,11 @@ pub fn into_byte_array(b: b256) -> [u8;32] {
 // x: secretKey in big-endian format
 pub fn generate_k(data: Vec<u8>, x: [u8;32]) -> Scalar {
     
-  // This step might be redundant but is there because sha256 of sway is giving different value than expected 
-  // hence converting into bytes in order to get desire result
+  /*
+  sha256 does not give correct result for certain inputs in Sway.
+  It seems to be working correctly for Bytes, therefore we do a conversion to Bytes to be safe.
+  This should be removed whenever possible!
+  */
   let mut m = Bytes::new();
 
   let mut i = 0;

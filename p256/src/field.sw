@@ -2,10 +2,10 @@ library;
 
 use utils::{
   integer_utils::{adc, sbb, mac},
-  choice::* //This wildcard import is needed because of importing ConstantTimeEq for u64 since it's a trait for a primitive type
+  choice::{Choice, CtOption, ConditionallySelectable, ConstantTimeEq}
 };
 use core::ops::{Add, Subtract, Multiply};
-use :: modular_helper::{sub_inner, mul_wide, add, ct_eq, conditional_select};
+use ::modular_helper::{sub_inner, mul_wide, add, ct_eq, conditional_select, to_bytes};
 
 // Little endian
 // ls[0] + ls[1] * 2^64 + ls[2] * 2^128 + ls[3] * 2^192
@@ -20,7 +20,6 @@ const MODULUS_FE: [u64; 4] = [18446744073709551615, 4294967295, 0, 1844674406941
 
 // R^2 = 2^512 mod p = 134799733323198995502561713907086292154532538166959272814710328655875
 const R_2: [u64; 4] = [3, 18446744056529682431, 18446744073709551614, 21474836477];
-
 
 impl FieldElement {
 
@@ -44,38 +43,17 @@ impl FieldElement {
 
   // Returns `a + b mod p`.
   fn fe_add(self, b: Self) -> Self {
-      FieldElement {ls: add(self.ls, b.ls, MODULUS_FE)}
+    FieldElement {ls: add(self.ls, b.ls, MODULUS_FE)}
   }
 
   // Returns `a - b mod p`.
   fn fe_sub(self, b: Self) -> Self {
-      FieldElement{ls: sub_inner([self.ls[0], self.ls[1], self.ls[2], self.ls[3], 0], [b.ls[0], b.ls[1], b.ls[2], b.ls[3], 0], MODULUS_FE)}
+    FieldElement{ls: sub_inner([self.ls[0], self.ls[1], self.ls[2], self.ls[3], 0], [b.ls[0], b.ls[1], b.ls[2], b.ls[3], 0], MODULUS_FE)}
   }
 
-// normalize and convert to bytes
+  // normalize and convert to bytes
   pub fn to_bytes(self) -> [u8;32] {
-      let reduced = sub_inner(
-          [self.ls[0], self.ls[1], self.ls[2], self.ls[3], 0],
-          [MODULUS_FE[0], MODULUS_FE[1], MODULUS_FE[2], MODULUS_FE[3], 0],
-          MODULUS_FE
-      );
-      let mut res: [u8;32] = [0u8;32];
-      // big endian
-      let mut i = 4;
-      let mut j = 0;
-      while j < 32 {
-        i -= 1; // to prevent overflow at last run
-        res[j] = reduced[i] >> 56;
-        res[j + 1] = reduced[i] >> 48;
-        res[j + 2] = reduced[i] >> 40;
-        res[j + 3] = reduced[i] >> 32;
-        res[j + 4] = reduced[i] >> 24;
-        res[j + 5] = reduced[i] >> 16;
-        res[j + 6] = reduced[i] >> 8;
-        res[j + 7] = reduced[i];        
-        j += 8;
-      }
-      res
+    to_bytes([self.ls[0], self.ls[1], self.ls[2], self.ls[3], 0], MODULUS_FE)
   }
 }
 
@@ -110,9 +88,9 @@ fn montgomery_reduce(r: [u64; 8]) -> FieldElement {
   let (r7, r8) = adc(r7, carry2, carry);
 
   FieldElement{ls: sub_inner(
-      [r4, r5, r6, r7, r8],
-      [MODULUS_FE[0], MODULUS_FE[1], MODULUS_FE[2], MODULUS_FE[3], 0],
-      MODULUS_FE
+    [r4, r5, r6, r7, r8],
+    [MODULUS_FE[0], MODULUS_FE[1], MODULUS_FE[2], MODULUS_FE[3], 0],
+    MODULUS_FE
   )}
 }
 
