@@ -33,7 +33,6 @@ impl MyContract for Contract {
         a * b
     }
 
-
     fn sqrt(w: FieldElement) -> CtOption<FieldElement> {
       w.sqrt()
     }

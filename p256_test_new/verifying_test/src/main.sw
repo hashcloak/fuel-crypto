@@ -5,10 +5,8 @@ use p256::{
   scalar::*,
   affine::AffinePoint,
   projective::ProjectivePoint,
-  publickey::PublicKey,
   signingkey::SigningKey,
   ecdsa::Signature,
-  ecdsa::bits2field,
   hmac::{hmac, generate_k},
   verifyingkey::VerifyingKey
 };

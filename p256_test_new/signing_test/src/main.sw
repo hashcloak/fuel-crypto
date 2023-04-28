@@ -5,9 +5,6 @@ use p256::{
   scalar::Scalar,
   affine::AffinePoint,
   projective::ProjectivePoint,
-  // hash_to_field::{hash_to_field, from_okm, expand_message, hash_to_scalar},
-  // hash2curve::hash_to_curve,
-  publickey::PublicKey,
   signingkey::SigningKey,
   ecdsa::{try_sign_prehashed, verify_prehashed, Signature},
   hmac::generate_k,
@@ -33,7 +30,6 @@ abi MyContract {
 
 impl MyContract for Contract {
   
-
     // signing
     fn signingkey_from_bytes(b: [u8;32]) -> SigningKey {
       SigningKey::from_bytes(b)

@@ -8,6 +8,7 @@ abigen!(Contract(
     name = "MyContract",
     abi = "out/debug/signing_test-abi.json"
 ));
+
 async fn get_contract_methods() -> (MyContractMethods<WalletUnlocked>, ContractId) {
   let mut wallet = WalletUnlocked::new_random(None);
   let num_assets = 1;
