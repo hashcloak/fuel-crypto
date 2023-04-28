@@ -1,7 +1,4 @@
-li
-
-
-brary;
+library;
 
 use ::field::FieldElement;
 use utils::{choice::*};
