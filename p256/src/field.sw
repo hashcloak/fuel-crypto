@@ -80,53 +80,52 @@ impl FieldElement {
 }
 
 fn montgomery_reduce(r: [u64; 8]) -> FieldElement {
+  let r0 = r[0];
+  let r1 = r[1];
+  let r2 = r[2];
+  let r3 = r[3];
+  let r4 = r[4];
+  let r5 = r[5];
+  let r6 = r[6];
+  let r7 = r[7];
 
-    let r0 = r[0];
-    let r1 = r[1];
-    let r2 = r[2];
-    let r3 = r[3];
-    let r4 = r[4];
-    let r5 = r[5];
-    let r6 = r[6];
-    let r7 = r[7];
+  let (r1, carry) = mac(r1, r0, MODULUS_FE[1], r0);
+  let (r2, carry) = adc(r2, 0, carry);
+  let (r3, carry) = mac(r3, r0, MODULUS_FE[3], carry);
+  let (r4, carry2) = adc(r4, 0, carry);
 
-    let (r1, carry) = mac(r1, r0, MODULUS_FE[1], r0);
-    let (r2, carry) = adc(r2, 0, carry);
-    let (r3, carry) = mac(r3, r0, MODULUS_FE[3], carry);
-    let (r4, carry2) = adc(r4, 0, carry);
+  let (r2, carry) = mac(r2, r1, MODULUS_FE[1], r1);
+  let (r3, carry) = adc(r3, 0, carry);
+  let (r4, carry) = mac(r4, r1, MODULUS_FE[3], carry);
+  let (r5, carry2) = adc(r5, carry2, carry);
 
-    let (r2, carry) = mac(r2, r1, MODULUS_FE[1], r1);
-    let (r3, carry) = adc(r3, 0, carry);
-    let (r4, carry) = mac(r4, r1, MODULUS_FE[3], carry);
-    let (r5, carry2) = adc(r5, carry2, carry);
+  let (r3, carry) = mac(r3, r2, MODULUS_FE[1], r2);
+  let (r4, carry) = adc(r4, 0, carry);
+  let (r5, carry) = mac(r5, r2, MODULUS_FE[3], carry);
+  let (r6, carry2) = adc(r6, carry2, carry);
 
-    let (r3, carry) = mac(r3, r2, MODULUS_FE[1], r2);
-    let (r4, carry) = adc(r4, 0, carry);
-    let (r5, carry) = mac(r5, r2, MODULUS_FE[3], carry);
-    let (r6, carry2) = adc(r6, carry2, carry);
+  let (r4, carry) = mac(r4, r3, MODULUS_FE[1], r3);
+  let (r5, carry) = adc(r5, 0, carry);
+  let (r6, carry) = mac(r6, r3, MODULUS_FE[3], carry);
+  let (r7, r8) = adc(r7, carry2, carry);
 
-    let (r4, carry) = mac(r4, r3, MODULUS_FE[1], r3);
-    let (r5, carry) = adc(r5, 0, carry);
-    let (r6, carry) = mac(r6, r3, MODULUS_FE[3], carry);
-    let (r7, r8) = adc(r7, carry2, carry);
-
-    FieldElement{ls: sub_inner(
-        [r4, r5, r6, r7, r8],
-        [MODULUS_FE[0], MODULUS_FE[1], MODULUS_FE[2], MODULUS_FE[3], 0],
-        MODULUS_FE
-    )}
+  FieldElement{ls: sub_inner(
+      [r4, r5, r6, r7, r8],
+      [MODULUS_FE[0], MODULUS_FE[1], MODULUS_FE[2], MODULUS_FE[3], 0],
+      MODULUS_FE
+  )}
 }
 
 impl FieldElement {
 
   /// Returns `a * b mod p`.
   pub fn fe_mul(self, b: Self) -> Self {
-          montgomery_reduce(mul_wide(self.ls, b.ls))
+    montgomery_reduce(mul_wide(self.ls, b.ls))
   }
 
   // Translate a field element out of the Montgomery domain.
   pub fn fe_from_montgomery(self) -> Self {
-      montgomery_reduce([self.ls[0], self.ls[1], self.ls[2], self.ls[3], 0, 0, 0, 0])
+    montgomery_reduce([self.ls[0], self.ls[1], self.ls[2], self.ls[3], 0, 0, 0, 0])
   }
 
 }
@@ -134,21 +133,21 @@ impl FieldElement {
 // Add arithmetic symbols support +, - , *
 
 impl Add for FieldElement {
-    fn add(self, other: Self) -> Self {
-        self.fe_add(other)
-    }
+  fn add(self, other: Self) -> Self {
+    self.fe_add(other)
+  }
 }
 
 impl Subtract for FieldElement {
-    fn subtract(self, other: Self) -> Self {
-        self.fe_sub(other)
-    }
+  fn subtract(self, other: Self) -> Self {
+    self.fe_sub(other)
+  }
 }
 
 impl Multiply for FieldElement {
-    fn multiply(self, other: Self) -> Self {
-        self.fe_mul(other)
-    }
+  fn multiply(self, other: Self) -> Self {
+    self.fe_mul(other)
+  }
 }
 
 impl FieldElement {
@@ -159,11 +158,11 @@ impl FieldElement {
 
   // Translate a field element into the Montgomery domain.
   pub fn fe_to_montgomery(self) -> Self {
-      self * FieldElement{ls: R_2}
+    self * FieldElement{ls: R_2}
   }
 
   pub fn square(self) -> Self {
-      self * self
+    self * self
   }
 }
 
@@ -179,13 +178,13 @@ impl FieldElement {
   // Has to be in a separate impl Fe, so it can be used in next methods
   /// Returns self^(2^n) mod p
   fn sqn(self, n: u64) -> Self {
-      let mut x = self;
-      let mut i = 0;
-      while i < n {
-        x = x.square();
-        i += 1;
-      }
-      x
+    let mut x = self;
+    let mut i = 0;
+    while i < n {
+      x = x.square();
+      i += 1;
+    }
+    x
   }
 
   pub fn one_montgomery_form() -> Self {
@@ -201,16 +200,15 @@ impl FieldElement {
 
   // returns multiplicative inverse, does not check for input being zero
   pub fn invert_unchecked(self) -> Self {
-
     let t111 = self.multiply(self.multiply(self.square()).square());
-        let t111111 = t111.multiply(t111.sqn(3));
-        let x15 = t111111.sqn(6).multiply(t111111).sqn(3).multiply(t111);
-        let x16 = x15.square().multiply(self);
-        let i53 = x16.sqn(16).multiply(x16).sqn(15);
-        let x47 = x15.multiply(i53);
-        x47.multiply(i53.sqn(17).multiply(self).sqn(143).multiply(x47).sqn(47))
-            .sqn(2)
-            .multiply(self)
+    let t111111 = t111.multiply(t111.sqn(3));
+    let x15 = t111111.sqn(6).multiply(t111111).sqn(3).multiply(t111);
+    let x16 = x15.square().multiply(self);
+    let i53 = x16.sqn(16).multiply(x16).sqn(15);
+    let x47 = x15.multiply(i53);
+    x47.multiply(i53.sqn(17).multiply(self).sqn(143).multiply(x47).sqn(47))
+        .sqn(2)
+        .multiply(self)
   }
 
   // returns square root of self mod p in the form CtOption(value: square_root, is_some: true)
@@ -232,7 +230,7 @@ impl FieldElement {
   }
 
   pub fn is_zero(self) -> Choice {
-      self.ct_eq(Self::zero())
+    self.ct_eq(Self::zero())
   }
 }
 
@@ -240,15 +238,15 @@ impl FieldElement {
   // returns multiplicative inverse of self mod p in the form CtOption(value: inverse, is_some: true)
   // If the input is zero, the result is CtOption(value: xxx, is_some: false)
   pub fn invert(self) -> CtOption<Self> {
-      CtOption::new(self.invert_unchecked(), !self.is_zero())
+    CtOption::new(self.invert_unchecked(), !self.is_zero())
   }
 
   pub fn is_even(self) -> Choice {
-      !self.is_odd()
+    !self.is_odd()
   }
 
   pub fn negate(self) -> Self {
-      Self::zero().subtract(self)
+    Self::zero().subtract(self)
   }
 
   pub fn pow_vartime(self, exp: [u64; 4]) -> Self {

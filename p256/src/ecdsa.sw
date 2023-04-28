@@ -82,6 +82,7 @@ pub fn verify_prehashed(a: AffinePoint, bytes: [u8;32], sig: Signature) -> bool 
   }
 }
 
+
 /// This is used to convert a message digest whose size may be smaller or
 /// larger than the size of the curve's scalar field into a serialized
 /// (unreduced) field element.

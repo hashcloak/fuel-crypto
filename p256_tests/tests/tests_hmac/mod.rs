@@ -11,7 +11,6 @@ mod success {
   async fn test_hmac() {
     let (_methods, _id) = get_contract_methods().await;
 
-    
     //test vector from https://www.rfc-editor.org/rfc/rfc4231#section-4
     
     // TEST CASE 1
@@ -79,7 +78,6 @@ mod success {
     //   k = D16B6AE827F17175E040871A1C7EC3500192C4C92677336EC2537ACAEE0008E0
     let expected2 = Scalar{ls: [14002670678419966176, 113369308850500462, 16159064009222308688, 15090272521770070389]};
     assert_scalar(result2.value, expected2);
-
   }
 
 
