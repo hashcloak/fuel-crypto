@@ -30,13 +30,14 @@ impl VerifyingKey {
 
   // There are 2 separate verification functions, to allow input with a pubkey and with a secret scalar.
 
+// TODO uncomment when possible. Having both verification algorithms gives the following error: "Unable to offset into the data section more than 2^12 bits. Unsupported data section length."
   // returns whether signature is verified, using the scalar as input for verification key
   // Note: converting scalar results in verifyingkey in montgomery form
-  pub fn verify_prehash_with_secret_scalar(scalar: Scalar, bytes: [u8;32], sig: Signature) -> bool {
-    // Ref: https://github.com/RustCrypto/signatures/blob/master/ecdsa/src/verifying.rs#L163
-    let pubkey = Self::from_secret_scalar(scalar);
-    verify_prehashed(pubkey.inner.point, bytes, sig)
-  }
+  // pub fn verify_prehash_with_secret_scalar(scalar: Scalar, bytes: [u8;32], sig: Signature) -> bool {
+  //   // Ref: https://github.com/RustCrypto/signatures/blob/master/ecdsa/src/verifying.rs#L163
+  //   let pubkey = Self::from_secret_scalar(scalar);
+  //   verify_prehashed(pubkey.inner.point, bytes, sig)
+  // }
 
   // returns whether signature is verified, using the given verifyingkey
   // Note: pubkey is expected to be in normal form and will be converted to Montgomery form

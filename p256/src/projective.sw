@@ -87,6 +87,7 @@ impl From<AffinePoint> for ProjectivePoint {
 
 // These are specialised elliptic curve arithmetic implementations for the case a = -3
 pub fn point_double(point: ProjectivePoint) -> ProjectivePoint { 
+  // Ref: https://github.com/RustCrypto/elliptic-curves/blob/81cb7e11afbde1b8753d56fa27238369209b2e65/primeorder/src/point_arithmetic.rs#L286
   let xx = point.x.square(); // 1
   let yy = point.y.square(); // 2
   let zz = point.z.square(); // 3
@@ -118,6 +119,7 @@ pub fn point_double(point: ProjectivePoint) -> ProjectivePoint {
 }
 
 pub fn point_add(lhs: ProjectivePoint, rhs: ProjectivePoint) -> ProjectivePoint {
+  // Ref: https://github.com/RustCrypto/elliptic-curves/blob/81cb7e11afbde1b8753d56fa27238369209b2e65/primeorder/src/point_arithmetic.rs#L209
   let xx = lhs.x * rhs.x; // 1
   let yy = lhs.y * rhs.y; // 2
   let zz = lhs.z * rhs.z; // 3
@@ -147,6 +149,7 @@ pub fn point_add(lhs: ProjectivePoint, rhs: ProjectivePoint) -> ProjectivePoint 
 }
 
 pub fn point_add_mixed(lhs: ProjectivePoint, rhs: AffinePoint) -> ProjectivePoint {
+  // Ref: https://github.com/RustCrypto/elliptic-curves/blob/81cb7e11afbde1b8753d56fa27238369209b2e65/primeorder/src/point_arithmetic.rs#L247
   let xx = lhs.x * rhs.x; // 1
   let yy = lhs.y * rhs.y; // 2
   let xy_pairs = ((lhs.x + lhs.y) * (rhs.x + rhs.y)) - (xx + yy); // 3, 4, 5, 6, 7
@@ -229,49 +232,10 @@ impl ProjectivePoint {
   }
 }
 
-pub fn to_le_byte_array(w: Scalar) -> [u8;32] {
-  [
-    w.ls[0] & 0xff,
-    (w.ls[0] >> 8) & 0xff,
-    (w.ls[0] >> 16) & 0xff,
-    (w.ls[0] >> 24) & 0xff,
-    (w.ls[0] >> 32) & 0xff,
-    (w.ls[0] >> 40) & 0xff,
-    (w.ls[0] >> 48) & 0xff,
-    (w.ls[0] >> 56) & 0xff,
-
-    w.ls[1] & 0xff,
-    (w.ls[1] >> 8) & 0xff,
-    (w.ls[1] >> 16) & 0xff,
-    (w.ls[1] >> 24) & 0xff,
-    (w.ls[1] >> 32) & 0xff,
-    (w.ls[1] >> 40) & 0xff,
-    (w.ls[1] >> 48) & 0xff,
-    (w.ls[1] >> 56) & 0xff,
-
-    w.ls[2] & 0xff,
-    (w.ls[2] >> 8) & 0xff,
-    (w.ls[2] >> 16) & 0xff,
-    (w.ls[2] >> 24) & 0xff,
-    (w.ls[2] >> 32) & 0xff,
-    (w.ls[2] >> 40) & 0xff,
-    (w.ls[2] >> 48) & 0xff,
-    (w.ls[2] >> 56) & 0xff,
-
-    w.ls[3] & 0xff,
-    (w.ls[3] >> 8) & 0xff,
-    (w.ls[3] >> 16) & 0xff,
-    (w.ls[3] >> 24) & 0xff,
-    (w.ls[3] >> 32) & 0xff,
-    (w.ls[3] >> 40) & 0xff,
-    (w.ls[3] >> 48) & 0xff,
-    (w.ls[3] >> 56) & 0xff,
-    ]
-}
-
 impl ProjectivePoint {
   pub fn mul(self, k: Scalar) -> Self {
-    let k_byte_array = to_le_byte_array(k);
+    // Ref: https://github.com/RustCrypto/elliptic-curves/blob/81cb7e11afbde1b8753d56fa27238369209b2e65/primeorder/src/projective.rs#L100
+    let k_byte_array = k.to_le_byte_array();
 
     let mut pc = [ProjectivePoint::identity_montgomery(); 16];
     pc[1] = self;

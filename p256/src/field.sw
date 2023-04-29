@@ -58,6 +58,7 @@ impl FieldElement {
 }
 
 fn montgomery_reduce(r: [u64; 8]) -> FieldElement {
+  // Ref: https://github.com/RustCrypto/elliptic-curves/blob/81cb7e11afbde1b8753d56fa27238369209b2e65/p256/src/arithmetic/field/field64.rs#L118
   let r0 = r[0];
   let r1 = r[1];
   let r2 = r[2];
@@ -178,6 +179,7 @@ impl FieldElement {
 
   // returns multiplicative inverse, does not check for input being zero
   pub fn invert_unchecked(self) -> Self {
+    // Ref: https://github.com/RustCrypto/elliptic-curves/blob/81cb7e11afbde1b8753d56fa27238369209b2e65/p256/src/arithmetic/field.rs#L65
     let t111 = self.multiply(self.multiply(self.square()).square());
     let t111111 = t111.multiply(t111.sqn(3));
     let x15 = t111111.sqn(6).multiply(t111111).sqn(3).multiply(t111);
@@ -192,6 +194,7 @@ impl FieldElement {
   // returns square root of self mod p in the form CtOption(value: square_root, is_some: true)
   // If there is no such element, the result is CtOption(value: xxx, is_some: false)
   pub fn sqrt(self) -> CtOption<Self> {
+    // Ref: https://github.com/RustCrypto/elliptic-curves/blob/81cb7e11afbde1b8753d56fa27238369209b2e65/p256/src/arithmetic/field.rs#L87
     let t111 = self * self.square();
     let t1111 = t111 * t111.sqn(2);
     let t11111111 = t1111 * t1111.sqn(4);

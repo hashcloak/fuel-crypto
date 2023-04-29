@@ -20,7 +20,10 @@ abi MyContract {
 
   // verifying
     fn from_secret_scalar(scalar: Scalar) -> VerifyingKey;
+    
+    // Gives error: 'Unable to offset into the data section more than 2^12 bits. Unsupported data section length.'
     // fn verify_prehash_with_secret_scalar(scalar: Scalar, bytes: [u8;32], sig: Signature) -> bool;
+    
     fn verify_prehash_with_pubkey(vk: VerifyingKey, bytes: [u8;32], sig: Signature) -> bool; 
 }
 

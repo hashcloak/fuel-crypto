@@ -64,7 +64,6 @@ pub fn mul_wide(a: [u64; 4], b: [u64; 4]) -> [u64;8] {
   [w0, w1, w2, w3, w4, w5, w6, w7]
 }
 
-
 pub fn ct_eq(a: [u64;4], b: [u64;4]) -> Choice {
   u64::ct_eq(a[0], b[0])
   & u64::ct_eq(a[1], b[1])
@@ -81,6 +80,7 @@ pub fn conditional_select(a: [u64;4], b: [u64; 4], choice: Choice) -> [u64;4] {
   ]
 }
 
+// returns bytes in big endian
 pub fn to_bytes(limbs: [u64; 5], MODULUS: [u64; 4]) -> [u8;32] {
   let reduced = sub_inner(
       [limbs[0], limbs[1], limbs[2], limbs[3], 0],
@@ -88,7 +88,7 @@ pub fn to_bytes(limbs: [u64; 5], MODULUS: [u64; 4]) -> [u8;32] {
       MODULUS
   );
   let mut res: [u8;32] = [0u8;32];
-  // big endian
+  
   let mut i = 4;
   let mut j = 0;
   while j < 32 {

@@ -1,6 +1,6 @@
 use std::hash;
 use fuels::{prelude::*, 
-  tx::{ConsensusParameters, ContractId}, /*accounts::fuel_crypto::{coins_bip32::{enc::Test, prelude::VerifyingKey}, SecretKey, PublicKey},*/ types::Bits256
+  tx::{ConsensusParameters, ContractId}, 
 };
 use fuel_core_chain_config::ChainConfig;
 // Load abi from json

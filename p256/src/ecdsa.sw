@@ -12,13 +12,13 @@ pub struct Signature {
   s: Scalar
 }
 
-// https://github.com/RustCrypto/signatures/blob/91a62e8abaca19bcdf126b34f60424144ee46dfe/ecdsa/src/hazmat.rs#L75
-
-// k: random secret used while signing 
-// d: secret key
-//bytes: message digest to be signed. MUST BE OUTPUT OF A CRYPTOGRAPHICALLY SECURE DIGEST ALGORITHM!!!
+// returns signature on the provided hash (bytes), using secret key d and randomness k
+// - d: secret key
+// - k: random secret used while signing 
+// - bytes: hash to be signed
+// Throws error if: k is zero, inverse of k is zero, signature is zero
 pub fn try_sign_prehashed(d: Scalar, k: Scalar, bytes: [u8;32]) -> Signature {
-
+  // Ref: https://github.com/RustCrypto/signatures/blob/91a62e8abaca19bcdf126b34f60424144ee46dfe/ecdsa/src/hazmat.rs#L75
   let z = Scalar::from_bytes(bytes);
   // check if k is non-zero
   assert(!k.ct_eq(Scalar::zero()).unwrap_as_bool());
@@ -27,6 +27,7 @@ pub fn try_sign_prehashed(d: Scalar, k: Scalar, bytes: [u8;32]) -> Signature {
 
   //checks if k_inv exist or not
   assert(k_inv.is_some.unwrap_as_bool());
+
   let g_projective_montgomery = ProjectivePoint::from(AffinePoint::generator());
   let R_montgomery = ProjectivePoint::into(ProjectivePoint::mul(g_projective_montgomery, k));
   let R = AffinePoint{x: FieldElement::fe_from_montgomery(R_montgomery.x), y: FieldElement::fe_from_montgomery(R_montgomery.y), infinity: 0};
@@ -43,12 +44,13 @@ pub fn try_sign_prehashed(d: Scalar, k: Scalar, bytes: [u8;32]) -> Signature {
   Signature { r: r , s: s }
 }
 
-// Reference impl https://github.com/RustCrypto/signatures/blob/91a62e8abaca19bcdf126b34f60424144ee46dfe/ecdsa/src/hazmat.rs#L160
-// a is the public key
-// bytes is the hash
-// (r,s) signature
+// returns whether the given signature is valid, given the hash that was signed and publickey
+// - a: public key
 // NOTE: coordinates of a are in Montgomery form
+// - bytes: hash that was signed
+// - sig: signature to be checked
 pub fn verify_prehashed(a: AffinePoint, bytes: [u8;32], sig: Signature) -> bool {
+  // Ref: https://github.com/RustCrypto/signatures/blob/91a62e8abaca19bcdf126b34f60424144ee46dfe/ecdsa/src/hazmat.rs#L160
   let z = Scalar::from_bytes(bytes);
   let s_inv: Scalar = sig.s.scalar_invert().unwrap();
   let u1: Scalar = z * s_inv;

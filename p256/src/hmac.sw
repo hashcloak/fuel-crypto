@@ -28,16 +28,6 @@ pub fn hmac(data: Vec<u8>, key: [u8;32]) -> [u8;32] {
   //      appended with 44 zero bytes 0x00)
   // (2) XOR (bitwise exclusive-OR) the B byte string computed in step
   //     (1) with ipad
-  // (3) append the stream of data 'text' to the B byte string resulting
-  //     from step (2)
-  // (4) apply H to the stream generated in step (3)
-  // (5) XOR (bitwise exclusive-OR) the B byte string computed in
-  //     step (1) with opad
-  // (6) append the H result from step (4) to the B byte string
-  //     resulting from step (5)
-  // (7) apply H to the stream generated in step (6) and output
-  //     the result
-
   let mut key_xor_ipad: [u8;64] = [0u8; 64];
 
   let mut i = 0;
@@ -59,15 +49,20 @@ pub fn hmac(data: Vec<u8>, key: [u8;32]) -> [u8;32] {
     i = i + 1;
   }
 
+  // (3) append the stream of data 'text' to the B byte string resulting
+  //     from step (2)
   i = 0;
   while i < data.len() {
     data_appended.push(data.get(i).unwrap());
     i = i + 1;
   }
   
+  // (4) apply H to the stream generated in step (3)
   let mut hash_data_append = data_appended.sha256();    
   let mut key_xor_opad: [u8;64] = [0u8;64];
 
+  // (5) XOR (bitwise exclusive-OR) the B byte string computed in
+  //     step (1) with opad
   i = 0;
   while i < 32 {
     key_xor_opad[i] = key[i] ^ opad;
@@ -87,6 +82,8 @@ pub fn hmac(data: Vec<u8>, key: [u8;32]) -> [u8;32] {
     i = i + 1;
   }
 
+  // (6) append the H result from step (4) to the B byte string
+  //     resulting from step (5)
   let hash_data_append_bytes = into_byte_array(hash_data_append);
 
   i = 0;
@@ -94,7 +91,9 @@ pub fn hmac(data: Vec<u8>, key: [u8;32]) -> [u8;32] {
     second_append.push(hash_data_append_bytes[i]);
     i = i + 1;
   }
-  
+
+  // (7) apply H to the stream generated in step (6) and output
+  //     the result
   into_byte_array(second_append.sha256())
 }
 
@@ -104,6 +103,7 @@ pub fn decompose(val: b256) -> (u64, u64, u64, u64) {
   asm(r1: __addr_of(val)) { r1: (u64, u64, u64, u64) }
 }
 
+// Comes from Fuel forum: https://forum.fuel.network/t/how-can-i-transform-b256-into-u8-32/1124/2?u=elena
 pub fn compose(words: (u64, u64, u64, u64)) -> b256 {
   asm(r1: __addr_of(words)) { r1: b256 }
 }
@@ -144,10 +144,10 @@ pub fn into_byte_array(b: b256) -> [u8;32] {
   res
 }
 
-// https://datatracker.ietf.org/doc/html/rfc6979#section-3
-// generating `k`: ephemeral scalar value for deterministic ecdsa
-// msg: data
-// x: secretKey in big-endian format
+// Documentation https://datatracker.ietf.org/doc/html/rfc6979#section-3
+// returns `k`, ephemeral scalar value for deterministic ecdsa
+// - data: byte array over which k is calculated
+// - x: secretKey in big-endian format
 pub fn generate_k(data: Vec<u8>, x: [u8;32]) -> Scalar {
     
   /*
@@ -266,8 +266,9 @@ pub fn generate_k(data: Vec<u8>, x: [u8;32]) -> Scalar {
     // check if k_option was already within range
     t_found = k_option.ct_eq(reduced_k_option).unwrap_as_bool();
 
-    // TODO it should be checked that this k doesn't lead to gˆk mod p mod q being 0
-    // the chance of this happening is really slim and the check quite expensive. Is this check already added along the way?
+    // TODO it should be checked that this k doesn't lead to kG mod p mod q being 0
+    // the chance of this happening is really slim and the check quite expensive. 
+    // @Mikerah Should we add it here, or add the check to try_sign_prehashed? There, the computation of kG is already done, so it would not be a performance burden.
 
     if !t_found {
       let mut v_append_0: Vec<u8> = Vec::new();
@@ -295,7 +296,7 @@ fn arr_to_vec(a: [u8;32]) -> Vec<u8> {
   res
 }
 
-// https://datatracker.ietf.org/doc/html/rfc6979#section-2.3.7
+// Documentation: https://datatracker.ietf.org/doc/html/rfc6979#section-2.3.7
 fn int2octets(x: [u8;32]) -> [u8;32] {
   // value x modulo q
   let x_reduced_scalar: Scalar = Scalar::from_bytes(x);

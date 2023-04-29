@@ -18,7 +18,7 @@ pub struct SigningKey {
 impl SigningKey {
 
   // returns signingkey (secret key) using the given bytes
-  // Error: when bytes result in scalar equal to zero
+  // Throws error if: when bytes result in scalar equal to zero
   pub fn from_bytes(bytes: [u8;32]) -> SigningKey {
     // Ref: https://github.com/RustCrypto/signatures/blob/master/ecdsa/src/signing.rs#L92
     let secret_scalar = Scalar::from_bytes(bytes);

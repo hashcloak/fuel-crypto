@@ -20,6 +20,7 @@ pub const MODULUS_SCALAR: [u64;4] = [17562291160714782033, 13611842547513532036,
 pub const MU: [u64; 5] = [85565669623438334, 4834901528447446049, 18446744069414584319, 4294967295, 1];
 
 fn q1_times_mu_shift_five(q1: [u64; 5]) -> [u64; 5] {
+  // Ref: https://github.com/RustCrypto/elliptic-curves/blob/81cb7e11afbde1b8753d56fa27238369209b2e65/p256/src/arithmetic/scalar/scalar64.rs#L64
   // Schoolbook multiplication.
 
   let (_w0, carry) = mac(0, q1[0], MU[0], 0);
@@ -56,6 +57,7 @@ fn q1_times_mu_shift_five(q1: [u64; 5]) -> [u64; 5] {
 }
 
 fn q3_times_n_keep_five(q3: [u64; 5]) -> [u64; 5] {
+  // Ref: https://github.com/RustCrypto/elliptic-curves/blob/81cb7e11afbde1b8753d56fa27238369209b2e65/p256/src/arithmetic/scalar/scalar64.rs#L101
   // Schoolbook multiplication.
 
   let (w0, carry) = mac(0, q3[0], MODULUS_SCALAR[0], 0);
@@ -82,6 +84,7 @@ fn q3_times_n_keep_five(q3: [u64; 5]) -> [u64; 5] {
 }
 
 fn sub_inner_five(l: [u64; 5], r: [u64; 5]) -> [u64; 5] {
+  // Ref: https://github.com/RustCrypto/elliptic-curves/blob/81cb7e11afbde1b8753d56fa27238369209b2e65/p256/src/arithmetic/scalar/scalar64.rs#L131
   let (w0, borrow) = sbb(l[0], r[0], 0);
   let (w1, borrow) = sbb(l[1], r[1], borrow);
   let (w2, borrow) = sbb(l[2], r[2], borrow);
@@ -93,6 +96,7 @@ fn sub_inner_five(l: [u64; 5], r: [u64; 5]) -> [u64; 5] {
 }
 
 fn subtract_n_if_necessary(r0: u64, r1: u64, r2: u64, r3: u64, r4: u64) -> [u64; 5] {
+  // Ref: https://github.com/RustCrypto/elliptic-curves/blob/81cb7e11afbde1b8753d56fa27238369209b2e65/p256/src/arithmetic/scalar/scalar64.rs#L144
   let (w0, borrow) = sbb(r0, MODULUS_SCALAR[0], 0);
   let (w1, borrow) = sbb(r1, MODULUS_SCALAR[1], borrow);
   let (w2, borrow) = sbb(r2, MODULUS_SCALAR[2], borrow);
@@ -133,6 +137,7 @@ impl Scalar {
   }
 
   pub fn barrett_reduce(self, h: Self) -> Self {
+    // Ref: https://github.com/RustCrypto/elliptic-curves/blob/81cb7e11afbde1b8753d56fa27238369209b2e65/p256/src/arithmetic/scalar/scalar64.rs#L39
     let lo: [u64;4] = [self.ls[0], self.ls[1], self.ls[2], self.ls[3]];
     let hi: [u64;4] = [h.ls[0], h.ls[1], h.ls[2], h.ls[3]];
     let a0 = lo[0];
@@ -188,10 +193,53 @@ impl Scalar {
     Scalar { ls: u64s}.scalar_add(Self::zero()) // trigger the mod q
   }
 
+  // return big endian byte array
   // normalize and convert to bytes
   pub fn to_bytes(self) -> [u8;32] {
     to_bytes([self.ls[0], self.ls[1], self.ls[2], self.ls[3], 0], MODULUS_SCALAR)
   }
+  
+  // returns little endian byte array
+  pub fn to_le_byte_array(self) -> [u8;32] {
+    [
+      self.ls[0] & 0xff,
+      (self.ls[0] >> 8) & 0xff,
+      (self.ls[0] >> 16) & 0xff,
+      (self.ls[0] >> 24) & 0xff,
+      (self.ls[0] >> 32) & 0xff,
+      (self.ls[0] >> 40) & 0xff,
+      (self.ls[0] >> 48) & 0xff,
+      (self.ls[0] >> 56) & 0xff,
+
+      self.ls[1] & 0xff,
+      (self.ls[1] >> 8) & 0xff,
+      (self.ls[1] >> 16) & 0xff,
+      (self.ls[1] >> 24) & 0xff,
+      (self.ls[1] >> 32) & 0xff,
+      (self.ls[1] >> 40) & 0xff,
+      (self.ls[1] >> 48) & 0xff,
+      (self.ls[1] >> 56) & 0xff,
+
+      self.ls[2] & 0xff,
+      (self.ls[2] >> 8) & 0xff,
+      (self.ls[2] >> 16) & 0xff,
+      (self.ls[2] >> 24) & 0xff,
+      (self.ls[2] >> 32) & 0xff,
+      (self.ls[2] >> 40) & 0xff,
+      (self.ls[2] >> 48) & 0xff,
+      (self.ls[2] >> 56) & 0xff,
+
+      self.ls[3] & 0xff,
+      (self.ls[3] >> 8) & 0xff,
+      (self.ls[3] >> 16) & 0xff,
+      (self.ls[3] >> 24) & 0xff,
+      (self.ls[3] >> 32) & 0xff,
+      (self.ls[3] >> 40) & 0xff,
+      (self.ls[3] >> 48) & 0xff,
+      (self.ls[3] >> 56) & 0xff,
+      ]
+  }
+
 }
 
 impl ConstantTimeEq for Scalar {
@@ -236,6 +284,7 @@ impl Scalar {
   // returns self ^ exp mod p
   // exp is given in little endian
   fn pow_vartime(self, exp: [u64; 4]) -> Self {
+    // Ref: https://github.com/RustCrypto/elliptic-curves/blob/81cb7e11afbde1b8753d56fa27238369209b2e65/p256/src/arithmetic/scalar.rs#L161
     let mut res = Self::one();
 
     let mut i = 4;
@@ -261,22 +310,24 @@ impl Scalar {
 
   // returns multiplicative inverse, does not check for input being zero
   fn invert_unchecked(self) -> Self {
-      // We need to find b such that b * a ≡ 1 mod p. As we are in a prime
-      // field, we can apply Fermat's Little Theorem:
-      //
-      //    a^p         ≡ a mod p
-      //    a^(p-1)     ≡ 1 mod p
-      //    a^(p-2) * a ≡ 1 mod p
-      //
-      // Thus inversion can be implemented with a single exponentiation.
-      //
-      // This is `n - 2`, so the top right two digits are `4f` instead of `51`.
-      self.pow_vartime([
-        0xf3b9_cac2_fc63_254f,
-        0xbce6_faad_a717_9e84,
-        0xffff_ffff_ffff_ffff,
-        0xffff_ffff_0000_0000,
-      ])
+    // Ref: https://github.com/RustCrypto/elliptic-curves/blob/81cb7e11afbde1b8753d56fa27238369209b2e65/p256/src/arithmetic/scalar.rs#L140
+
+    // We need to find b such that b * a ≡ 1 mod p. As we are in a prime
+    // field, we can apply Fermat's Little Theorem:
+    //
+    //    a^p         ≡ a mod p
+    //    a^(p-1)     ≡ 1 mod p
+    //    a^(p-2) * a ≡ 1 mod p
+    //
+    // Thus inversion can be implemented with a single exponentiation.
+    //
+    // This is `n - 2`, so the top right two digits are `4f` instead of `51`.
+    self.pow_vartime([
+      0xf3b9_cac2_fc63_254f,
+      0xbce6_faad_a717_9e84,
+      0xffff_ffff_ffff_ffff,
+      0xffff_ffff_0000_0000,
+    ])
   }
 }
 
