@@ -1,4 +1,3 @@
-use std::hash;
 use fuels::{prelude::*, 
   tx::{ConsensusParameters, ContractId}, 
 };
@@ -14,7 +13,7 @@ async fn get_contract_methods() -> (MyContractMethods<WalletUnlocked>, ContractI
   let num_assets = 1;
   let coins_per_asset = 100;
   let amount_per_coin = 100000;
-  let (coins, asset_ids) = setup_multiple_assets_coins(
+  let (coins, _asset_ids) = setup_multiple_assets_coins(
       wallet.address(),
       num_assets,
       coins_per_asset,
@@ -26,7 +25,7 @@ async fn get_contract_methods() -> (MyContractMethods<WalletUnlocked>, ContractI
   let mut chain_config = ChainConfig::local_testnet();
   // This is needed to allow for expensive operations
   chain_config.block_gas_limit = 100_000_000_000;
-  let (client, addr) = setup_test_client(coins, vec![], None, Some(chain_config), Some(consensus_parameters_config)).await;
+  let (client, _addr) = setup_test_client(coins, vec![], None, Some(chain_config), Some(consensus_parameters_config)).await;
   let provider = Provider::new(client);
   wallet.set_provider(provider.clone());
   let id = Contract::deploy(

@@ -1,7 +1,5 @@
-use std::hash;
 use fuels::{prelude::*, 
   tx::{ConsensusParameters, ContractId}, 
-  types::Bits256
 };
 use fuel_core_chain_config::ChainConfig;
 
@@ -16,7 +14,7 @@ async fn get_contract_methods() -> (MyContractMethods<WalletUnlocked>, ContractI
   let num_assets = 1;
   let coins_per_asset = 100;
   let amount_per_coin = 100000;
-  let (coins, asset_ids) = setup_multiple_assets_coins(
+  let (coins, _asset_ids) = setup_multiple_assets_coins(
       wallet.address(),
       num_assets,
       coins_per_asset,
@@ -28,7 +26,7 @@ async fn get_contract_methods() -> (MyContractMethods<WalletUnlocked>, ContractI
   let mut chain_config = ChainConfig::local_testnet();
   // This is needed to allow for expensive operations
   chain_config.block_gas_limit = 100_000_000_000;
-  let (client, addr) = setup_test_client(coins, vec![], None, Some(chain_config), Some(consensus_parameters_config)).await;
+  let (client, _addr) = setup_test_client(coins, vec![], None, Some(chain_config), Some(consensus_parameters_config)).await;
   let provider = Provider::new(client);
   wallet.set_provider(provider.clone());
   let id = Contract::deploy(
@@ -70,14 +68,6 @@ async fn to_montgomery(_methods: &MyContractMethods<WalletUnlocked>, a: FieldEle
     .fe_to_montgomery(a)
     .call().await.unwrap().value
 }
-
-fn check_fieldelement(a: FieldElement, expected_res: FieldElement) {
-  assert_eq!(a.ls[0], expected_res.ls[0]);
-  assert_eq!(a.ls[1], expected_res.ls[1]);
-  assert_eq!(a.ls[2], expected_res.ls[2]);
-  assert_eq!(a.ls[3], expected_res.ls[3]);
-}
-
 //41624337018869194729192205381537838788846303834619688597471765238035829032504
 const X_SCALAR: Scalar = Scalar{ls: [13282407956253574712, 7557322358563246340, 14991082624209354397, 6631139461101160670]};
 
