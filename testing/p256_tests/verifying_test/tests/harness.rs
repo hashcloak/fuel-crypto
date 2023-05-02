@@ -1,7 +1,7 @@
-use std::hash;
+// use std::hash;
 use fuels::{prelude::*, 
   tx::{ConsensusParameters, ContractId}, 
-  types::Bits256
+  // types::Bits256
 };
 use fuel_core_chain_config::ChainConfig;
 
@@ -16,7 +16,7 @@ async fn get_contract_methods() -> (MyContractMethods<WalletUnlocked>, ContractI
   let num_assets = 1;
   let coins_per_asset = 100;
   let amount_per_coin = 100000;
-  let (coins, asset_ids) = setup_multiple_assets_coins(
+  let (coins, _asset_ids) = setup_multiple_assets_coins(
       wallet.address(),
       num_assets,
       coins_per_asset,
@@ -28,7 +28,7 @@ async fn get_contract_methods() -> (MyContractMethods<WalletUnlocked>, ContractI
   let mut chain_config = ChainConfig::local_testnet();
   // This is needed to allow for expensive operations
   chain_config.block_gas_limit = 100_000_000_000;
-  let (client, addr) = setup_test_client(coins, vec![], None, Some(chain_config), Some(consensus_parameters_config)).await;
+  let (client, _addr) = setup_test_client(coins, vec![], None, Some(chain_config), Some(consensus_parameters_config)).await;
   let provider = Provider::new(client);
   wallet.set_provider(provider.clone());
   let id = Contract::deploy(
@@ -40,19 +40,6 @@ async fn get_contract_methods() -> (MyContractMethods<WalletUnlocked>, ContractI
   .unwrap();
   let instance = MyContract::new(id.clone(), wallet);
   (instance.methods(), id.into())
-}
-
-// assert that scalar are equal
-fn assert_scalar(res: Scalar, expected: Scalar) {
-  assert_eq!(res.ls[0], expected.ls[0]);
-  assert_eq!(res.ls[1], expected.ls[1]);
-  assert_eq!(res.ls[2], expected.ls[2]);
-  assert_eq!(res.ls[3], expected.ls[3]);
-}
-
-fn assert_signature(a: Signature, b: Signature) {
-  assert_scalar(a.r, b.r);
-  assert_scalar(a.s, b.s);
 }
 
 pub fn assert_xy(x: FieldElement, y: FieldElement, x_res: [u64; 4], y_res: [u64;4]) {
@@ -87,7 +74,7 @@ test test_generate_verifyingkey ... ok
 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 815.83s
 */
 
-#[tokio::test]#[ignore] // WORKS
+#[tokio::test]//#[ignore] // WORKS
 async fn test_verify_prehash_with_pubkey() {
   // test vectors taken from https://datatracker.ietf.org/doc/html/rfc6979#appendix-A.2.5
 
@@ -199,7 +186,7 @@ async fn test_verify_prehash_with_pubkey() {
   assert!(!verify_failed.value);
 }
 
-#[tokio::test]#[ignore]// WORKS
+#[tokio::test]//#[ignore]// WORKS
 async fn test_generate_verifyingkey() {
   // test vectors taken from https://datatracker.ietf.org/doc/html/rfc6979#appendix-A.2.5
 
