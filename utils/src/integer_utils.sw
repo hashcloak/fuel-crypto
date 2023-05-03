@@ -1,4 +1,4 @@
-library integer_utils;
+library;
 
 use std::{u128::U128};
 

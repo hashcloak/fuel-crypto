@@ -1,4 +1,4 @@
-library choice;
+library;
 
 /*
 Copyright (c) 2016-2017 Isis Agora Lovecruft, Henry de Valence. All rights reserved.
@@ -163,6 +163,14 @@ impl BitwiseOr for Choice {
     // Note that we still can't use the `|` operator for this binary_or, but have to use the function name
     fn binary_or(self, other: Self) -> Self {
         Choice::from(self.c | other.c)
+    }
+}
+
+impl BitwiseXor for Choice {
+    // Returns the choice for the binary 'xor' of the inner values of self and other
+    // Note that we still can't use the `^` operator for this binary_xor, but have to use the function name
+    fn binary_xor(self, other: Self) -> Self {
+        Choice::from(self.c ^ other.c)
     }
 }
 

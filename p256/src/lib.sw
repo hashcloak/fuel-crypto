@@ -1,6 +1,7 @@
-library p256;
+library;
 
-dep field64;
-dep field;
-dep scalar64;
-dep scalar;
+mod modular_helper;
+mod field;
+mod scalar;
+mod affine;
+mod projective;
