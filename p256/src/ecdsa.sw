@@ -12,38 +12,6 @@ pub struct Signature {
   s: Scalar
 }
 
-// returns signature on the provided hash (bytes), using secret key d and randomness k
-// - d: secret key
-// - k: random secret used while signing 
-// - bytes: hash to be signed
-// Throws error if: k is zero, inverse of k is zero, signature is zero
-pub fn try_sign_prehashed(d: Scalar, k: Scalar, bytes: [u8;32]) -> Signature {
-  // Ref: https://github.com/RustCrypto/signatures/blob/91a62e8abaca19bcdf126b34f60424144ee46dfe/ecdsa/src/hazmat.rs#L75
-  let z = Scalar::from_bytes(bytes);
-  // check if k is non-zero
-  assert(!k.ct_eq(Scalar::zero()).unwrap_as_bool());
-
-  let k_inv = Scalar::scalar_invert(k);
-
-  //checks if k_inv exist or not
-  assert(k_inv.is_some.unwrap_as_bool());
-
-  let g_projective_montgomery = ProjectivePoint::from(AffinePoint::generator());
-  let R_montgomery = ProjectivePoint::into(ProjectivePoint::mul(g_projective_montgomery, k));
-  let R = AffinePoint{x: FieldElement::fe_from_montgomery(R_montgomery.x), y: FieldElement::fe_from_montgomery(R_montgomery.y), infinity: 0};
-
-  //reduces R.x into element of the scalar field 
-  let r = Scalar{ls: [R.x.ls[0], R.x.ls[1], R.x.ls[2], R.x.ls[3] ]} + Scalar::zero();
-
-  //computes s as a signature over r and z
-  let s = k_inv.value * (z + (r * d));
-
-  //check if s is zero or not
-  assert(!s.ct_eq(Scalar::zero()).unwrap_as_bool());
-
-  Signature { r: r , s: s }
-}
-
 // returns whether the given signature is valid, given the hash that was signed and publickey
 // - a: public key
 // NOTE: coordinates of a are in Montgomery form
