@@ -13,7 +13,7 @@ pub struct Signature {
 }
 
 // For checking the validity of the signature
-fn assert_eq(res: [u64;4], expected: [u64;4]) {
+fn assert_equal(res: [u64;4], expected: [u64;4]) {
   assert(res[0] == expected[0] && res[1] == expected[1] && res[2] == expected[2] && res[3] == expected[3]);
 }
 
@@ -41,8 +41,8 @@ pub fn verify_prehashed(a: AffinePoint, bytes: [u8;32], sig: Signature) -> bool 
   // same check for s.
   assert_neq(sig.r.ls, Scalar::zero().ls);
   assert_neq(sig.s.ls, Scalar::zero().ls);
-  assert_eq(mod_r.ls, sig.r.ls);
-  assert_eq(mod_s.ls, sig.s.ls);
+  assert_equal(mod_r.ls, sig.r.ls);
+  assert_equal(mod_s.ls, sig.s.ls);
 
   //cheks if hash is non-zero
   let mut i = 0;

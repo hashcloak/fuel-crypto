@@ -1,6 +1,6 @@
 [project]
 authors = ["HashCloak"]
-entry = "lib.sw"
+entry = "predicate.sw"
 license = "Apache-2.0"
 name = "p256"
 
