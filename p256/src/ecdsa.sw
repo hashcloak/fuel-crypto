@@ -1,24 +1,15 @@
 library;
 
 use ::scalar::Scalar;
+use ::modular_helper::ct_eq; 
 use ::utils::choice::{Choice, CtOption};
 use ::affine::AffinePoint;
 use ::projective::ProjectivePoint;
-use std::logging::log;
 use ::field::FieldElement;
 
 pub struct Signature {
   r: Scalar,
   s: Scalar
-}
-
-// For checking the validity of the signature
-fn assert_eq(res: [u64;4], expected: [u64;4]) {
-  assert(res[0] == expected[0] && res[1] == expected[1] && res[2] == expected[2] && res[3] == expected[3]);
-}
-
-fn assert_neq(res: [u64;4], expected: [u64;4]) {
-  assert(res[0] != expected[0] || res[1] != expected[1] || res[2] != expected[2] || res[3] != expected[3]);
 }
 
 // returns whether the given signature is valid, given the hash that was signed and publickey
@@ -39,24 +30,34 @@ pub fn verify_prehashed(a: AffinePoint, bytes: [u8;32], sig: Signature) -> bool 
   
   // checking if r != 0 and mod_r == r implies r is in the interval [1, n − 1]
   // same check for s.
-  assert_neq(sig.r.ls, Scalar::zero().ls);
-  assert_neq(sig.s.ls, Scalar::zero().ls);
-  assert_eq(mod_r.ls, sig.r.ls);
-  assert_eq(mod_s.ls, sig.s.ls);
+  assert(ct_eq(sig.r.ls, [0,0,0,0]).unwrap_as_bool() == false);
+  assert(ct_eq(sig.s.ls, [0,0,0,0]).unwrap_as_bool() == false);
+  assert(ct_eq(mod_r.ls, sig.r.ls).unwrap_as_bool() == true);
+  assert(ct_eq(mod_s.ls, sig.s.ls).unwrap_as_bool() == true);
 
-  //cheks if hash is non-zero
-  let mut i = 0;
-  while i < 32 {
-    if bytes[i] != 0 {
-      break;
+    //converting bytes hash into [u64;4]
+    let mut i = 0;
+    let mut j = 4;
+    let mut u64s: [u64;4] = [0;4];
+    while i < 32 {
+      u64s[j-1] = (bytes[i + 0] << 56)
+        .binary_or(bytes[i + 1] << 48)
+        .binary_or(bytes[i + 2] << 40)
+        .binary_or(bytes[i + 3] << 32)
+        .binary_or(bytes[i + 4] << 24)
+        .binary_or(bytes[i + 5] << 16)
+        .binary_or(bytes[i + 6] << 8)
+        .binary_or(bytes[i + 7]);
+      j -= 1;
+      i += 8;
     }
-    i = i + 1;
-  }
-  assert(i != 32);
+
+  //cheks if bytes hash is non-zero
+  assert(ct_eq(u64s, [0,0,0,0]).unwrap_as_bool() == false);
 
   // checks if public key is non-zero
-  assert_neq(a.x.ls, [0,0,0,0]);
-  assert_neq(a.y.ls, [0,0,0,0]);
+  assert(ct_eq(a.x.ls, [0,0,0,0]).unwrap_as_bool() == false);
+  assert(ct_eq(a.y.ls, [0,0,0,0]).unwrap_as_bool() == false);
 
   let z = Scalar::from_bytes(bytes);
   let s_inv: Scalar = sig.s.scalar_invert().unwrap();
@@ -72,7 +73,7 @@ pub fn verify_prehashed(a: AffinePoint, bytes: [u8;32], sig: Signature) -> bool 
   let x: ProjectivePoint = u1_g.add(u2_a);
 
   //checking if x is point at infinity 
-  assert_neq(x.z.ls, [0,0,0,0]);
+  assert(ct_eq(x.z.ls, [0,0,0,0]).unwrap_as_bool() == false);
   
   let res: FieldElement = x.into().x.fe_from_montgomery();
   let res_scalar: Scalar = Scalar::from_bytes(res.to_bytes());
