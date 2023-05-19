@@ -1,5 +1,5 @@
 [package]
-name = "p256_tests"
+name = "curve_test"
 description = "A cargo-generate template for Rust + Sway integration testing."
 version = "0.1.0"
 edition = "2021"

@@ -1,20 +1,15 @@
-# Build
+# P256
 
-Using forc >= `0.37.1`:
-```
-forc build
-```
-Documentation on installation can be found in the [Fuelup Book](https://install.fuel.network/master/basics.html).
-
-Some warning such as `This cast, from integer type of width sixty four to integer type of width eight, will lose precision.` will appear. Currently Sway does implicit conversion and there is no way to surpress the warning. The team plans to remove implicit conversion.
-
-# Running a script
+Documentation:
+- Deterministic Usage of the Digital Signature Algorithm (DSA) and Elliptic Curve Digital Signature Algorithm (ECDSA): https://datatracker.ietf.org/doc/html/rfc6979
+- HMAC: Keyed-Hashing for Message Authentication: https://datatracker.ietf.org/doc/html/rfc2104
+- Test value references
+  - https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Standards-and-Guidelines/documents/examples/P256_SHA256.pdf
+  - http://point-at-infinity.org/ecc/nisttv
 
 Add script code to `main.sw` and run the script with 
 
-```
-fuel-core --db-type in-memory
-forc run --unsigned --pretty-print
-```
-
-For this change `entry = "lib.sw"` to `entry = "main.sw"` in `Forc.toml`. 
+Reference repos:
+- https://github.com/RustCrypto/elliptic-curves
+- https://github.com/RustCrypto/signatures
+- https://github.com/RustCrypto/traits

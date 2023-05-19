@@ -5,3 +5,5 @@ mod field;
 mod scalar;
 mod affine;
 mod projective;
+mod ecdsa;
+mod verifyingkey;
