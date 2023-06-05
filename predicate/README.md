@@ -7,3 +7,10 @@ This is temporary example code coming from the example in https://fuellabs.githu
 ```
 forc build
 ```
+
+This gives the error
+
+```
+error: Internal compiler error: An attempt to get register for unknown Value.
+Please file an issue on the repository and include the code that triggered this error.
+```

@@ -1,4 +1,4 @@
 library;
 
-mod integer_utils;
-mod choice;
+pub mod integer_utils;
+pub mod choice;
