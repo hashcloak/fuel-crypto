@@ -1,6 +1,6 @@
 [[package]]
 name = 'core'
-source = 'path+from-root-67732E1923984E25'
+source = 'path+from-root-B313E39BF6A5D375'
 
 [[package]]
 name = 'curve_test'
@@ -21,7 +21,7 @@ dependencies = [
 
 [[package]]
 name = 'std'
-source = 'git+https://github.com/fuellabs/sway?tag=v0.37.3#d09ef912828f5fc7193501ccf8a0d0fb0f36a821'
+source = 'git+https://github.com/fuellabs/sway?tag=v0.39.1#e3065657c907225a8fdfe2d2210a7a3bd2b55c73'
 dependencies = ['core']
 
 [[package]]

@@ -7,9 +7,11 @@ Documentation:
   - https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Standards-and-Guidelines/documents/examples/P256_SHA256.pdf
   - http://point-at-infinity.org/ecc/nisttv
 
-Add script code to `main.sw` and run the script with 
-
 Reference repos:
 - https://github.com/RustCrypto/elliptic-curves
 - https://github.com/RustCrypto/signatures
 - https://github.com/RustCrypto/traits
+
+## Tests
+
+Accompanying tests can be found in `testing/p256_tests`. 

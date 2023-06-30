@@ -5,5 +5,5 @@ license = "Apache-2.0"
 name = "verifying_test"
 
 [dependencies]
-p256 = { path = "../../../p256" }
+p256 = { path = "../../../p256/lib" }
 utils = { path = "../../../utils" }

@@ -4,7 +4,7 @@ All P256 (library) functionality is tested with the Rust testing framework by us
 
 ## Run tests
 
-First, build the necessary dependencies. Run in both `p256` and `utils`:
+First, build the necessary dependencies. Run in both `p256/lib` and `utils`:
 ```
 forc build
 ```
