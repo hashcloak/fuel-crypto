@@ -1,0 +1,487 @@
+{
+  "types": [
+    {
+      "typeId": 0,
+      "type": "(_, _)",
+      "components": [
+        {
+          "name": "__tuple_element",
+          "type": 8,
+          "typeArguments": [
+            {
+              "name": "",
+              "type": 5,
+              "typeArguments": null
+            }
+          ]
+        },
+        {
+          "name": "__tuple_element",
+          "type": 13,
+          "typeArguments": null
+        }
+      ],
+      "typeParameters": null
+    },
+    {
+      "typeId": 1,
+      "type": "[_; 32]",
+      "components": [
+        {
+          "name": "__array_element",
+          "type": 5,
+          "typeArguments": null
+        }
+      ],
+      "typeParameters": null
+    },
+    {
+      "typeId": 2,
+      "type": "bool",
+      "components": null,
+      "typeParameters": null
+    },
+    {
+      "typeId": 3,
+      "type": "generic T",
+      "components": null,
+      "typeParameters": null
+    },
+    {
+      "typeId": 4,
+      "type": "raw untyped ptr",
+      "components": null,
+      "typeParameters": null
+    },
+    {
+      "typeId": 5,
+      "type": "struct Element",
+      "components": [
+        {
+          "name": "l0",
+          "type": 12,
+          "typeArguments": null
+        },
+        {
+          "name": "l1",
+          "type": 12,
+          "typeArguments": null
+        },
+        {
+          "name": "l2",
+          "type": 12,
+          "typeArguments": null
+        },
+        {
+          "name": "l3",
+          "type": 12,
+          "typeArguments": null
+        },
+        {
+          "name": "l4",
+          "type": 12,
+          "typeArguments": null
+        }
+      ],
+      "typeParameters": null
+    },
+    {
+      "typeId": 6,
+      "type": "struct RawVec",
+      "components": [
+        {
+          "name": "ptr",
+          "type": 4,
+          "typeArguments": null
+        },
+        {
+          "name": "cap",
+          "type": 12,
+          "typeArguments": null
+        }
+      ],
+      "typeParameters": [
+        3
+      ]
+    },
+    {
+      "typeId": 7,
+      "type": "struct U128",
+      "components": [
+        {
+          "name": "upper",
+          "type": 12,
+          "typeArguments": null
+        },
+        {
+          "name": "lower",
+          "type": 12,
+          "typeArguments": null
+        }
+      ],
+      "typeParameters": null
+    },
+    {
+      "typeId": 8,
+      "type": "struct Vec",
+      "components": [
+        {
+          "name": "buf",
+          "type": 6,
+          "typeArguments": [
+            {
+              "name": "",
+              "type": 3,
+              "typeArguments": null
+            }
+          ]
+        },
+        {
+          "name": "len",
+          "type": 12,
+          "typeArguments": null
+        }
+      ],
+      "typeParameters": [
+        3
+      ]
+    },
+    {
+      "typeId": 9,
+      "type": "struct ge25519_p1p1",
+      "components": [
+        {
+          "name": "x",
+          "type": 5,
+          "typeArguments": null
+        },
+        {
+          "name": "y",
+          "type": 5,
+          "typeArguments": null
+        },
+        {
+          "name": "z",
+          "type": 5,
+          "typeArguments": null
+        },
+        {
+          "name": "t",
+          "type": 5,
+          "typeArguments": null
+        }
+      ],
+      "typeParameters": null
+    },
+    {
+      "typeId": 10,
+      "type": "struct ge25519_p2",
+      "components": [
+        {
+          "name": "x",
+          "type": 5,
+          "typeArguments": null
+        },
+        {
+          "name": "y",
+          "type": 5,
+          "typeArguments": null
+        },
+        {
+          "name": "z",
+          "type": 5,
+          "typeArguments": null
+        }
+      ],
+      "typeParameters": null
+    },
+    {
+      "typeId": 11,
+      "type": "u32",
+      "components": null,
+      "typeParameters": null
+    },
+    {
+      "typeId": 12,
+      "type": "u64",
+      "components": null,
+      "typeParameters": null
+    },
+    {
+      "typeId": 13,
+      "type": "u8",
+      "components": null,
+      "typeParameters": null
+    }
+  ],
+  "functions": [
+    {
+      "inputs": [
+        {
+          "name": "a",
+          "type": 5,
+          "typeArguments": null
+        },
+        {
+          "name": "b",
+          "type": 5,
+          "typeArguments": null
+        }
+      ],
+      "name": "add",
+      "output": {
+        "name": "",
+        "type": 5,
+        "typeArguments": null
+      }
+    },
+    {
+      "inputs": [
+        {
+          "name": "res",
+          "type": 7,
+          "typeArguments": null
+        },
+        {
+          "name": "a",
+          "type": 12,
+          "typeArguments": null
+        },
+        {
+          "name": "b",
+          "type": 12,
+          "typeArguments": null
+        }
+      ],
+      "name": "add_multiply64",
+      "output": {
+        "name": "",
+        "type": 7,
+        "typeArguments": null
+      }
+    },
+    {
+      "inputs": [
+        {
+          "name": "a",
+          "type": 5,
+          "typeArguments": null
+        }
+      ],
+      "name": "carry_propagate",
+      "output": {
+        "name": "",
+        "type": 5,
+        "typeArguments": null
+      }
+    },
+    {
+      "inputs": [
+        {
+          "name": "m",
+          "type": 8,
+          "typeArguments": [
+            {
+              "name": "",
+              "type": 5,
+              "typeArguments": null
+            }
+          ]
+        },
+        {
+          "name": "mlen",
+          "type": 13,
+          "typeArguments": null
+        },
+        {
+          "name": "sk",
+          "type": 1,
+          "typeArguments": null
+        }
+      ],
+      "name": "crypto_sign",
+      "output": {
+        "name": "",
+        "type": 0,
+        "typeArguments": null
+      }
+    },
+    {
+      "inputs": [
+        {
+          "name": "p",
+          "type": 10,
+          "typeArguments": null
+        }
+      ],
+      "name": "dbl_p1p1",
+      "output": {
+        "name": "",
+        "type": 9,
+        "typeArguments": null
+      }
+    },
+    {
+      "inputs": [
+        {
+          "name": "a",
+          "type": 5,
+          "typeArguments": null
+        },
+        {
+          "name": "b",
+          "type": 5,
+          "typeArguments": null
+        }
+      ],
+      "name": "equals",
+      "output": {
+        "name": "",
+        "type": 2,
+        "typeArguments": null
+      }
+    },
+    {
+      "inputs": [
+        {
+          "name": "a",
+          "type": 5,
+          "typeArguments": null
+        }
+      ],
+      "name": "inverse",
+      "output": {
+        "name": "",
+        "type": 5,
+        "typeArguments": null
+      }
+    },
+    {
+      "inputs": [
+        {
+          "name": "a",
+          "type": 5,
+          "typeArguments": null
+        },
+        {
+          "name": "b",
+          "type": 5,
+          "typeArguments": null
+        }
+      ],
+      "name": "multiply",
+      "output": {
+        "name": "",
+        "type": 5,
+        "typeArguments": null
+      }
+    },
+    {
+      "inputs": [
+        {
+          "name": "a",
+          "type": 12,
+          "typeArguments": null
+        },
+        {
+          "name": "b",
+          "type": 12,
+          "typeArguments": null
+        }
+      ],
+      "name": "multiply64",
+      "output": {
+        "name": "",
+        "type": 7,
+        "typeArguments": null
+      }
+    },
+    {
+      "inputs": [
+        {
+          "name": "a",
+          "type": 5,
+          "typeArguments": null
+        }
+      ],
+      "name": "reduce",
+      "output": {
+        "name": "",
+        "type": 5,
+        "typeArguments": null
+      }
+    },
+    {
+      "inputs": [
+        {
+          "name": "a",
+          "type": 5,
+          "typeArguments": null
+        },
+        {
+          "name": "x",
+          "type": 11,
+          "typeArguments": null
+        }
+      ],
+      "name": "scalar_mult",
+      "output": {
+        "name": "",
+        "type": 5,
+        "typeArguments": null
+      }
+    },
+    {
+      "inputs": [
+        {
+          "name": "a",
+          "type": 7,
+          "typeArguments": null
+        }
+      ],
+      "name": "shift_right_by51",
+      "output": {
+        "name": "",
+        "type": 12,
+        "typeArguments": null
+      }
+    },
+    {
+      "inputs": [
+        {
+          "name": "a",
+          "type": 5,
+          "typeArguments": null
+        }
+      ],
+      "name": "square",
+      "output": {
+        "name": "",
+        "type": 5,
+        "typeArguments": null
+      }
+    },
+    {
+      "inputs": [
+        {
+          "name": "a",
+          "type": 5,
+          "typeArguments": null
+        },
+        {
+          "name": "b",
+          "type": 5,
+          "typeArguments": null
+        }
+      ],
+      "name": "subtract",
+      "output": {
+        "name": "",
+        "type": 5,
+        "typeArguments": null
+      }
+    }
+  ],
+  "loggedTypes": [],
+  "messagesTypes": []
+}

@@ -1,0 +1,30 @@
+[[package]]
+name = 'core'
+source = 'path+from-root-E6BBD1A08F478960'
+
+[[package]]
+name = 'edwards25519'
+source = 'path+from-root-0458BA434CA4FF78'
+dependencies = [
+    'std',
+    'utils',
+]
+
+[[package]]
+name = 'new_tests_edwards25519'
+source = 'member'
+dependencies = [
+    'edwards25519',
+    'std',
+    'utils',
+]
+
+[[package]]
+name = 'std'
+source = 'git+https://github.com/fuellabs/sway?tag=v0.32.2#b9996f13463c324e256014935c053c334b880ab5'
+dependencies = ['core']
+
+[[package]]
+name = 'utils'
+source = 'path+from-root-0458BA434CA4FF78'
+dependencies = ['std']
