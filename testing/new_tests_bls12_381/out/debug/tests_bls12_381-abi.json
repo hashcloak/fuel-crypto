@@ -1,0 +1,368 @@
+{
+  "types": [
+    {
+      "typeId": 0,
+      "type": "[_; 4]",
+      "components": [
+        {
+          "name": "__array_element",
+          "type": 7,
+          "typeArguments": null
+        }
+      ],
+      "typeParameters": null
+    },
+    {
+      "typeId": 1,
+      "type": "[_; 6]",
+      "components": [
+        {
+          "name": "__array_element",
+          "type": 7,
+          "typeArguments": null
+        }
+      ],
+      "typeParameters": null
+    },
+    {
+      "typeId": 2,
+      "type": "struct Choice",
+      "components": [
+        {
+          "name": "c",
+          "type": 8,
+          "typeArguments": null
+        }
+      ],
+      "typeParameters": null
+    },
+    {
+      "typeId": 3,
+      "type": "struct Fp",
+      "components": [
+        {
+          "name": "ls",
+          "type": 1,
+          "typeArguments": null
+        }
+      ],
+      "typeParameters": null
+    },
+    {
+      "typeId": 4,
+      "type": "struct Fp2",
+      "components": [
+        {
+          "name": "c0",
+          "type": 3,
+          "typeArguments": null
+        },
+        {
+          "name": "c1",
+          "type": 3,
+          "typeArguments": null
+        }
+      ],
+      "typeParameters": null
+    },
+    {
+      "typeId": 5,
+      "type": "struct Fp6",
+      "components": [
+        {
+          "name": "c0",
+          "type": 4,
+          "typeArguments": null
+        },
+        {
+          "name": "c1",
+          "type": 4,
+          "typeArguments": null
+        },
+        {
+          "name": "c2",
+          "type": 4,
+          "typeArguments": null
+        }
+      ],
+      "typeParameters": null
+    },
+    {
+      "typeId": 6,
+      "type": "struct Scalar",
+      "components": [
+        {
+          "name": "ls",
+          "type": 0,
+          "typeArguments": null
+        }
+      ],
+      "typeParameters": null
+    },
+    {
+      "typeId": 7,
+      "type": "u64",
+      "components": null,
+      "typeParameters": null
+    },
+    {
+      "typeId": 8,
+      "type": "u8",
+      "components": null,
+      "typeParameters": null
+    }
+  ],
+  "functions": [
+    {
+      "inputs": [
+        {
+          "name": "a",
+          "type": 3,
+          "typeArguments": null
+        },
+        {
+          "name": "b",
+          "type": 3,
+          "typeArguments": null
+        }
+      ],
+      "name": "add_fp",
+      "output": {
+        "name": "",
+        "type": 3,
+        "typeArguments": null
+      }
+    },
+    {
+      "inputs": [
+        {
+          "name": "a",
+          "type": 4,
+          "typeArguments": null
+        },
+        {
+          "name": "b",
+          "type": 4,
+          "typeArguments": null
+        }
+      ],
+      "name": "add_fp2",
+      "output": {
+        "name": "",
+        "type": 4,
+        "typeArguments": null
+      }
+    },
+    {
+      "inputs": [
+        {
+          "name": "a",
+          "type": 6,
+          "typeArguments": null
+        },
+        {
+          "name": "b",
+          "type": 6,
+          "typeArguments": null
+        }
+      ],
+      "name": "add_scalar",
+      "output": {
+        "name": "",
+        "type": 6,
+        "typeArguments": null
+      }
+    },
+    {
+      "inputs": [
+        {
+          "name": "a",
+          "type": 3,
+          "typeArguments": null
+        }
+      ],
+      "name": "lexicographically_largest_fp",
+      "output": {
+        "name": "",
+        "type": 2,
+        "typeArguments": null
+      }
+    },
+    {
+      "inputs": [
+        {
+          "name": "a",
+          "type": 4,
+          "typeArguments": null
+        }
+      ],
+      "name": "lexicographically_largest_fp2",
+      "output": {
+        "name": "",
+        "type": 2,
+        "typeArguments": null
+      }
+    },
+    {
+      "inputs": [
+        {
+          "name": "a",
+          "type": 3,
+          "typeArguments": null
+        },
+        {
+          "name": "b",
+          "type": 3,
+          "typeArguments": null
+        }
+      ],
+      "name": "mul_fp",
+      "output": {
+        "name": "",
+        "type": 3,
+        "typeArguments": null
+      }
+    },
+    {
+      "inputs": [
+        {
+          "name": "a",
+          "type": 4,
+          "typeArguments": null
+        },
+        {
+          "name": "b",
+          "type": 4,
+          "typeArguments": null
+        }
+      ],
+      "name": "mul_fp2",
+      "output": {
+        "name": "",
+        "type": 4,
+        "typeArguments": null
+      }
+    },
+    {
+      "inputs": [
+        {
+          "name": "a",
+          "type": 5,
+          "typeArguments": null
+        },
+        {
+          "name": "b",
+          "type": 5,
+          "typeArguments": null
+        }
+      ],
+      "name": "mul_fp6",
+      "output": {
+        "name": "",
+        "type": 5,
+        "typeArguments": null
+      }
+    },
+    {
+      "inputs": [
+        {
+          "name": "a",
+          "type": 4,
+          "typeArguments": null
+        }
+      ],
+      "name": "neg_fp2",
+      "output": {
+        "name": "",
+        "type": 4,
+        "typeArguments": null
+      }
+    },
+    {
+      "inputs": [
+        {
+          "name": "a",
+          "type": 3,
+          "typeArguments": null
+        }
+      ],
+      "name": "square_fp",
+      "output": {
+        "name": "",
+        "type": 3,
+        "typeArguments": null
+      }
+    },
+    {
+      "inputs": [
+        {
+          "name": "a",
+          "type": 4,
+          "typeArguments": null
+        }
+      ],
+      "name": "square_fp2",
+      "output": {
+        "name": "",
+        "type": 4,
+        "typeArguments": null
+      }
+    },
+    {
+      "inputs": [
+        {
+          "name": "a",
+          "type": 5,
+          "typeArguments": null
+        }
+      ],
+      "name": "square_fp6",
+      "output": {
+        "name": "",
+        "type": 5,
+        "typeArguments": null
+      }
+    },
+    {
+      "inputs": [
+        {
+          "name": "a",
+          "type": 3,
+          "typeArguments": null
+        },
+        {
+          "name": "b",
+          "type": 3,
+          "typeArguments": null
+        }
+      ],
+      "name": "sub_fp",
+      "output": {
+        "name": "",
+        "type": 3,
+        "typeArguments": null
+      }
+    },
+    {
+      "inputs": [
+        {
+          "name": "a",
+          "type": 4,
+          "typeArguments": null
+        },
+        {
+          "name": "b",
+          "type": 4,
+          "typeArguments": null
+        }
+      ],
+      "name": "sub_fp2",
+      "output": {
+        "name": "",
+        "type": 4,
+        "typeArguments": null
+      }
+    }
+  ],
+  "loggedTypes": []
+}

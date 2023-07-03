@@ -1,0 +1,30 @@
+[[package]]
+name = 'contract'
+source = 'member'
+dependencies = [
+    'p256',
+    'std',
+    'utils',
+]
+
+[[package]]
+name = 'core'
+source = 'path+from-root-B313E39BF6A5D375'
+
+[[package]]
+name = 'p256'
+source = 'path+from-root-67606CE75F849616'
+dependencies = [
+    'std',
+    'utils',
+]
+
+[[package]]
+name = 'std'
+source = 'git+https://github.com/fuellabs/sway?tag=v0.39.1#e3065657c907225a8fdfe2d2210a7a3bd2b55c73'
+dependencies = ['core']
+
+[[package]]
+name = 'utils'
+source = 'path+from-root-67606CE75F849616'
+dependencies = ['std']

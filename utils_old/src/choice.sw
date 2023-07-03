@@ -1,4 +1,4 @@
-library;
+library choice;
 
 /*
 Copyright (c) 2016-2017 Isis Agora Lovecruft, Henry de Valence. All rights reserved.
@@ -31,7 +31,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
 */
 
-use std::convert::From;
+use core::num::*;
 use std::{option::Option, u128::U128, assert::assert};
 use core::ops::{Eq, BitwiseAnd, BitwiseOr, BitwiseXor};
 
@@ -48,8 +48,14 @@ use core::ops::{Eq, BitwiseAnd, BitwiseOr, BitwiseXor};
 /// or `0` (false).
 pub struct Choice { c: u8 }
 
+// Trait for conversion from and to u8
+pub trait From {
+    fn from(input: u8) -> Self;
+    fn into(self) -> u8;
+}
+
 // Conversion Choice <-> u8
-impl From<u8> for Choice {
+impl From for Choice {
     fn from(input: u8) -> Self {
         Choice { c: input  }
     }
@@ -95,7 +101,29 @@ impl Choice {
 impl Choice {
     // return a Choice with the opposite internal value (1u8 or 0u8)
     pub fn not(self) -> Choice {
-        Choice::from_bool(opposite_choice_value(self.c))
+        ~Choice::from_bool(opposite_choice_value(self.c))
+    }
+}
+
+// Sway natively doesn't (or didn't) implement xor for all primitive types, so this has to be added. 
+impl BitwiseXor for u8 {
+    // return (self ^ other)
+    fn binary_xor(self, other: Self) -> Self {
+        asm(r1: self, r2: other, r3) { // set register 1 (r1) to value self, r2 to value other and allocate r3
+            xor r3 r1 r2; // r3 = r1 ^ r2
+            r3: u8 // result is cast to u8
+        }
+    }
+}
+
+// Sway natively doesn't (or didn't) implement and for all primitive types, so this has to be added. 
+impl BitwiseXor for u32 {
+    // return (self ^ other)
+    fn binary_xor(self, other: Self) -> Self {
+        asm(r1: self, r2: other, r3) { // set register 1 (r1) to value self, r2 to value other and allocate r3
+            xor r3 r1 r2; // r3 = r1 ^ r2
+            r3: u32 // result is cast to u32
+        }
     }
 }
 
@@ -107,7 +135,7 @@ pub trait ConditionallySelectable {
 
 impl ConditionallySelectable for u8 {
     // Select a if choice == 1 or select b if choice == 0, in constant time.
-    fn conditional_select(a: u8, b: u8, choice: Choice) -> u8 {
+    fn conditional_select(a: u8, b: u8, choice: Choice) -> u32 {
         // If choice == 0, mask = 00...00
         // Else if choice == 1, mask = 11..11
         let mask = wrapping_neg(choice.unwrap_u8());
@@ -146,7 +174,18 @@ impl ConditionallySelectable for u64 {
 impl ConditionallySelectable for Choice {
     // Select a if choice == 1 or select b if choice == 0, in constant time.
     fn conditional_select(a: Self, b: Self, choice: Choice) -> Self {
-        Choice::from(u8::conditional_select(a.c, b.c, choice))
+        ~Choice::from(~u8::conditional_select(a.c, b.c, choice))
+    }
+}
+
+// Sway natively doesn't (or didn't) implement and for all primitive types, so this has to be added. 
+impl BitwiseAnd for u8 {
+    // return (self & other)
+    fn binary_and(self, other: Self) -> Self {
+        asm(r1: self, r2: other, r3) {// set register 1 (r1) to value self, r2 to value other and allocate r3
+            and r3 r1 r2; // r3 = r1 & r2
+            r3: u8 // result is cast to u8
+        }
     }
 }
 
@@ -154,7 +193,18 @@ impl BitwiseAnd for Choice {
     // Returns the choice for the binary 'and' of the inner values of self and other
     // Note that we still can't use the `&` operator for this binary_and, but have to use the function name
     fn binary_and(self, other: Self) -> Self {
-        Choice::from(self.c & other.c)
+        ~Choice::from(self.c & other.c)
+    }
+}
+
+// Sway natively doesn't (or didn't) implement and for all primitive types, so this has to be added. 
+impl BitwiseOr for u8 {
+    // return (self | other)
+    fn binary_or(self, other: Self) -> Self {
+        asm(r1: self, r2: other, r3) {// set register 1 (r1) to value self, r2 to value other and allocate r3
+            or r3 r1 r2; // r3 = r1 | r2
+            r3: u8 // result is cast to u8
+        }
     }
 }
 
@@ -162,15 +212,7 @@ impl BitwiseOr for Choice {
     // Returns the choice for the binary 'or' of the inner values of self and other
     // Note that we still can't use the `|` operator for this binary_or, but have to use the function name
     fn binary_or(self, other: Self) -> Self {
-        Choice::from(self.c | other.c)
-    }
-}
-
-impl BitwiseXor for Choice {
-    // Returns the choice for the binary 'xor' of the inner values of self and other
-    // Note that we still can't use the `^` operator for this binary_xor, but have to use the function name
-    fn binary_xor(self, other: Self) -> Self {
-        Choice::from(self.c ^ other.c)
+        ~Choice::from(self.c | other.c)
     }
 }
 
@@ -237,14 +279,14 @@ pub trait ConstantTimeEq {
 
 // returns a+b mod 2^64. The result loses the carry.
 fn add_wrap_64(a: u64, b :u64) -> u64 {
-    let a_128: U128 = U128::from((0, a));
-    let b_128: U128 = U128::from((0, b));
+    let a_128: U128 = ~U128::from(0, a);
+    let b_128: U128 = ~U128::from(0, b);
     (a_128 + b_128).lower
 }
 
 // returns -a mod 2^64
 pub fn wrapping_neg(a: u64) -> u64 {
-   add_wrap_64(u64::max() - a, 1)
+   add_wrap_64(~u64::max() - a, 1)
 }
 
 impl ConstantTimeEq for u64 {
@@ -259,6 +301,6 @@ impl ConstantTimeEq for u64 {
 
         // Result is the opposite of the high bit (now shifted to low).
         let res: u8 = y ^ (1u64);
-        Choice::from(res)
+        ~Choice::from(res)
     }
 }
